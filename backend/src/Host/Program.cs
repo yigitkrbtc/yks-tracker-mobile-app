@@ -1,5 +1,7 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
+using Nirengi.BuildingBlocks.Api.Security;
 using Nirengi.BuildingBlocks.Infrastructure;
 using Nirengi.Host;
 
@@ -11,6 +13,12 @@ if (args.Contains("--health-probe"))
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider")
+{
+    // Build-time OpenAPI generation starts the host without secrets; give startup validation throwaway values.
+    builder.Configuration.AddInMemoryCollection(OpenApiBuildSecrets.Values);
+}
+
 builder.Host.UseSerilog((context, logger) => logger
     .ReadFrom.Configuration(context.Configuration)
     .Enrich.FromLogContext()
@@ -18,6 +26,7 @@ builder.Host.UseSerilog((context, logger) => logger
 
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi("v1");
+builder.Services.AddNirengiSecurity(builder.Configuration);
 builder.Services.AddHealthChecks()
     .AddNpgSql(
         builder.Configuration.GetConnectionString(ModuleInfrastructureRegistration.ConnectionStringName)!,
@@ -34,6 +43,7 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseSerilogRequestLogging();
+app.UseNirengiSecurity();
 
 app.MapOpenApi("/openapi/{documentName}.json");
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });

@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Testcontainers.PostgreSql;
@@ -8,6 +9,8 @@ namespace Nirengi.Host.IntegrationTests;
 public sealed class NirengiApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17-alpine").Build();
+
+    public static readonly string TestSigningKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
     public string ConnectionString => _postgres.GetConnectionString();
 
@@ -25,6 +28,8 @@ public sealed class NirengiApiFactory : WebApplicationFactory<Program>, IAsyncLi
         builder.UseSetting("ConnectionStrings:Database", ConnectionString);
         builder.UseSetting("Database:MigrateOnStartup", "true");
         builder.UseSetting("Outbox:PollInterval", "00:00:00.200");
+        builder.UseSetting("Jwt:SigningKey", TestSigningKey);
+        builder.UseSetting("RateLimiting:Auth:PermitLimit", "10000");
     }
 }
 
