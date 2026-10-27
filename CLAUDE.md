@@ -31,6 +31,7 @@ cd backend
 dotnet build Nirengi.slnx                     # contracts/openapi/v1.json da yeniden üretilir
 dotnet test --project tests/ArchitectureTests
 dotnet test --project tests/BuildingBlocks.UnitTests
+dotnet test --project tests/Identity.UnitTests
 dotnet test --project tests/Host.IntegrationTests   # Docker gerekir
 dotnet ef migrations add <Ad> -p src/Modules/<M>/<M>.Infrastructure -s src/Host -c <M>DbContext -o Persistence/Migrations
 
