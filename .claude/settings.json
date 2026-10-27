@@ -6,10 +6,17 @@
         "source": "github",
         "repo": "DietrichGebert/ponytail"
       }
+    },
+    "thedotmack": {
+      "source": {
+        "source": "github",
+        "repo": "thedotmack/claude-mem"
+      }
     }
   },
   "enabledPlugins": {
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "claude-mem@thedotmack": true
   },
   "env": {
     "PONYTAIL_DEFAULT_MODE": "lite"
