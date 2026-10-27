@@ -18,5 +18,6 @@ public sealed class IdentityModule : IModule
     {
         v1.MapAuthEndpoints();
         v1.MapMeEndpoints();
+        v1.MapAccountEndpoints();
     }
 }

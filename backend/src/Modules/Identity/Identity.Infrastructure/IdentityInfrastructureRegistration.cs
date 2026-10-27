@@ -43,6 +43,9 @@ public static class IdentityInfrastructureRegistration
         services.AddSingleton<ISecretProtector, DataProtectionSecretProtector>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
 
+        services.AddOptions<AccountPurgeOptions>().BindConfiguration(AccountPurgeOptions.SectionName);
+        services.AddHostedService<AccountPurgeWorker>();
+
         services.AddDataProtection().SetApplicationName("Nirengi").PersistKeysToDbContext<IdentityDbContext>();
         return services;
     }

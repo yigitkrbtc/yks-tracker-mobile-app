@@ -4,9 +4,12 @@ using Microsoft.AspNetCore.Routing;
 using Nirengi.BuildingBlocks.Api.Results;
 using Nirengi.BuildingBlocks.Application.Abstractions;
 using Nirengi.BuildingBlocks.Application.Messaging;
+using Nirengi.Modules.Identity.Application.Features.Deletion;
 using Nirengi.Modules.Identity.Application.Features.Profile;
 
 namespace Nirengi.Modules.Identity.Api.Endpoints;
+
+public sealed record DeleteAccountRequest(string Password);
 
 internal static class MeEndpoints
 {
@@ -19,5 +22,12 @@ internal static class MeEndpoints
             .WithName("GetMe")
             .Produces<UserProfile>()
             .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        me.MapPost("/deletion", async (DeleteAccountRequest request, ICurrentUser user, IDispatcher dispatcher, CancellationToken ct) =>
+                (await dispatcher.Send(new RequestAccountDeletionCommand(user.UserId, request.Password), ct))
+                    .Match(scheduled => Results.Accepted(value: scheduled)))
+            .WithName("RequestAccountDeletion")
+            .Produces<DeletionScheduled>(StatusCodes.Status202Accepted)
+            .ProducesValidationProblem();
     }
 }
