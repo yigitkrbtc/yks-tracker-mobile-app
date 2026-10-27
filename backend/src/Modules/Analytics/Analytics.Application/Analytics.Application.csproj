@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Analytics.Engine/Analytics.Engine.csproj" />
+    <ProjectReference Include="../Analytics.Contracts/Analytics.Contracts.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj" />
+  </ItemGroup>
+</Project>

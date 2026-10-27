@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: backend/global.json
+      - name: Restore
+        run: dotnet restore Nirengi.slnx
+      - name: Build (warnings are errors)
+        run: dotnet build Nirengi.slnx --no-restore -c Release
+      - name: OpenAPI contract is up to date
+        working-directory: .
+        run: git diff --exit-code -- contracts/openapi || (echo "::error::contracts/openapi is stale. Build locally and commit the regenerated file." && exit 1)
+      - name: Unit and architecture tests
+        run: |
+          dotnet test --project tests/ArchitectureTests --no-build -c Release
+          dotnet test --project tests/BuildingBlocks.UnitTests --no-build -c Release
+      - name: Integration tests (Testcontainers)
+        run: dotnet test --project tests/Host.IntegrationTests --no-build -c Release
+
+  backend-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build API image
+        run: docker build -f backend/src/Host/Dockerfile -t nirengi-api:ci backend
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.8
+          cache: true
+      - run: flutter pub get
+      - name: Format
+        run: dart format --output=none --set-exit-if-changed lib test
+      - run: flutter analyze
+      - run: flutter test
+
+  admin:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build

@@ -1,0 +1,24 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- CA1716: VB keyword clash (Error) is irrelevant for a C#-only codebase. -->
+    <NoWarn>$(NoWarn);CA1716</NoWarn>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- Working product name; change here (and in apps/) when the final brand is chosen. -->
+  <PropertyGroup>
+    <Product>Nirengi</Product>
+    <ModulePrefix Condition="$(MSBuildProjectDirectory.Contains('/src/Modules/'))">Nirengi.Modules.</ModulePrefix>
+    <ModulePrefix Condition="'$(ModulePrefix)' == ''">Nirengi.</ModulePrefix>
+    <AssemblyName Condition="'$(AssemblyName)' == '' Or '$(AssemblyName)' == '$(MSBuildProjectName)'">$(ModulePrefix)$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+  </PropertyGroup>
+</Project>

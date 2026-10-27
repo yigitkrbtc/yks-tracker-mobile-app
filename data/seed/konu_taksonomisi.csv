@@ -1,0 +1,371 @@
+session,unit,topic_code,topic,subtopics,grade,description
+AYT,AMAT,AYT.AMAT.01,Temel Kavramlar ve Sayı Basamakları,Sayı kümeleri;Tek-çift;Ardışık sayılar;Sayı basamakları;Sayı örüntüleri ve sayısal akıl yürütme,9,AYT'de tekrar edilen temel sayı kavramları ve basamak çözümlemesi
+AYT,AMAT,AYT.AMAT.02,"Bölme-Bölünebilme, Asal Sayılar ve EBOB-EKOK",Bölme algoritması;Bölünebilme kuralları;Asal çarpanlara ayırma;Pozitif bölen sayısı;EBOB-EKOK;Modüler aritmetik,9,Tam sayılarda bölünebilme ve asal çarpan uygulamaları
+AYT,AMAT,AYT.AMAT.03,"Rasyonel Sayılar, Basit Eşitsizlikler ve Mutlak Değer",Rasyonel ve ondalık sayılar;Aralıklar;Birinci dereceden eşitsizlikler;Mutlak değer;Mutlak değerli denklem ve eşitsizlikler,9,Sıralama ve mutlak değer
+AYT,AMAT,AYT.AMAT.04,Üslü ve Köklü Sayılar,Üslü ifadeler;Üslü denklemler;Köklü ifadeler;Paydayı rasyonel yapma,9,Üs ve kök kuralları
+AYT,AMAT,AYT.AMAT.05,"Çarpanlara Ayırma, Oran-Orantı ve Denklemler",Özdeşlikler;Çarpanlara ayırma;Rasyonel ifadeler;Oran-orantı;Birinci dereceden denklemler ve denklem sistemleri,9,Cebirsel ifadeler ve denklemler
+AYT,AMAT,AYT.AMAT.06,Problemler,Sayı;Kesir;Yaş;Yüzde-kâr-zarar;Karışım;Hareket;İşçi-havuz;Grafik problemleri,9,Sözel problemler (AYT'de nadir)
+AYT,AMAT,AYT.AMAT.07,Kümeler ve Kartezyen Çarpım,Küme işlemleri;Alt küme sayısı;Venn şeması;Kartezyen çarpım,9,Kümeler
+AYT,AMAT,AYT.AMAT.08,Mantık,Önermeler;Bileşik önermeler;Koşullu ve iki yönlü koşullu önerme;Niceleyiciler;Tanım-aksiyom-teorem,9,Önermeler mantığı
+AYT,AMAT,AYT.AMAT.09,Fonksiyonlar,Fonksiyon kavramı ve grafik;Bire bir-örten;Bileşke;Ters fonksiyon;Fonksiyonel denklemler;Grafik dönüşümleri;Tek-çift fonksiyon;Parçalı ve mutlak değerli fonksiyonlar,10-11,Fonksiyon kavramı ve işlemleri
+AYT,AMAT,AYT.AMAT.10,Polinomlar,Polinom kavramı;Polinomlarda işlemler;Bölme ve kalan;Polinomun kökleri ve çarpanları;Polinom grafiği,10,Polinomlar
+AYT,AMAT,AYT.AMAT.11,İkinci Dereceden Denklemler,Çözüm yöntemleri;Diskriminant;Kök-katsayı bağıntıları;Kökleri verilen denklem;Denkleme dönüştürülebilen denklemler,10,İkinci dereceden denklemler
+AYT,AMAT,AYT.AMAT.12,Karmaşık Sayılar,i'nin kuvvetleri;Karmaşık sayılarda işlemler;Eşlenik;Modül;Karmaşık kökler,10,Karmaşık sayılar
+AYT,AMAT,AYT.AMAT.13,Parabol (İkinci Dereceden Fonksiyonlar),Tepe noktası;Grafik çizimi;Parabol-doğru ilişkisi;Denklem yazma;Maksimum-minimum,11,İkinci dereceden fonksiyon ve grafiği
+AYT,AMAT,AYT.AMAT.14,Eşitsizlikler,İkinci dereceden eşitsizlikler;Çarpım-bölüm eşitsizlikleri;Eşitsizlik sistemleri;İkinci dereceden iki bilinmeyenli eşitsizlik grafikleri,11,Polinom ve rasyonel eşitsizlikler
+AYT,AMAT,AYT.AMAT.15,Permütasyon ve Kombinasyon,Sayma kuralları;Permütasyon;Tekrarlı ve dairesel permütasyon;Kombinasyon;Geometrik sayma,10,Sayma
+AYT,AMAT,AYT.AMAT.16,Binom Açılımı,Binom açılımı;Genel terim;Katsayılar toplamı;Pascal üçgeni,10,Binom
+AYT,AMAT,AYT.AMAT.17,Olasılık,Örnek uzay;Olasılık hesabı;Koşullu olasılık;Bağımsız olaylar;Deneysel ve teorik olasılık,10,Olasılık
+AYT,AMAT,AYT.AMAT.18,Trigonometri,Yönlü açılar;Trigonometrik oranlar;Birim çember;Trigonometrik fonksiyonlar ve grafikleri;Periyot;Ters trigonometrik fonksiyonlar;Sinüs ve kosinüs teoremi,11,Trigonometrik oran ve fonksiyonlar
+AYT,AMAT,AYT.AMAT.19,"Trigonometri: Toplam-Fark, İki Kat Açı ve Denklemler",Toplam-fark formülleri;İki kat ve yarım açı formülleri;Dönüşüm formülleri;Trigonometrik denklemler,12,İleri trigonometri
+AYT,AMAT,AYT.AMAT.20,Üstel ve Logaritmik Fonksiyonlar,Üstel fonksiyon;Logaritma fonksiyonu;Logaritma özellikleri;Üstel ve logaritmik denklem-eşitsizlikler;Gerçek hayat uygulamaları,12,Logaritma
+AYT,AMAT,AYT.AMAT.21,Diziler,Dizi kavramı;Aritmetik dizi;Geometrik dizi;Seriler ve toplam sembolü;Gerçek hayat uygulamaları,12,Diziler
+AYT,AMAT,AYT.AMAT.22,Limit ve Süreklilik,Limit kavramı;Sağdan-soldan limit;Limit özellikleri;Belirsizlikler;Süreklilik,12,Limit ve süreklilik
+AYT,AMAT,AYT.AMAT.23,Türev,Türevin tanımı;Türevlenebilirlik;Türev alma kuralları;Bileşke fonksiyonun türevi (zincir kuralı);Türevin geometrik yorumu (eğim ve teğet);Ortalama ve anlık değişim hızı,12,Türev kavramı ve kuralları
+AYT,AMAT,AYT.AMAT.24,Türevin Uygulamaları,Artan-azalan fonksiyonlar;Ekstremum noktaları;İkinci türev ve büküm;Grafik yorumlama ve çizimi;Maksimum-minimum (optimizasyon) problemleri,12,Türevin uygulamaları
+AYT,AMAT,AYT.AMAT.25,Belirsiz İntegral,Belirsiz integral;İntegral alma kuralları;Değişken değiştirme,12,Belirsiz integral
+AYT,AMAT,AYT.AMAT.26,Belirli İntegral ve Uygulamaları,Riemann toplamı;Belirli integral özellikleri;Değişken değiştirme;Türev-integral ilişkisi;İntegral ile alan hesabı,12,Belirli integral ve alan
+AYT,GEO,AYT.GEO.01,Doğruda ve Üçgende Açılar,Doğruda açılar;Paralel doğrularda açılar;Üçgenin iç ve dış açıları,9,Açılar
+AYT,GEO,AYT.GEO.02,Dik Üçgen ve Trigonometrik Bağıntılar,Pisagor bağıntısı;Öklid bağıntıları;Özel dik üçgenler;Dik üçgende trigonometrik oranlar,9,Dik üçgen
+AYT,GEO,AYT.GEO.03,İkizkenar ve Eşkenar Üçgen,İkizkenar üçgen;Eşkenar üçgen,9,Özel üçgenler
+AYT,GEO,AYT.GEO.04,Üçgende Yardımcı Elemanlar,Açıortay;Kenarortay;Kenar orta dikme;Yükseklik;Ağırlık merkezi,9,Açıortay-kenarortay bağıntıları
+AYT,GEO,AYT.GEO.05,Üçgende Eşlik ve Benzerlik,Eşlik;Benzerlik kuralları;Temel orantı teoremi;Menelaus-Seva,9,Benzerlik
+AYT,GEO,AYT.GEO.06,Üçgende Alan,Alan formülleri;Sinüslü alan;Alan oranları;Yükseklik ve taban ilişkisi,9,Üçgende alan
+AYT,GEO,AYT.GEO.07,Açı-Kenar Bağıntıları,Üçgen eşitsizliği;Açı-kenar sıralaması,9,Açı-kenar bağıntıları
+AYT,GEO,AYT.GEO.08,Çokgenler,Çokgenlerde açı;Köşegen;Düzgün çokgenler;Çokgende alan,10,Çokgenler
+AYT,GEO,AYT.GEO.09,Dörtgenler ve Özel Dörtgenler,Genel dörtgen;Yamuk;Paralelkenar;Eşkenar dörtgen;Dikdörtgen;Kare;Deltoid,10,Dörtgenler
+AYT,GEO,AYT.GEO.10,Çember,Çemberde temel elemanlar;Çemberde açılar;Çemberde uzunluk;Teğet;Kirişler dörtgeni,10-11,Çember geometrisi
+AYT,GEO,AYT.GEO.11,Daire,Dairenin çevre ve alanı;Daire dilimi;Daire parçası;Yay uzunluğu,10,Dairede alan ve çevre
+AYT,GEO,AYT.GEO.12,Noktanın ve Doğrunun Analitiği,İki nokta arası uzaklık;Orta nokta;Eğim;Doğru denklemi;Doğruların birbirine göre durumu;Noktanın doğruya uzaklığı;Analitik düzlemde alan,10-11,Analitik geometri
+AYT,GEO,AYT.GEO.13,Dönüşüm Geometrisi,Öteleme;Yansıma;Dönme;Dönüşümlerin bileşkesi;Simetri,10-11,Dönüşümler
+AYT,GEO,AYT.GEO.14,Çemberin Analitiği,Çember denklemi;Çember ve doğru;Çemberde teğet,12,Çemberin analitik incelenmesi
+AYT,GEO,AYT.GEO.15,Katı Cisimler,Prizma;Küp ve dikdörtgenler prizması;Piramit;Silindir;Koni;Küre;Açınımlar,10,Uzay geometrisi
+TYT,BIY,TYT.BIY.01,Biyoloji ve Canlıların Ortak Özellikleri,Bilim ve bilimsel yöntem;Canlıların ortak özellikleri;Biyolojinin önemi ve uygulama alanları,9,Bilimsel çalışma süreci ve tüm canlılarda görülen ortak özellikler
+TYT,BIY,TYT.BIY.02,İnorganik Bileşikler,Su;Mineraller;Asitler bazlar ve tuzlar,9,Canlıların yapısındaki inorganik maddeler ve görevleri
+TYT,BIY,TYT.BIY.03,Karbonhidratlar ve Lipitler,Monosakkaritler;Disakkaritler;Polisakkaritler (nişasta glikojen selüloz kitin);Trigliseritler;Fosfolipitler;Steroitler,9,Karbonhidrat ve lipitlerin yapısı ve görevleri; organik moleküllerin genel (polimer/monomer) karşılaştırması
+TYT,BIY,TYT.BIY.04,Proteinler ve Enzimler,Amino asitler;Peptit bağı;Proteinlerin yapısı ve görevleri;Enzimlerin yapısı ve çalışması;Enzim etkinliğini etkileyen faktörler,9,Proteinler ve enzimler
+TYT,BIY,TYT.BIY.05,Vitaminler,Yağda çözünen vitaminler;Suda çözünen vitaminler,9,Vitaminlerin özellikleri ve eksiklik belirtileri
+TYT,BIY,TYT.BIY.06,Nükleik Asitler ve ATP,DNA ve RNA yapısı;Nükleotit;Gen-DNA-kromozom ilişkisi;DNA eşlenmesi (temel);ATP,9,Nükleik asitlerin yapısı ve görevleri ile ATP
+TYT,BIY,TYT.BIY.07,Hücre Yapısı ve Organeller,Hücre teorisi;Prokaryot ve ökaryot hücre;Sitoplazma ve organeller;Kofullar;Çekirdek;Bitki ve hayvan hücresi karşılaştırması,9,Hücrenin yapısı ve organellerin görevleri
+TYT,BIY,TYT.BIY.08,Hücre Zarı ve Madde Geçişleri,Akıcı mozaik zar modeli;Difüzyon;Osmoz;Kolaylaştırılmış difüzyon;Aktif taşıma;Endositoz ve ekzositoz,9,Hücre zarının yapısı ve zardan madde geçişi
+TYT,BIY,TYT.BIY.09,Canlıların Sınıflandırılması,Sınıflandırma ilkeleri;Taksonomik kategoriler;İkili adlandırma;Tür kavramı,9,Sınıflandırma sistemi ve kategoriler arası ilişkiler
+TYT,BIY,TYT.BIY.10,Canlı Âlemleri ve Virüsler,Bakteriler;Arkeler;Protistler;Bitkiler;Mantarlar;Hayvanlar;Virüsler,9,Canlı âlemlerinin genel özellikleri ve örnekleri
+TYT,BIY,TYT.BIY.11,"Hücre Döngüsü, Mitoz ve Eşeysiz Üreme",İnterfaz;Mitoz evreleri;Sitokinez;Eşeysiz üreme çeşitleri,10,Mitoz bölünme ve eşeysiz üreme
+TYT,BIY,TYT.BIY.12,Mayoz ve Eşeyli Üreme,Mayoz evreleri;Krossing over;Mitoz-mayoz karşılaştırması;Döllenme;Partenogenez;Eşeyli üremenin çeşitliliğe katkısı,10,Mayoz bölünme ve eşeyli üreme (mitoz-mayoz ayırt etme soruları burada)
+TYT,BIY,TYT.BIY.13,Kalıtımın Genel İlkeleri,Mendel ilkeleri;Monohibrit ve dihibrit çaprazlama;Eş baskınlık;Çok alellilik;Kan grupları,10,Mendel genetiği ve otozomal kalıtım (soyağacı soruları hariç)
+TYT,BIY,TYT.BIY.14,Eşeye Bağlı Kalıtım ve Soyağaçları,X'e bağlı kalıtım;Y'ye bağlı kalıtım;Soyağacı analizi;Otozomal soyağaçları,10,Eşeye bağlı kalıtım ve her türlü soyağacı yorumlama
+TYT,BIY,TYT.BIY.15,Genetik Varyasyon ve Biyolojik Çeşitlilik,Mutasyon;Modifikasyon;Varyasyon kaynakları;Biyolojik çeşitlilik;Türkiye'nin biyoçeşitliliği;Endemik türler;Biyoçeşitliliğin korunması,10,Kalıtsal çeşitlilik ve biyoçeşitlilik
+TYT,BIY,TYT.BIY.16,Ekosistem Ekolojisi,Ekosistemin bileşenleri;Beslenme şekilleri;Besin zinciri ve besin ağı;Enerji akışı;Ekolojik piramitler;Madde döngüleri,10,Ekosistemin yapısı ve işleyişi
+TYT,BIY,TYT.BIY.17,Güncel Çevre Sorunları ve Sürdürülebilirlik,Hava su ve toprak kirliliği;Biyolojik birikim;Küresel iklim değişikliği;Ekolojik ayak izi;Sürdürülebilirlik;Doğal kaynakların korunması,10,Çevre sorunları ve sürdürülebilir kalkınma
+AYT,BIY,AYT.BIY.01,Sinir Sistemi,Nöron yapısı ve miyelin;İmpuls iletimi;Sinaps;Merkezi sinir sistemi;Çevresel ve otonom sinir sistemi;Refleks,11,Sinirsel denetim ve düzenleme
+AYT,BIY,AYT.BIY.02,Endokrin Sistem,Hormonların genel özellikleri;Endokrin bezler ve hormonları;Geri bildirim;Kan şekeri düzenlenmesi;Hormonal rahatsızlıklar,11,Hormonal denetim ve düzenleme
+AYT,BIY,AYT.BIY.03,Duyu Organları,Göz;Kulak (işitme ve denge);Burun;Dil;Deri,11,Duyu organlarının yapısı ve işleyişi
+AYT,BIY,AYT.BIY.04,Destek ve Hareket Sistemi,Kemik;Kıkırdak;Eklemler;Kas çeşitleri;Kas kasılması (sarkomer),11,İskelet ve kas sistemi
+AYT,BIY,AYT.BIY.05,Sindirim Sistemi,Sindirim kanalı;Kimyasal sindirim ve enzimler;Karaciğer ve pankreas;Emilim,11,İnsanda sindirim
+AYT,BIY,AYT.BIY.06,Dolaşım Sistemi,Kalbin yapısı ve çalışması;Damarlar;Büyük ve küçük dolaşım;Kılcal damar-doku sıvısı alışverişi;Kan;Lenf sistemi,11,Kalp damar ve kan
+AYT,BIY,AYT.BIY.07,Bağışıklık Sistemi,Özgül olmayan savunma;Özgül savunma;B ve T lenfositler;Antikor;Aşı ve serum;Otoimmün hastalıklar,11,Vücudun savunma mekanizmaları
+AYT,BIY,AYT.BIY.08,Solunum Sistemi,Solunum yolları ve alveoller;Soluk alıp verme;Solunum gazlarının taşınması;Hemoglobin;Solunumun düzenlenmesi,11,İnsanda solunum ve gaz taşınması
+AYT,BIY,AYT.BIY.09,Üriner Sistem,Böbrek ve nefron;Süzülme geri emilim salgılama;Homeostazi;Osmoregülasyon,11,Boşaltım ve vücut sıvılarının düzenlenmesi
+AYT,BIY,AYT.BIY.10,Üreme Sistemi ve Embriyonik Gelişim,Erkek ve dişi üreme sistemi;Spermatogenez ve oogenez;Üreme hormonları ve menstrual döngü;Döllenme;Embriyonik gelişim,11,İnsanda üreme
+AYT,BIY,AYT.BIY.11,Komünite Ekolojisi,Komünitenin yapısı;Türler arası etkileşimler (simbiyoz rekabet av-avcı);Ekolojik niş;Kilit taşı türler;Süksesyon,11,Komünite yapısı ve türler arası ilişkiler
+AYT,BIY,AYT.BIY.12,Popülasyon Ekolojisi,Popülasyon büyüklüğü ve yoğunluğu;Dağılım modelleri;J ve S tipi büyüme;Taşıma kapasitesi;Yaş piramitleri;Hayatta kalma eğrileri,11,Popülasyonların yapısı ve büyümesi
+AYT,BIY,AYT.BIY.13,Nükleik Asitler ve DNA Replikasyonu,DNA ve RNA yapısı;Gen ve genom;DNA replikasyonu ve enzimleri;Genetik materyalin keşfi,12,Nükleik asitler ve kendini eşleme
+AYT,BIY,AYT.BIY.14,Genetik Şifre ve Protein Sentezi,Genetik kod ve kodonlar;Transkripsiyon;Translasyon;Poliribozom;Mutasyonların protein sentezine etkisi,12,Genden proteine bilgi akışı
+AYT,BIY,AYT.BIY.15,Biyoteknoloji ve Genetik Mühendisliği,Rekombinant DNA;Gen aktarımı;GDO;Klonlama;Model organizmalar;Gen tedavisi;Biyoetik,12,Genetik mühendisliği uygulamaları
+AYT,BIY,AYT.BIY.16,Canlılık ve Enerji (ATP),ATP yapısı;Enerji dönüşümleri;Fosforilasyon çeşitleri;Kemiozmotik mekanizma,12,ATP ve hücrede enerji dönüşümü
+AYT,BIY,AYT.BIY.17,Fotosentez,Pigmentler;Kloroplast;Işığa bağımlı reaksiyonlar;Calvin döngüsü;Fotosentez hızını etkileyen faktörler,12,Fotosentez
+AYT,BIY,AYT.BIY.18,Kemosentez,Kemosentetik bakteriler;Kemosentezin madde döngülerindeki rolü,12,Kemosentez
+AYT,BIY,AYT.BIY.19,Hücresel Solunum,Glikoliz;Krebs döngüsü;Elektron taşıma sistemi;Oksijenli solunum;Fermantasyon;Fotosentez-solunum karşılaştırması,12,Oksijenli solunum ve fermantasyon
+AYT,BIY,AYT.BIY.20,Bitkilerin Yapısı ve Büyümesi,Bitki dokuları (meristem örtü temel iletim);Kök gövde ve yaprak;Primer ve sekonder büyüme;Stoma ve hidatot,12,Bitki doku ve organları ile büyüme
+AYT,BIY,AYT.BIY.21,Bitkilerde Madde Taşınması,Su ve mineral alımı;Kök basıncı terleme kohezyon;Floemde taşıma (kaynak-havuz);Stomaların açılıp kapanması,12,Ksilem ve floemde taşıma
+AYT,BIY,AYT.BIY.22,Bitkisel Hormonlar ve Bitki Hareketleri,Oksin;Giberellin;Sitokinin;Etilen;Absisik asit;Tropizma;Nasti,12,Bitkilerde büyümenin düzenlenmesi ve hareketler
+AYT,BIY,AYT.BIY.23,Bitkilerde Eşeyli Üreme,Çiçeğin yapısı;Mikrospor ve megaspor oluşumu;Tozlaşma;Çifte döllenme;Tohum ve meyve;Çimlenme,12,Çiçekli bitkilerde üreme
+AYT,BIY,AYT.BIY.24,Canlılar ve Çevre (Adaptasyon),Adaptasyon;Mimikri ve kamuflaj;Doğal ve yapay seçilim;Çevresel koşullara uyum,12,Canlıların çevreye uyumu ve seçilim
+TYT,COG,TYT.COG.01,"Doğa ve İnsan, Coğrafyanın Bölümleri",Coğrafyanın konusu;Fiziki coğrafya alt dalları;Beşerî coğrafya alt dalları;Coğrafyanın gelişimi,9,Coğrafyanın tanımı ve alt dalları; doğa-insan ilişkisinin temel kavramları
+TYT,COG,TYT.COG.02,Dünya'nın Şekli ve Hareketleri,Dünya'nın şekli ve sonuçları;Eksen hareketi;Yörünge hareketi;Mevsimler;Gündüz-gece süreleri;Güneş ışınlarının geliş açısı,9,Dünya'nın şeklinin ve hareketlerinin coğrafi sonuçları
+TYT,COG,TYT.COG.03,Coğrafi Konum,Mutlak (matematik) konum;Paralel ve meridyenler;Yerel saat ve saat dilimleri;Göreceli (özel) konum;Türkiye'nin konumu,9,Paralel-meridyen sistemi ve konumun etkileri
+TYT,COG,TYT.COG.04,Harita Bilgisi,Ölçek;İzohipsler ve profil;Haritada yön ve uzaklık;Projeksiyonlar;Kroki ve harita türleri,9,Harita okuma ve harita teknikleri
+TYT,COG,TYT.COG.05,Atmosfer ve Sıcaklık,Atmosferin katmanları;Sıcaklığı etkileyen faktörler;İzoterm;Sıcaklığın dağılışı,9,Atmosferin yapısı ve sıcaklık
+TYT,COG,TYT.COG.06,Basınç ve Rüzgârlar,Basınç merkezleri;İzobar;Sürekli rüzgârlar;Mevsimlik ve yerel rüzgârlar;Muson,9,Basınç ve rüzgâr sistemleri
+TYT,COG,TYT.COG.07,"Nem, Yağış ve Buharlaşma",Mutlak-bağıl nem;Yağış türleri (yamaç-konveksiyonel-cephesel);Buharlaşma;Yağışın dağılışı,9,Nem ve yağış oluşumu
+TYT,COG,TYT.COG.08,İklim Tipleri ve Türkiye'nin İklimi,Sıcak-ılıman-soğuk iklimler;Akdeniz iklimi;Karasal iklim;Türkiye'de iklim elemanları;Klimogram okuma,9,Dünya'daki iklim tipleri ve Türkiye'nin iklim özellikleri
+TYT,COG,TYT.COG.09,Yer'in Yapısı ve İç Kuvvetler,Yer'in katmanları;Jeolojik zamanlar;Levha hareketleri;Orojenez-epirojenez;Volkanizma;Deprem,10,Yer'in iç yapısı ve iç kuvvetler
+TYT,COG,TYT.COG.10,Dış Kuvvetler ve Yer Şekilleri,Akarsu aşındırma-biriktirme;Rüzgâr;Buzul;Dalga ve akıntılar;Karstik şekiller;Çözünme ve ayrışma,10,Dış kuvvetlerin oluşturduğu yer şekilleri
+TYT,COG,TYT.COG.11,Türkiye'nin Yer Şekilleri,Dağlar;Platolar;Ovalar;Kıyı tipleri;Türkiye'nin jeolojik oluşumu,10,Türkiye'deki yer şekillerinin özellikleri ve dağılışı
+TYT,COG,TYT.COG.12,Su Kaynakları,Okyanus ve denizler;Akarsular ve rejim;Göller;Yer altı suları;Türkiye'nin su kaynakları,10,Hidrosfer ve su kaynakları
+TYT,COG,TYT.COG.13,Topraklar,Toprak oluşumu;Toprak türleri;Zonal-azonal topraklar;Türkiye'de topraklar;Toprak erozyonu,10,Toprakların oluşumu ve dağılışı
+TYT,COG,TYT.COG.14,Bitki Örtüsü ve Biyomlar,Biyomlar;Orman-çayır-çalı;Bitki örtüsünü etkileyen faktörler;Türkiye'nin bitki örtüsü;Endemik türler,10,Bitki örtüsü türleri ve dağılışı
+TYT,COG,TYT.COG.15,Nüfus,Nüfus artışı;Nüfusun dağılışı ve yoğunluk;Nüfus piramitleri;Nüfusun yapısı;Demografik göstergeler,10,Dünya ve Türkiye'de nüfusun özellikleri
+TYT,COG,TYT.COG.16,Göç,Göç nedenleri;Göç türleri;Göçlerin sonuçları,10,Göçün nedenleri ve sonuçları
+TYT,COG,TYT.COG.17,Yerleşmeler,Yerleşmeyi etkileyen doğal ve beşerî faktörler;Kır ve şehir yerleşmeleri;Yerleşme dokusu;Türkiye'de yerleşme,9,Yerleşmelerin oluşumu ve türleri
+TYT,COG,TYT.COG.18,Ekonomik Faaliyetler,Birincil-ikincil-üçüncül faaliyetler;Tarım ve hayvancılık;Madencilik ve enerji;Sanayi;Doğal kaynaklar,10,Ekonomik faaliyet türleri ve dağılışı
+TYT,COG,TYT.COG.19,Bölgeler ve Bölge Türleri,Bölge kavramı;Doğal bölgeler;Beşerî bölgeler;Fonksiyonel bölgeler;Bölge sınırları,9,Bölge türleri ve bölgelerin belirlenmesi
+TYT,COG,TYT.COG.20,Uluslararası Ulaşım Hatları,Kara-deniz-hava ulaşımı;Boğazlar ve kanallar;Stratejik geçitler,10,Uluslararası ulaşım hatlarının coğrafi özellikleri
+TYT,COG,TYT.COG.21,İnsan-Doğa Etkileşimi,Doğal ortamın insan faaliyetlerine etkisi;İnsanın doğal ortamı değiştirmesi;Çevre sorunları;Doğal ortama uyum,9,Çevre ve toplum: insan ile doğal ortam arasındaki karşılıklı etkileşim
+TYT,COG,TYT.COG.22,Doğal Afetler,Afet türleri;Deprem-heyelan-sel-çığ;Afetlerin dağılışı;Afetlerden korunma,10,Doğal afetlerin oluşumu ve zararlarını azaltma
+AYT,COG,AYT.COG.01,"Dünya'nın Hareketleri, Konum ve Harita",Eksen ve yörünge hareketi;Mutlak-göreceli konum;Yerel saat;Harita okuma,9,Temel fiziki coğrafya tekrarı: Dünya'nın hareketleri ve sonuçları; konum; harita
+AYT,COG,AYT.COG.02,İklim Bilgisi ve Türkiye'nin İklimi,Sıcaklık-basınç-rüzgâr;Nem ve yağış;İklim tipleri;Türkiye'de iklim,9,Temel iklim konuları ve Türkiye'nin iklimi
+AYT,COG,AYT.COG.03,"İç ve Dış Kuvvetler, Yer Şekilleri",Levha hareketleri;Volkanizma ve deprem;Dış kuvvet şekilleri;Türkiye'nin yer şekilleri,10,Yer şekillerini oluşturan kuvvetler ve Türkiye'nin yer şekilleri
+AYT,COG,AYT.COG.04,"Su, Toprak ve Bitki Örtüsü",Akarsular ve göller;Yer altı suları;Toprak türleri;Bitki örtüsü,10,Su kaynakları; topraklar; bitki örtüsü (temel)
+AYT,COG,AYT.COG.05,Biyoçeşitlilik ve Ekosistem,Ekosistemin unsurları;Biyomlar;Biyoçeşitlilik ve etkileyen faktörler;Ekosistemlerin işleyişi,11,Ekosistemlerin unsurları ve biyoçeşitlilik
+AYT,COG,AYT.COG.06,Madde Döngüleri ve Enerji Akışı,Su döngüsü;Karbon döngüsü;Azot döngüsü;Oksijen döngüsü;Besin zinciri ve enerji akışı,11,Ekosistemde madde döngüleri ve enerji akışı
+AYT,COG,AYT.COG.07,Su Ekosistemleri,Okyanus ve deniz ekosistemleri;Göl ve akarsu ekosistemleri;Sulak alanlar,11,Su ekosistemlerinin özellikleri
+AYT,COG,AYT.COG.08,Nüfus ve Göç (Dünya),Nüfus artışı;Nüfus yapısı ve piramitler;Demografik dönüşüm;Göçler,10,Dünya'da nüfus ve göç (temel)
+AYT,COG,AYT.COG.09,Nüfus Politikaları,Nüfus artışını teşvik eden politikalar;Nüfus artışını sınırlayan politikalar;Türkiye'de nüfus politikaları,11,Ülkelerin nüfus politikaları
+AYT,COG,AYT.COG.10,Türkiye'de Nüfus ve Yerleşme,Türkiye'de nüfusun gelişimi;Nüfusun dağılışı;Türkiye'de göç;Kır ve şehir yerleşmeleri;Yerleşme tipleri,11,Türkiye'de nüfus özellikleri ve yerleşme
+AYT,COG,AYT.COG.11,Ekonomik Faaliyetler ve Doğal Kaynaklar,Ekonomik sistemler;Doğal kaynak-ekonomi ilişkisi;Dünyada tarım-maden-enerji;Ekonomik faaliyetlerin dağılışı,11,Ekonomik faaliyetler ve doğal kaynakların dünyadaki dağılışı
+AYT,COG,AYT.COG.12,Türkiye'de Tarım ve Hayvancılık,Tarım ürünleri ve yetişme koşulları;Tarımsal yapı;Hayvancılık;Ormancılık ve balıkçılık,11,Türkiye ekonomisinde tarım ve hayvancılık
+AYT,COG,AYT.COG.13,Türkiye'de Madenler ve Enerji Kaynakları,Metalik madenler;Endüstriyel hammaddeler;Fosil yakıtlar;Yenilenebilir enerji,11,Türkiye'nin maden ve enerji kaynakları
+AYT,COG,AYT.COG.14,Türkiye'de Sanayi,Sanayinin dağılışını etkileyen faktörler;Sanayi kolları;Sanayi bölgeleri,11,Türkiye'de sanayi
+AYT,COG,AYT.COG.15,Şehirlerin Fonksiyonları ve Etki Alanları,Şehir fonksiyonları;Etki alanı;Şehirleşme;Kentsel sorunlar,12,Şehirlerin işlevleri ve etki alanları
+AYT,COG,AYT.COG.16,"Türkiye'de Ulaşım, Ticaret ve Turizm",Hizmet sektörü;Ulaşım;İç ve dış ticaret;Turizm;Doğal ve kültürel miras,12,Türkiye'de hizmet sektörü: ulaşım-ticaret-turizm
+AYT,COG,AYT.COG.17,Türkiye'nin İşlevsel Bölgeleri ve Kalkınma Projeleri,Bölgesel kalkınma projeleri (GAP-DAP-DOKAP-KOP vb.);Havza projeleri;Bölgesel gelişmişlik farkları,12,Türkiye'nin işlevsel bölgeleri ve kalkınma projeleri
+AYT,COG,AYT.COG.18,"Bölgeler, Kültür Bölgeleri ve Türk Kültürü",Bölge türleri;İlk kültür merkezleri;Kültür bölgeleri;Türk kültürü ve yayılışı,11-12,Bölge kavramı; kültür bölgeleri ve Türk kültürünün coğrafi temelleri
+AYT,COG,AYT.COG.19,Sanayileşme Süreçleri ve Ülkeler Arası Etkileşim,Sanayileşme süreci (Almanya-Japonya-Çin vb.);Tarım-ekonomi ilişkisi;Gelişmişlik düzeyleri;Küresel ticaret ve turizm;Uluslararası ulaşım ve ticaret güzergâhları;Doğal kaynakların küresel etkisi,11-12,Ülkelerin sanayileşme süreçleri ve küresel etkileşim
+AYT,COG,AYT.COG.20,Jeopolitik Konum ve Çatışma Bölgeleri,Jeopolitik konum;Türkiye'nin jeopolitiği;Enerji nakil hatları;Çatışma bölgeleri,11-12,Jeopolitik konum ve çatışma bölgeleri
+AYT,COG,AYT.COG.21,Küresel ve Bölgesel Örgütler,BM ve bağlı kuruluşlar;Ekonomik örgütler;Askerî ve siyasi örgütler;Türkiye'nin üyesi olduğu örgütler,11,Küresel ve bölgesel örgütler
+AYT,COG,AYT.COG.22,Çevre Sorunları ve Sürdürülebilirlik,Çevre sorunları;Madencilik ve enerjinin çevresel etkileri;Doğal kaynakların sürdürülebilir kullanımı;Ekolojik ayak izi;Doğal ve kültürel mirasın korunması,11-12,Çevre sorunları ve doğal kaynakların sürdürülebilir kullanımı
+AYT,COG,AYT.COG.23,"Doğal Afetler, Ekstrem Doğa Olayları ve Küresel İklim Değişimi",Doğal afetler;Ekstrem doğa olayları;Küresel iklim değişimi,10-12,Afetler ve iklim değişimi
+AYT,EDB,AYT.EDB.01,Sözcükte Anlam,altı çizili söz;parantez içi açıklama;deyim anlamı;boşluğa uygun sözcük,9-10,Sözcük ve söz öbeği düzeyinde anlam
+AYT,EDB,AYT.EDB.02,Cümlede Anlam,numaralı cümleler;cümle birleştirme;iki cümle ilişkisi;cümlede anlatılmak istenen,9-10,Cümle ve cümle çifti düzeyinde anlam
+AYT,EDB,AYT.EDB.03,Paragraf,ana düşünce;çıkarım;değinilmeyen;düşüncenin akışı;anekdot yorumu,9-10,Edebî ya da genel içerikli paragraf soruları
+AYT,EDB,AYT.EDB.04,Dil Bilgisi,ses bilgisi;yapı bilgisi;sözcük türleri;cümle bilgisi,9-10,Dil bilgisi
+AYT,EDB,AYT.EDB.05,"Yazım, Noktalama ve Anlatım Bozuklukları",yazım;noktalama;anlatım bozukluğu,9-10,Yazım-noktalama ve anlatım bozukluğu
+AYT,EDB,AYT.EDB.06,Şiir Bilgisi,"nazım birimi;ölçü;uyak ve redif;şiir türleri (lirik, epik, didaktik, satirik, pastoral);tema;serbest şiir",9,Biçim ve içerik ölçütleriyle şiir tahlili
+AYT,EDB,AYT.EDB.07,Edebî Sanatlar,teşbih;istiare;mecazımürsel;teşhis;intak;tevriye;tezat;mübalağa;telmih;tecahülüarif;hüsnütalil;irsalimesel;tenasüp,9-10,Söz sanatları
+AYT,EDB,AYT.EDB.08,Anlatmaya Bağlı Metinler: Tür ve Teknik,"roman/hikâye unsurları;anlatıcı ve bakış açısı;anlatım teknikleri (bilinç akışı, iç monolog, iç çözümleme);olay/durum hikâyesi;metin tahlili",9-10,Dönem ve yazar bilgisinden bağımsız metin tahlili ve anlatım teknikleri
+AYT,EDB,AYT.EDB.09,Öğretici Metinler,makale;deneme;fıkra;eleştiri;sohbet;gezi;anı;biyografi;mektup;günlük;söyleşi;röportaj,9-12,Öğretici metin türleri
+AYT,EDB,AYT.EDB.10,İslamiyet Öncesi ve Geçiş Dönemi Türk Edebiyatı,"sözlü gelenek;destanlar (Oğuz Kağan, Bozkurt, Göç, Satuk Buğra Han);Uygur dönemi;Kutadgu Bilig;Divânu Lugâti't-Türk;Atabetü'l-Hakayık;Divan-ı Hikmet;Dede Korkut",9-10,İslamiyet öncesi ve geçiş dönemi eser ve türleri
+AYT,EDB,AYT.EDB.11,Halk Edebiyatı,"anonim (mâni, türkü, masal, efsane, halk hikâyesi);âşık (koşma, semai, varsağı, güzelleme, taşlama);tekke (nutuk, ilahi);geleneksel Türk tiyatrosu (Karagöz, orta oyunu, meddah)",9-10,"Anonim, âşık ve tekke edebiyatı ile geleneksel tiyatro"
+AYT,EDB,AYT.EDB.12,Divan Edebiyatı,"nazım şekilleri (gazel, kaside, mesnevi, murabba, müstezat, tuyuğ);nazım türleri (tevhit, münacat, naat, fahriye, mersiye, hicviye);şair-eser;divan nesri (tezkire, surname, sefaretname, seyahatname, gazavatname);akımlar (hikemî, sebkihindi, mahallîleşme)",9-10,Divan şiiri ve nesri
+AYT,EDB,AYT.EDB.13,Tanzimat Edebiyatı,Şinasi;Namık Kemal;Ziya Paşa;Ahmet Mithat;Recaizade;Abdülhak Hamit;Sami Paşazade Sezai;Ahmet Vefik Paşa;roman tipleri,11,Tanzimat dönemi
+AYT,EDB,AYT.EDB.14,Servet-i Fünun ve Fecr-i Âti,Tevfik Fikret;Cenap Şahabettin;Halit Ziya;Hüseyin Cahit;Mehmet Rauf;Fecr-i Âti topluluğu;Ahmet Haşim,11,Servet-i Fünun ve Fecr-i Âti
+AYT,EDB,AYT.EDB.15,Millî Edebiyat Dönemi,Genç Kalemler;Ziya Gökalp;Ömer Seyfettin;M. Emin Yurdakul;Mehmet Akif;Beş Hececiler;Halide Edip;Yakup Kadri;Reşat Nuri;Refik Halit,11,Millî Edebiyat dönemi şiir ve nesri
+AYT,EDB,AYT.EDB.16,Cumhuriyet Dönemi Şiiri,saf şiir;memleketçi şiir;Garip;toplumcu şiir;İkinci Yeni;Dağlarca;Tecer;1980 sonrası,11-12,Cumhuriyet dönemi şiir
+AYT,EDB,AYT.EDB.17,Cumhuriyet Dönemi Roman ve Hikâye,Millî Mücadele romanı;tarihî roman;Tanpınar;Esendal;Sait Faik;Kemal Tahir;Adalet Ağaoğlu;Latife Tekin;Haldun Taner;1980 sonrası,11-12,Cumhuriyet dönemi roman ve hikâye
+AYT,EDB,AYT.EDB.18,Cumhuriyet Dönemi Tiyatro,Necip Fazıl;Cevat Fehmi Başkut;Haldun Taner;Turgut Özakman,11-12,Cumhuriyet dönemi tiyatro
+AYT,EDB,AYT.EDB.19,Edebî Akımlar ve Dünya Edebiyatı,klasisizm;romantizm;realizm;natüralizm;parnasizm;sembolizm;empresyonizm;ekspresyonizm;fütürizm;dadaizm;sürrealizm;egzistansiyalizm,11-12,Batı edebî akımları
+TYT,FEL,TYT.FEL.01,Felsefeyi Tanıma,felsefenin anlamı;felsefi düşüncenin özellikleri;felsefe sorusu;filozof;felsefe-bilim-din-sanat ilişkisi,10,"Felsefenin ne olduğu, felsefi düşüncenin nitelikleri, felsefenin diğer alanlarla ilişkisi"
+TYT,FEL,TYT.FEL.02,Felsefe ile Düşünme,düşünme ve akıl yürütme kavramları;argüman;safsatalar;felsefi okuma-yazma,10,"Kavram, önerme, argüman; hatalı akıl yürütmeler"
+TYT,FEL,TYT.FEL.03,Varlık Felsefesi,varlığın var olup olmadığı;arkhe;idealizm-materyalizm;oluş-değişim;zaman;insan/zihin-yapay zekâ,10,Ontoloji problemleri; insan doğası ve zihin felsefesi soruları da burada
+TYT,FEL,TYT.FEL.04,Bilgi Felsefesi,"doğru bilginin imkânı;bilginin kaynağı (rasyonalizm, empirizm, kritisizm);doğruluk ölçütleri;şüphecilik;pragmatizm;fenomenoloji",10,Epistemoloji problemleri
+TYT,FEL,TYT.FEL.05,Bilim Felsefesi,bilimin değeri ve sınırları;bilimsel yöntem;tümevarım-doğrulama-yanlışlama;bilimsel devrim,10,Bilimin doğası ve yöntemi
+TYT,FEL,TYT.FEL.06,Ahlak Felsefesi,"iyi-kötü;özgürlük-sorumluluk-determinizm;haz, erdem, ödev etiği;evrensel ahlak yasası",10,Etik kuramlar ve ahlak problemleri
+TYT,FEL,TYT.FEL.07,Din Felsefesi,Tanrı'nın varlığı kanıtları;kötülük problemi;Tanrı anlayışları (panteizm vb.);akıl-inanç ilişkisi,10,Din felsefesinin temel problemleri
+TYT,FEL,TYT.FEL.08,Siyaset Felsefesi,devletin kaynağı;toplum sözleşmesi;birey-devlet;ideal düzen ve ütopyalar;mülkiyet,10,Siyaset felsefesi problemleri
+TYT,FEL,TYT.FEL.09,Sanat Felsefesi,estetik yargı;güzellik;sanat eserinin nitelikleri;estetik görecelik,10,Estetik problemleri
+TYT,FEL,TYT.FEL.10,Felsefe Tarihi: Dönem ve Düşünür Özellikleri,İlk Çağ;Orta Çağ;15-17. yy;18-19. yy (Aydınlanma);20. yy,11,Bir dönemin/düşünürün genel karakterini soran sorular (11. sınıf içeriği)
+TYT,DKAB,TYT.DKAB.01,Bilgi ve İnanç,"bilgi kaynakları (selim akıl, salim duyu, sadık haber);iman ve inanç esasları;tahkiki-taklidi iman;peygamberlere iman",9,İslam inancının temelleri
+TYT,DKAB,TYT.DKAB.02,Din ve İslam,din kavramı;dinin insan hayatındaki yeri;Kur'an ve Sünnet;Kur'an'ın anlaşılması ve tefsir,9,Dinin anlamı ve İslam'ın temel kaynakları
+TYT,DKAB,TYT.DKAB.03,İslam ve İbadet,"ibadetin anlamı ve işlevi;namaz, oruç, zekât, hac, kurban;ibadet-hayat ilişkisi",9,İbadetler
+TYT,DKAB,TYT.DKAB.04,Ahlak ve Değerler,gençlik ve değerler;ahlaki tutum ve davranışlar;temel haklar ve özel hayat;yardımlaşma;kötü alışkanlıklar,9-10,Ahlaki değerler ve sosyal ilişkiler
+TYT,DKAB,TYT.DKAB.05,Allah İnsan İlişkisi,Allah'ın varlığı ve birliği delilleri;isim ve sıfatları;Kur'an'da insan;dua;tövbe;Allah'ın nimetleri,10,Allah tasavvuru ve kul-Allah ilişkisi
+TYT,DKAB,TYT.DKAB.06,Hz. Muhammed ve Gençlik,Hz. Muhammed'in hayatı ve ahlakı;örnekliği;gençlere verdiği değer;Hılfü'l-Füdul,10,Hz. Muhammed'in kişiliği ve örnekliği
+TYT,DKAB,TYT.DKAB.07,İslam Düşüncesinde Yorumlar,yorum farklılıklarının sebepleri;mezhepler;içtihat;tasavvufi yorumlar (Mevlevilik vb.),10,"İtikadi, fıkhi ve tasavvufi yorumlar"
+TYT,DKAB,TYT.DKAB.08,Gönül Coğrafyamız ve İslam Kültürü,"Türklerin İslam'ı benimsemesi;Ahi Evran, Mevlana, Yunus Emre vb.;İslam sanatı eserleri",9-10,Türk-İslam kültür ve medeniyeti şahsiyetleri ve eserleri
+AYT,FEL,AYT.FEL.01,Felsefe: Felsefenin Konusu ve Problem Alanları (genel),felsefi düşüncenin özellikleri;bilgi/ahlak/sanat/siyaset problemleri (dönem belirtilmeden);felsefi tartışma ve argüman;felsefe tarihinin dönemleri,10-11,Belirli bir döneme bağlanmayan felsefe soruları
+AYT,FEL,AYT.FEL.02,Felsefe: MÖ 6. yy – MS 2. yy Felsefesi,felsefenin doğuşu;doğa filozofları;sofistler;Sokrates;Platon;Aristoteles;Helenistik dönem,11,İlk Çağ felsefesi
+AYT,FEL,AYT.FEL.03,Felsefe: MS 2. yy – MS 15. yy Felsefesi,"Hristiyan felsefesi;İslam felsefesi (Farabi, İbn Sina, Gazali, İbn Rüşd);tümeller problemi",11,Orta Çağ felsefesi
+AYT,FEL,AYT.FEL.04,Felsefe: 15. – 17. yy Felsefesi,"Rönesans ve hümanizm;bilimsel devrim;Descartes, Spinoza, Locke, Hobbes",11,Rönesans ve erken modern felsefe
+AYT,FEL,AYT.FEL.05,Felsefe: 18. – 19. yy Felsefesi,Aydınlanma;Kant;Hegel;Schopenhauer;Kierkegaard;Nietzsche;Tolstoy,11,Aydınlanma ve 19. yüzyıl felsefesi
+AYT,FEL,AYT.FEL.06,Felsefe: 20. yy Felsefesi,fenomenoloji;varoluşçuluk;hermeneutik;Bergson;Kuhn;Hartmann;Türk düşünürleri (Topçu vb.);distopyalar,11,Çağdaş felsefe
+AYT,FEL,AYT.FEL.11,Psikoloji: Psikoloji Bilimini Tanıma,psikolojinin konusu;alt dalları;yaklaşımlar;Wundt;araştırma yöntemleri ve etik,11,Psikoloji grubu
+AYT,FEL,AYT.FEL.12,Psikoloji: Psikolojinin Temel Süreçleri,biyolojik temeller;duyum ve dikkat;algı ve algı ilkeleri;bilinç;gelişim (Erikson),11,Psikoloji grubu
+AYT,FEL,AYT.FEL.13,"Psikoloji: Öğrenme, Bellek, Düşünme","klasik ve edimsel koşullanma;pekiştirme;model alma, kavrayış;alışma-duyarlılaşma;öğrenilmiş çaresizlik;bellek ve ket vurma",11,Psikoloji grubu
+AYT,FEL,AYT.FEL.14,Psikoloji: Ruh Sağlığının Temelleri,güdü ve dürtü;güdülenme;güdü çatışmaları;duygular;kişilik ve kuramlar;savunma mekanizmaları,11,Psikoloji grubu
+AYT,FEL,AYT.FEL.15,Psikoloji: Sosyal Psikoloji,yükleme;sosyal biliş;tutum ve ön yargı,11,Psikoloji grubu
+AYT,FEL,AYT.FEL.21,Sosyoloji: Sosyolojiye Giriş,sosyolojinin konusu;sosyolojik düşünme;sosyolog;araştırma yöntemleri ve örneklem,11,Sosyoloji grubu
+AYT,FEL,AYT.FEL.22,Sosyoloji: Birey ve Toplum,sosyalleşme;sosyal etkileşim tipleri;sosyal ilişkiler;sosyal grup;toplumsal roller,11,Sosyoloji grubu
+AYT,FEL,AYT.FEL.23,Sosyoloji: Toplumsal Yapı,statü ve rol;toplumsal kurallar ve sosyal kontrol;sapma ve suç;tabakalaşma;toplumsal hareketlilik,11,Sosyoloji grubu
+AYT,FEL,AYT.FEL.24,Sosyoloji: Toplumsal Değişme ve Gelişme,değişmeyi etkileyen faktörler;sanayileşme;modernleşme;kentleşme ve göç;kültürel gecikme;sosyal medya,11,Sosyoloji grubu
+AYT,FEL,AYT.FEL.25,Sosyoloji: Toplum ve Kültür,kültür ve unsurları;kültürel görecelik;popüler kültür;medya;toplumsal bütünleşme,11,Sosyoloji grubu
+AYT,FEL,AYT.FEL.26,Sosyoloji: Toplumsal Kurumlar,aile;eğitim;ekonomi;din;siyaset ve demokrasi,11,Sosyoloji grubu
+AYT,FEL,AYT.FEL.31,Mantık: Mantığa Giriş ve Düşünme İlkeleri,mantığın konusu;özdeşlik;çelişmezlik;üçüncü hâlin imkânsızlığı;yeter-sebep,11-12,Mantık grubu
+AYT,FEL,AYT.FEL.32,"Mantık: Klasik Mantık – Kavram, Terim ve Tanım",kavram türleri;beş tümel;tanım ve kuralları,11-12,Mantık grubu
+AYT,FEL,AYT.FEL.33,Mantık: Klasik Mantık – Önermeler ve Çıkarımlar,"önerme;basit-bileşik önerme;karşı olum;döndürme, ters döndürme",11-12,Mantık grubu
+AYT,FEL,AYT.FEL.34,Mantık: Klasik Mantık – Akıl Yürütmeler,tümdengelim;kıyas ve geçerlilik;tümevarım (tam/eksik);analoji,11-12,Mantık grubu
+AYT,FEL,AYT.FEL.35,Mantık: Mantık ve Dil,dilin görevleri;söz edimleri;safsatalar,11-12,Mantık grubu
+AYT,FEL,AYT.FEL.36,Mantık: Sembolik (Modern) Mantık,"sembolleştirme;bağlaçlar ve ana eklem;doğruluk değeri;değilleme;totoloji, tutarlılık, geçerlilik;çok değerli mantık",11-12,Mantık grubu
+AYT,DKAB,AYT.DKAB.01,Dünya ve Ahiret,dünya hayatının geçiciliği;dünya-ahiret dengesi;hayatın anlamı,11,
+AYT,DKAB,AYT.DKAB.02,Kur'an'a Göre Hz. Muhammed,"beşerî ve peygamberlik yönü;örnekliği (temsil);tebliğ, tebyin, teşri;toplumsal uygulamaları",11,
+AYT,DKAB,AYT.DKAB.03,Kur'an'da Bazı Kavramlar,ihsan;ihlas;takva;salih amel;iyilik (birr);sırat-ı müstakim,11,
+AYT,DKAB,AYT.DKAB.04,İnançla İlgili Meseleler,"Allah'ın varlığı ve birliği delilleri;teizm, deizm, ateizm, agnostisizm, nihilizm;yeni dinî hareketler",11,
+AYT,DKAB,AYT.DKAB.05,Yahudilik ve Hristiyanlık,Yahudilik ibadet ve sembolleri;Hristiyanlık inançları (teslis),11,
+AYT,DKAB,AYT.DKAB.06,Hint ve Çin Dinleri,Hinduizm (kast);Budizm;Taoizm;Konfüçyüsçülük,12,
+AYT,DKAB,AYT.DKAB.07,İslam ve Bilim,"Müslüman bilginler;bilim ve eğitim kurumları (Beytü'l-hikme, rasathane, medrese, küttap, suffe);İslami ilimler (tefsir, hadis, fıkıh, kelam)",12,
+AYT,DKAB,AYT.DKAB.08,Anadolu'da İslam,"Anadolu'nun İslamlaşması;ribat, tekke, zaviye;Ahilik",12,
+AYT,DKAB,AYT.DKAB.09,İslam Düşüncesinde Yorumlar,"itikadi-siyasi mezhepler (Şia);fıkhi mezhepler;tasavvufi yorumlar (Mevlevilik, Bektaşilik vb.)",10-12,
+AYT,DKAB,AYT.DKAB.10,Güncel Dinî Meseleler,biyoetik (organ nakli);din ve teknoloji;din istismarı,12,
+AYT,DKAB,AYT.DKAB.11,"Din, Kültür ve Sanat","İslam sanatları (hat, tezhip, ebru, musiki);cami mimarisi",12,
+AYT,DKAB,AYT.DKAB.12,İbadet ve Dinî Hükümler,"ibadet ilkeleri;bidat;fıkhi kavramlar (farz, sünnet, mübah, mekruh);hüküm kaynakları",9-10,9-10. sınıf tekrarı
+AYT,DKAB,AYT.DKAB.13,Allah İnsan İlişkisi ve İnanç Esasları,Allah'ın isim ve sıfatları;iman esasları,9-10,9-10. sınıf tekrarı
+AYT,DKAB,AYT.DKAB.14,Ahlak ve Değerler,ölçülülük;emek ve helal kazanç;karşılıksız iyilik;mahremiyet (tecessüs);sosyal adalet,9-10,9-10. sınıf tekrarı
+TYT,FIZ,TYT.FIZ.01,Fizik Bilimine Giriş,Fiziğin alt dalları;Fiziksel nicelikler ve SI birimleri;Ölçme;Skaler-vektörel nicelikler,9,"Fiziğin doğası, temel ve türetilmiş büyüklükler, birim sistemleri"
+TYT,FIZ,TYT.FIZ.02,Madde ve Özellikleri,Kütle ve hacim;Özkütle;Dayanıklılık;Adezyon-kohezyon;Yüzey gerilimi;Kılcallık,9,"Maddenin ortak ve ayırt edici özellikleri, özkütle grafikleri"
+TYT,FIZ,TYT.FIZ.03,Hareket,"Konum, yol, yer değiştirme;Sürat ve hız;Ortalama hız;İvme;Düzgün doğrusal hareket;Hareket grafikleri",9,Bir boyutta hareketin temel kavramları
+TYT,FIZ,TYT.FIZ.04,Kuvvet ve Newton'un Hareket Yasaları,Kuvvet ve net kuvvet;Eylemsizlik;Dinamiğin temel prensibi;Etki-tepki;Sürtünme kuvveti;Temel kuvvetler,9,Newton yasalarının kavramsal ve basit nicel uygulamaları
+TYT,FIZ,TYT.FIZ.05,"İş, Güç ve Enerji",İş;Güç;Kinetik ve potansiyel enerji;Mekanik enerjinin korunumu;Verim;Enerji kaynakları,9,"Enerji, iş, güç ve verim"
+TYT,FIZ,TYT.FIZ.06,"Isı, Sıcaklık ve Genleşme",Isı ve sıcaklık;Öz ısı ve ısı sığası;Hâl değişimi;Isıl denge;Isı aktarım yolları;Genleşme,9,"Isı alışverişi, ısıl denge, iletim-konveksiyon-ışıma, genleşme"
+TYT,FIZ,TYT.FIZ.07,Elektrostatik,Elektriklenme çeşitleri;Elektroskop;İletken-yalıtkan;Coulomb kuvveti (giriş);Elektrik alan (giriş),10,Elektriklenme ve elektroskop
+TYT,FIZ,TYT.FIZ.08,Elektrik Akımı ve Devreler,"Akım, potansiyel fark, direnç;Ohm yasası;Seri-paralel bağlama;Üreteçler;Elektriksel enerji ve güç;Lamba parlaklığı",10,Doğru akım devreleri ve elektriksel enerji
+TYT,FIZ,TYT.FIZ.09,Mıknatıslar ve Manyetizma,Mıknatıs ve manyetik alan;Akım geçen telin manyetik alanı;Yerin manyetik alanı,10,10. sınıf manyetizma girişi
+TYT,FIZ,TYT.FIZ.10,Basınç,Katı basıncı;Sıvı basıncı;Gaz basıncı ve açık hava basıncı;Akışkanlarda basınç-hız ilişkisi (Bernoulli),10,"Katı, sıvı, gaz ve akışkan basıncı"
+TYT,FIZ,TYT.FIZ.11,Kaldırma Kuvveti,Arşimet ilkesi;Yüzme-askıda kalma-batma;Gazlarda kaldırma kuvveti,10,Sıvı ve gazlarda kaldırma kuvveti
+TYT,FIZ,TYT.FIZ.12,Dalgalar,Temel dalga kavramları;Yay ve ip dalgaları;Su dalgaları;Ses dalgaları;Deprem dalgaları,10,Mekanik dalgaların temel özellikleri
+TYT,FIZ,TYT.FIZ.13,"Aydınlanma, Gölge ve Renk","Işık şiddeti, ışık akısı, aydınlanma şiddeti;Tam ve yarı gölge;Işık ve boya renkleri",10,Optik: ışığın yayılması ve renk
+TYT,FIZ,TYT.FIZ.14,Yansıma ve Aynalar,Yansıma kanunları;Düzlem ayna;Görüş alanı;Çukur ve tümsek aynalar,10,Optik: yansıma ve aynalar
+TYT,FIZ,TYT.FIZ.15,"Kırılma, Mercekler ve Prizmalar",Kırılma ve kırılma indisi;Görünür derinlik;Tam yansıma;İnce ve kalın kenarlı mercekler;Prizmalar ve renk dağılımı,10,"Optik: kırılma, mercek ve prizma"
+AYT,FIZ,AYT.FIZ.01,Vektörler,Vektörlerin toplanması-çıkarılması;Bileşenlere ayırma;Kuvvetlerin bileşkesi,11,Vektörel işlemler
+AYT,FIZ,AYT.FIZ.02,Bağıl Hareket,Bağıl hız;Nehir problemleri,11,Farklı gözlemcilere göre hareket
+AYT,FIZ,AYT.FIZ.03,Bir Boyutta Sabit İvmeli Hareket,Sabit ivmeli hareket denklemleri ve grafikleri;Serbest düşme;Düşey atış;Limit hız,11,Sabit ivmeli doğrusal hareket
+AYT,FIZ,AYT.FIZ.04,Newton'un Hareket Yasaları,Net kuvvet ve ivme;Bağlı cisimler;Sürtünme kuvveti;Etki-tepki,11,Dinamik
+AYT,FIZ,AYT.FIZ.05,İki Boyutta Hareket (Atışlar),Yatay atış;Eğik atış,11,Atış hareketleri
+AYT,FIZ,AYT.FIZ.06,Enerji ve Hareket,İş-enerji teoremi;Esneklik potansiyel enerjisi;Mekanik enerjinin korunumu;Sürtünmeli yüzeylerde enerji,11,Enerji korunumu uygulamaları
+AYT,FIZ,AYT.FIZ.07,İtme ve Çizgisel Momentum,İtme;Momentum değişimi;Momentumun korunumu;Esnek ve esnek olmayan çarpışmalar;Patlamalar,11,İtme-momentum
+AYT,FIZ,AYT.FIZ.08,Tork ve Denge,Tork;Denge koşulları;Kütle ve ağırlık merkezi,11,Statik
+AYT,FIZ,AYT.FIZ.09,Basit Makineler,"Kaldıraç;Makaralar;Eğik düzlem;Çıkrık, vida, dişli;Verim",11,Basit makineler
+AYT,FIZ,AYT.FIZ.10,"Elektriksel Kuvvet, Alan ve Potansiyel",Coulomb kuvveti;Elektrik alan;Elektriksel potansiyel enerji;Elektriksel potansiyel ve iş;Eş potansiyel yüzeyler;Yük dağılımı,11,"Noktasal yükler, alan ve potansiyel"
+AYT,FIZ,AYT.FIZ.11,Düzgün Elektrik Alan ve Sığa,Paralel levhalar;Yüklü parçacığın düzgün elektrik alanda hareketi;Sığaçlar,11,Paralel levhalar ve kondansatörler
+AYT,FIZ,AYT.FIZ.12,Manyetik Alan ve Manyetik Kuvvet,"Akım geçen tel, halka ve bobinin manyetik alanı;Akım geçen tele etkiyen kuvvet;Yüklü parçacığa etkiyen manyetik kuvvet",11,Manyetizma
+AYT,FIZ,AYT.FIZ.13,Elektromanyetik İndüklenme,Manyetik akı;İndüksiyon emk ve akımı;Lenz kuralı;Hareketsel emk;Öz-indüksiyon;Jeneratör,11,İndüksiyon
+AYT,FIZ,AYT.FIZ.14,Alternatif Akım ve Transformatörler,"Alternatif akım ve etkin değerler;Direnç-bobin-sığaç devreleri (empedans, rezonans);Transformatörler;Enerji iletimi",11,AC devreler ve transformatörler
+AYT,FIZ,AYT.FIZ.15,Düzgün Çembersel Hareket,"Periyot, frekans, açısal hız;Merkezcil ivme ve kuvvet;Yatay ve düşey düzlemde çembersel hareket;Viraj, tümsek-çukur",12,Çembersel hareket
+AYT,FIZ,AYT.FIZ.16,"Dönme, Yuvarlanma ve Açısal Momentum",Eylemsizlik momenti;Dönme kinetik enerjisi;Dönerek öteleme;Açısal momentum ve korunumu,12,Dönme dinamiği
+AYT,FIZ,AYT.FIZ.17,Kütle Çekim ve Kepler Yasaları,Newton'un kütle çekim yasası;Kepler yasaları;Uydular ve yörünge hareketi;Kütle çekim potansiyel enerjisi,12,Kütle çekim
+AYT,FIZ,AYT.FIZ.18,Basit Harmonik Hareket,BHH kavramları ve grafikleri;Yay sarkacı;Basit sarkaç,12,BHH
+AYT,FIZ,AYT.FIZ.19,Dalga Mekaniği ve Elektromanyetik Dalgalar,Su dalgalarında kırınım ve girişim;Işıkta girişim (çift yarık);Tek yarıkta kırınım;Doppler olayı;Elektromanyetik spektrum,12,Dalga mekaniği
+AYT,FIZ,AYT.FIZ.20,Atom Fiziğine Giriş ve Radyoaktivite,"Atom modellerinin tarihsel gelişimi;Bohr modeli ve uyarılma;Büyük patlama, temel parçacıklar ve temel kuvvetler;Radyoaktivite;Fisyon ve füzyon",12,Atom ve çekirdek fiziği
+AYT,FIZ,AYT.FIZ.21,Modern Fizik,Özel görelilik;Siyah cisim ışıması;Fotoelektrik olay;Compton olayı;de Broglie dalga boyu,12,Görelilik ve kuantum fiziği
+AYT,FIZ,AYT.FIZ.22,Modern Fiziğin Teknolojideki Uygulamaları,Görüntüleme teknolojileri;Yarı iletkenler ve LED;Süperiletkenler;Nanoteknoloji;LASER,12,Teknolojik uygulamalar
+TYT,KIM,TYT.KIM.01,Kimya Bilimi,simyadan kimyaya;kimya disiplinleri ve kimyacıların çalışma alanları;element ve bileşik kavramı;element sembolleri ve bileşik formülleri;yaygın bileşik adları;laboratuvar güvenlik işaretleri;laboratuvar malzemeleri,9,"Kimyanın sembolik dili, disiplinler, güvenlik ve laboratuvar"
+TYT,KIM,TYT.KIM.02,Atom ve Periyodik Sistem,atom modelleri (Dalton/Thomson/Rutherford/Bohr);atomun yapısı ve temel tanecikler;izotop/izoton/izobar/izoelektronik;katman elektron dağılımı;periyodik sistemde yer bulma;periyodik özellikler;metal/ametal/yarı metal/soy gaz,9,"Atom yapısı, modeller ve periyodik tablo"
+TYT,KIM,TYT.KIM.03,Kimyasal Türler Arası Etkileşimler,Lewis sembolleri;iyonik bağ;kovalent bağ (polar/apolar);metalik bağ;zayıf etkileşimler (London/dipol-dipol/hidrojen bağı);fiziksel ve kimyasal değişimler;bileşik adlandırma,9,"Güçlü ve zayıf etkileşimler, fiziksel/kimyasal değişim"
+TYT,KIM,TYT.KIM.04,Maddenin Halleri,katılar;sıvılar ve viskozite;buharlaşma ve denge buhar basıncı;kaynama;hal değişimleri;gazların genel özellikleri;plazma,9,"Katı, sıvı, gaz, plazma hâlleri ve hal değişimleri"
+TYT,KIM,TYT.KIM.05,Doğa ve Kimya,su ve hayat;su kirliliği ve arıtma;çevre kimyası;hava ve toprak kirliliği,9,"Su, çevre ve sürdürülebilirlik"
+TYT,KIM,TYT.KIM.06,Kimyanın Temel Kanunları,kütlenin korunumu;sabit oranlar kanunu;katlı oranlar kanunu;birleşen hacim oranları,10,Kimyanın temel yasaları
+TYT,KIM,TYT.KIM.07,Mol Kavramı,mol-kütle-tanecik sayısı ilişkisi;Avogadro sayısı;normal şartlarda gaz hacmi;bağıl atom kütlesi,10,Mol hesapları
+TYT,KIM,TYT.KIM.08,Kimyasal Tepkimeler ve Denklemler,tepkime denkleştirme;yanma;sentez/analiz;asit-baz;çözünme-çökelme;redoks (giriş),10,Tepkime türleri ve denklemler
+TYT,KIM,TYT.KIM.09,Kimyasal Hesaplamalar,denklem üzerinden kütle/mol/hacim hesabı;sınırlayıcı bileşen;tepkime verimi;karışım problemleri,10,Tepkime stokiyometrisi
+TYT,KIM,TYT.KIM.10,Karışımlar,homojen ve heterojen karışımlar;çözünme süreci;derişim (kütlece/hacimce yüzde;ppm);çözünürlük ve doygunluk;koligatif özellikler (donma noktası alçalması/kaynama noktası yükselmesi),10,"Çözeltiler, derişim ve koligatif özellikler"
+TYT,KIM,TYT.KIM.11,Ayırma ve Saflaştırma Teknikleri,süzme;damıtma;kristallendirme;ayırma hunisi/özütleme;yüzdürme;diyaliz;mıknatısla ayırma,10,Karışımların fiziksel özelliklere göre ayrılması
+TYT,KIM,TYT.KIM.12,"Asitler, Bazlar ve Tuzlar",asit ve baz tanımları;pH ve indikatörler;asit-baz özellikleri;nötralleşme;asitlerin/bazların metallerle tepkimesi;aktif/soy/amfoter metaller;tuzlar;hayatımızdaki asit ve bazlar,10,Asit-baz kavramı ve tepkimeleri
+TYT,KIM,TYT.KIM.13,Kimya Her Yerde,yaygın günlük hayat kimyasalları;temizlik maddeleri (sabun/deterjan/çamaşır suyu);polimerler;kozmetik;ilaçlar;gıdalar,10,Günlük hayatta kimya
+AYT,KIM,AYT.KIM.01,Modern Atom Teorisi,kuantum sayıları;orbitaller;elektron dizilimi;periyodik sistem ve elektron dizilimi;periyodik özellikler;yükseltgenme basamakları,11,"Kuantum modeli, dizilim ve periyodik özellikler"
+AYT,KIM,AYT.KIM.02,Gazlar,gaz yasaları;ideal gaz denklemi;gaz yoğunluğu;kinetik teori;difüzyon/efüzyon (Graham);gaz karışımları ve kısmi basınç;su üzerinde gaz toplama;gerçek gazlar,11,Gazların davranışı
+AYT,KIM,AYT.KIM.03,Sıvı Çözeltiler ve Çözünürlük,çözünme ve etkileşimler;derişim birimleri (molarite/molalite/kütlece yüzde/ppm);çözelti karıştırma ve seyreltme;koligatif özellikler;çözünürlük ve etkileyen faktörler,11,"Çözelti derişimleri, koligatif özellikler, çözünürlük"
+AYT,KIM,AYT.KIM.04,Kimyasal Tepkimelerde Enerji,endotermik/ekzotermik;standart oluşum entalpisi;Hess yasası;bağ enerjileri;potansiyel enerji diyagramı,11,Tepkime entalpisi
+AYT,KIM,AYT.KIM.05,Kimyasal Tepkimelerde Hız,ortalama hız;çarpışma teorisi ve aktivasyon enerjisi;hız ifadesi ve tepkime derecesi;tepkime mekanizması;hıza etki eden faktörler (katalizör/sıcaklık/derişim/temas yüzeyi),11,Tepkime hızı ve kinetik
+AYT,KIM,AYT.KIM.06,Kimyasal Denge,denge sabiti (Kc/Kp);homojen ve heterojen denge;Le Chatelier ilkesi;denge hesaplamaları,11,Kimyasal denge
+AYT,KIM,AYT.KIM.07,Asit-Baz Dengesi,pH/pOH;kuvvetli ve zayıf asit-baz;Ka/Kb;hidroliz;tampon çözeltiler;titrasyon,11,Sulu çözelti dengeleri: asit-baz
+AYT,KIM,AYT.KIM.08,Çözünürlük Dengesi,çözünürlük çarpımı (Kçç);ortak iyon etkisi;çökelme,11,Sulu çözelti dengeleri: çözünürlük
+AYT,KIM,AYT.KIM.09,Kimya ve Elektrik,redoks tepkimeleri;elektrot potansiyelleri;galvanik (elektrokimyasal) hücreler;Nernst eşitliği ve derişim pili;elektroliz ve Faraday;korozyon ve katodik koruma,12,Elektrokimya
+AYT,KIM,AYT.KIM.10,Karbon Kimyasına Giriş,anorganik ve organik bileşikler;basit formül ve molekül formülü;karbon allotropları;Lewis formülleri;hibritleşme;sigma/pi bağları;molekül geometrisi (VSEPR),12,"Organik kimyaya giriş, hibritleşme ve geometri"
+AYT,KIM,AYT.KIM.11,Hidrokarbonlar,alkanlar;alkenler;alkinler;aromatik hidrokarbonlar;adlandırma (IUPAC);yapı ve cis-trans izomerliği;katılma ve yanma tepkimeleri,12,Hidrokarbonlar ve izomeri
+AYT,KIM,AYT.KIM.12,Fonksiyonel Gruplar ve Organik Bileşikler,alkoller;eterler;aldehitler ve ketonlar;karboksilik asitler;esterler;aminler ve amidler;alkil halojenürler,12,Fonksiyonel gruplu organik bileşikler
+AYT,KIM,AYT.KIM.13,Enerji Kaynakları ve Bilimsel Gelişmeler,fosil yakıtlar;alternatif enerji kaynakları;sürdürülebilirlik;nanoteknoloji,12,Enerji ve güncel kimya
+AYT,KIM,AYT.KIM.14,Mol Kavramı ve Kimyasal Hesaplamalar,mol hesapları;tepkime stokiyometrisi;verim,9-10,AYT'de başka konularla birlikte gelen stokiyometri (etiketlemede eklendi; yalnızca ikincil konu olarak kullanıldı)
+TYT,TAR,TYT.TAR.01,Tarih Bilimi ve Zaman,tarihin konusu ve yöntemi;kaynaklar;yardımcı bilimler;takvimler ve çağlar,9,"Tarih biliminin tanımı, kaynak türleri, zaman ve takvim"
+TYT,TAR,TYT.TAR.02,İlk Çağ Uygarlıkları,Mezopotamya;Mısır;Anadolu uygarlıkları;İran;Ege-Yunan;Roma,9,İnsanlığın ilk dönemleri ve İlk Çağ medeniyetleri
+TYT,TAR,TYT.TAR.03,Orta Çağ'da Dünya,feodalite;kilise;Haçlı Seferleri;Bizans,9,Orta Çağ Avrupası ve dünyası
+TYT,TAR,TYT.TAR.04,İlk Türk Devletleri (İslamiyet Öncesi Türk Tarihi),"Asya Hun;Kök Türk;Uygur;Avrupa Hun ve Kavimler Göçü;diğer Türk toplulukları;bozkır kültürü;devlet anlayışı (kut, töre, kurultay)",9,İslamiyet öncesi Türk siyasi tarihi ve kültürü
+TYT,TAR,TYT.TAR.05,İslam Tarihi ve Uygarlığı,Hz. Muhammed dönemi;Dört Halife;Emeviler;Abbasiler;Endülüs,9,İslamiyet'in doğuşu ve ilk İslam devletleri
+TYT,TAR,TYT.TAR.06,Türk-İslam Devletleri,Türklerin İslamiyet'i kabulü;Karahanlılar;Gazneliler;Büyük Selçuklu;Mısır'daki Türk devletleri;Türk-İslam devlet teşkilatı ve kültürü,9,İlk Türk-İslam devletleri (X-XIII. yy)
+TYT,TAR,TYT.TAR.07,Türkiye Selçuklu Devleti ve Anadolu Beylikleri,Anadolu'nun Türkleşmesi;I. ve II. dönem beylikler;Türkiye Selçuklu siyasi tarihi;Moğol istilası,10,Yerleşme ve devletleşme sürecinde Selçuklu Türkiyesi
+TYT,TAR,TYT.TAR.08,Osmanlı Kuruluş Dönemi (1299-1453),Osmanlı Beyliği'nin kuruluşu;Rumeli'ye geçiş;Ankara Savaşı ve Fetret;Beylikten devlete,10,Beylikten devlete Osmanlı siyaseti
+TYT,TAR,TYT.TAR.09,Osmanlı Yükselme Dönemi (1453-1595),İstanbul'un fethi;Yavuz ve Kanuni dönemleri;Osmanlı-Avrupa ilişkileri;denizcilik,10,Dünya gücü Osmanlı
+TYT,TAR,TYT.TAR.10,"Osmanlı Devlet Teşkilatı, Kültür ve Medeniyeti",padişah ve merkez teşkilatı;Divan-ı Hümayun;taşra teşkilatı;ordu;toprak ve timar sistemi;vakıf;toplum ve millet sistemi;ekonomi ve vergi,10,Klasik çağda Osmanlı devlet ve toplum düzeni
+TYT,TAR,TYT.TAR.11,Osmanlı Duraklama Dönemi (XVII. yy),iç isyanlar;ıslahatlar;Safevi ve Habsburg ilişkileri;mali-askerî sorunlar,11,Değişen dünya dengeleri karşısında Osmanlı (1595-1699)
+TYT,TAR,TYT.TAR.12,Osmanlı Gerileme Dönemi (XVIII. yy),Karlofça sonrası antlaşmalar;Lale Devri ve ıslahatlar;III. Selim ve Nizam-ı Cedit;toprak kayıpları,11,XVIII. yüzyılda Osmanlı siyaseti ve yenileşme
+TYT,TAR,TYT.TAR.13,Osmanlı Dağılma Dönemi (XIX. yy),II. Mahmut;Tanzimat ve Islahat;I. Meşrutiyet;fikir akımları;Mısır ve Balkan sorunları;dış borçlar ve ekonomi,11,Uluslararası ilişkilerde denge stratejisi ve devlet-toplum ilişkileri
+TYT,TAR,TYT.TAR.14,XX. Yüzyıl Başlarında Osmanlı ve I. Dünya Savaşı,II. Meşrutiyet;Trablusgarp ve Balkan Savaşları;I. Dünya Savaşı;Mustafa Kemal'in hayatı,12,XX. yüzyıl başlarında Osmanlı Devleti ve dünya
+TYT,TAR,TYT.TAR.15,Millî Mücadele Hazırlık Dönemi,Mondros ve işgaller;cemiyetler;Mustafa Kemal'in Samsun'a çıkışı;genelgeler ve kongreler;Heyet-i Temsiliye;Misakımillî,12,Mondros'tan TBMM'nin açılmasına
+TYT,TAR,TYT.TAR.16,I. TBMM Dönemi ve Kurtuluş Savaşı Cepheleri,"TBMM'nin açılışı ve özellikleri;1921 Teşkilat-ı Esasiye;iç isyanlar;Doğu, Güney ve Batı cepheleri;Sakarya ve Büyük Taarruz;dönemin antlaşmaları",12,I. TBMM ve Kurtuluş Savaşı
+TYT,TAR,TYT.TAR.17,Mudanya Ateşkesi ve Lozan Barış Antlaşması,Mudanya;Lozan görüşmeleri;Lozan'ın maddeleri ve sonuçları,12,Kurtuluş Savaşı'nın diplomatik sonuçları
+TYT,TAR,TYT.TAR.18,Atatürk İnkılapları,siyasi;hukuk;eğitim ve kültür;toplumsal;ekonomi;sağlık,12,Türk inkılabı ve Atatürk dönemi iç gelişmeleri
+TYT,TAR,TYT.TAR.19,Atatürk İlkeleri ve Atatürkçülük,cumhuriyetçilik;milliyetçilik;halkçılık;devletçilik;laiklik;inkılapçılık;bütünleyici ilkeler,12,Atatürkçü düşünce sistemi
+TYT,TAR,TYT.TAR.20,Atatürk Dönemi Türk Dış Politikası,Musul;nüfus mübadelesi;Montrö;Hatay;Balkan ve Sadabat paktları,12,1923-1938 dış politika
+TYT,TAR,TYT.TAR.21,Çağdaş Türk ve Dünya Tarihi,II. Dünya Savaşı;Soğuk Savaş;yumuşama;küreselleşme,12,1938 sonrası Türkiye ve dünya
+AYT,TAR,AYT.TAR.01,Tarih Bilimi ve Zaman,tarihin konusu ve yöntemi;kaynaklar;yardımcı bilimler;takvimler ve çağlar,9,"Tarih biliminin tanımı, kaynak türleri, zaman ve takvim"
+AYT,TAR,AYT.TAR.02,İlk Çağ Uygarlıkları,Mezopotamya;Mısır;Anadolu uygarlıkları;İran;Ege-Yunan;Roma,9,İnsanlığın ilk dönemleri ve İlk Çağ medeniyetleri
+AYT,TAR,AYT.TAR.03,Orta Çağ'da Dünya,feodalite;kilise;Haçlı Seferleri;Bizans,9,Orta Çağ Avrupası ve dünyası
+AYT,TAR,AYT.TAR.04,İlk Türk Devletleri (İslamiyet Öncesi Türk Tarihi),"Asya Hun;Kök Türk;Uygur;Avrupa Hun ve Kavimler Göçü;diğer Türk toplulukları;bozkır kültürü;devlet anlayışı (kut, töre, kurultay)",9,İslamiyet öncesi Türk siyasi tarihi ve kültürü
+AYT,TAR,AYT.TAR.05,İslam Tarihi ve Uygarlığı,Hz. Muhammed dönemi;Dört Halife;Emeviler;Abbasiler;Endülüs,9,İslamiyet'in doğuşu ve ilk İslam devletleri
+AYT,TAR,AYT.TAR.06,Türk-İslam Devletleri,Türklerin İslamiyet'i kabulü;Karahanlılar;Gazneliler;Büyük Selçuklu;Mısır'daki Türk devletleri;Türk-İslam devlet teşkilatı ve kültürü,9,İlk Türk-İslam devletleri (X-XIII. yy)
+AYT,TAR,AYT.TAR.07,Türkiye Selçuklu Devleti ve Anadolu Beylikleri,Anadolu'nun Türkleşmesi;I. ve II. dönem beylikler;Türkiye Selçuklu siyasi tarihi;Moğol istilası,10,Yerleşme ve devletleşme sürecinde Selçuklu Türkiyesi
+AYT,TAR,AYT.TAR.08,Osmanlı Kuruluş Dönemi (1299-1453),Osmanlı Beyliği'nin kuruluşu;Rumeli'ye geçiş;Ankara Savaşı ve Fetret;Beylikten devlete,10,Beylikten devlete Osmanlı siyaseti
+AYT,TAR,AYT.TAR.09,Osmanlı Yükselme Dönemi (1453-1595),İstanbul'un fethi;Yavuz ve Kanuni dönemleri;Osmanlı-Avrupa ilişkileri;denizcilik,10,Dünya gücü Osmanlı
+AYT,TAR,AYT.TAR.10,Yeni Çağ Avrupa Tarihi,Coğrafi Keşifler;Rönesans;Reform;Vestfalya;mutlakiyet ve merkantilizm;Aydınlanma,10-11,XV-XVIII. yüzyıl Avrupası
+AYT,TAR,AYT.TAR.11,"Osmanlı Devlet Teşkilatı, Kültür ve Medeniyeti",padişah ve merkez teşkilatı;Divan-ı Hümayun;taşra teşkilatı;ordu;toprak ve timar sistemi;vakıf;toplum ve millet sistemi;ekonomi ve vergi,10,Klasik çağda Osmanlı devlet ve toplum düzeni
+AYT,TAR,AYT.TAR.12,Osmanlı Duraklama Dönemi (XVII. yy),iç isyanlar;ıslahatlar;Safevi ve Habsburg ilişkileri;mali-askerî sorunlar,11,Değişen dünya dengeleri karşısında Osmanlı (1595-1699)
+AYT,TAR,AYT.TAR.13,Osmanlı Gerileme Dönemi (XVIII. yy),Karlofça sonrası antlaşmalar;Lale Devri ve ıslahatlar;III. Selim ve Nizam-ı Cedit;toprak kayıpları,11,XVIII. yüzyılda Osmanlı siyaseti ve yenileşme
+AYT,TAR,AYT.TAR.14,Yakın Çağ Avrupa Tarihi,Fransız İhtilali;Sanayi Devrimi;1848 İhtilalleri;ulusçuluk;sömürgecilik,11,XVIII. yy sonu-XIX. yy Avrupası
+AYT,TAR,AYT.TAR.15,Osmanlı Dağılma Dönemi (XIX. yy),II. Mahmut;Tanzimat ve Islahat;I. Meşrutiyet;fikir akımları;Mısır ve Balkan sorunları;dış borçlar ve ekonomi,11,Uluslararası ilişkilerde denge stratejisi ve devlet-toplum ilişkileri
+AYT,TAR,AYT.TAR.16,XX. Yüzyıl Başlarında Osmanlı Devleti,II. Meşrutiyet ve siyasi hayat;Trablusgarp Savaşı;Balkan Savaşları;Mustafa Kemal'in hayatı,12,1908-1914 arası Osmanlı
+AYT,TAR,AYT.TAR.17,I. Dünya Savaşı,savaşın nedenleri;Osmanlı cepheleri;gizli antlaşmalar;savaşın sonu,12,1914-1918
+AYT,TAR,AYT.TAR.18,Millî Mücadele Hazırlık Dönemi,Mondros ve işgaller;cemiyetler;Mustafa Kemal'in Samsun'a çıkışı;genelgeler ve kongreler;Heyet-i Temsiliye;Misakımillî,12,Mondros'tan TBMM'nin açılmasına
+AYT,TAR,AYT.TAR.19,I. TBMM Dönemi ve Kurtuluş Savaşı Cepheleri,"TBMM'nin açılışı ve özellikleri;1921 Teşkilat-ı Esasiye;iç isyanlar;Doğu, Güney ve Batı cepheleri;Sakarya ve Büyük Taarruz;dönemin antlaşmaları",12,I. TBMM ve Kurtuluş Savaşı
+AYT,TAR,AYT.TAR.20,Mudanya Ateşkesi ve Lozan Barış Antlaşması,Mudanya;Lozan görüşmeleri;Lozan'ın maddeleri ve sonuçları,12,Kurtuluş Savaşı'nın diplomatik sonuçları
+AYT,TAR,AYT.TAR.21,Atatürk İnkılapları,siyasi;hukuk;eğitim ve kültür;toplumsal;ekonomi;sağlık,12,Türk inkılabı ve Atatürk dönemi iç gelişmeleri
+AYT,TAR,AYT.TAR.22,Atatürk İlkeleri ve Atatürkçülük,cumhuriyetçilik;milliyetçilik;halkçılık;devletçilik;laiklik;inkılapçılık;bütünleyici ilkeler,12,Atatürkçü düşünce sistemi
+AYT,TAR,AYT.TAR.23,Atatürk Dönemi Türk Dış Politikası,Musul;nüfus mübadelesi;Montrö;Hatay;Balkan ve Sadabat paktları,12,1923-1938 dış politika
+AYT,TAR,AYT.TAR.24,İki Savaş Arası Dönem,totaliter rejimler;1929 Buhranı;Milletler Cemiyeti,12,1918-1939 dünya
+AYT,TAR,AYT.TAR.25,II. Dünya Savaşı,savaşın seyri;Türkiye'nin tutumu ve ekonomisi;savaş sonu düzen,12,1939-1945
+AYT,TAR,AYT.TAR.26,Soğuk Savaş Dönemi,iki kutuplu dünya;NATO ve Varşova;Türkiye'nin dış politikası;Kıbrıs Sorunu;çok partili hayat,12,1945-1960'lar
+AYT,TAR,AYT.TAR.27,Yumuşama Dönemi ve Sonrası,yumuşama;1970-1990 Türkiye ve dünya;Soğuk Savaş'ın sonu,12,1960'lar-1990
+AYT,TAR,AYT.TAR.28,Küreselleşen Dünya,SSCB'nin dağılması sonrası;küreselleşme;2000'ler Türkiye,12,1990 sonrası
+TYT,TUR,TYT.TUR.01,Sözcükte Anlam,gerçek/mecaz/terim/yan anlam;çok anlamlılık;sözlük anlamını karşılayan kullanım;deyim ve atasözü anlamı;altı çizili söz öbeğinin anlamı;altı çizili sözü karşılayan kullanım;ayraç içi anlam uyuşması;boşluğa uygun sözcük getirme,9-10,Sözcük ve söz öbeği düzeyinde anlam; paragraf içindeki altı çizili söz soruları dahil
+TYT,TUR,TYT.TUR.02,Cümlede Anlam,cümlede anlatılmak istenen;cümleyle aynı doğrultudaki yargı;kesinlik/olasılık;öznel/nesnel yargı;iki cümle arası anlam ilişkisi;cümle birleştirme;numaralı cümlelerin anlam özellikleri;aynı düşünceyi aktaran cümleler;cümle-soru ilişkisi,9-10,Tek cümle ya da cümle çiftleri üzerinden anlam ve yorum
+TYT,TUR,TYT.TUR.03,Paragrafta Ana Düşünce ve Konu,asıl anlatılmak istenen;vurgulanan düşünce;konu;parçanın cevap olduğu soru;parçadaki düşünceyi destekleyen yargı/örnek;verilen düşünceye uzak düşen parça;özetleyen söz/slogan;yazarın asıl eleştirdiği,9-12,Paragrafın ana fikrini/konusunu kavramayı gerektiren sorular
+TYT,TUR,TYT.TUR.04,Paragrafta Yardımcı Düşünce ve Çıkarım,"ulaşılabilir/ulaşılamaz;söylenebilir/söylenemez;değinilmiştir/değinilmemiştir;bilgi bulma (neden, amaç, özellik);yazarın/okurun söylemesi beklenen;iki metin karşılaştırma;diyalogdan çıkarım;bilgiyi yeni duruma uygulama (örnek bulma);eleştirel okuma",9-12,Paragraftan ayrıntı bilgi çıkarma ve çıkarım yapma; ikili (aynı parçaya bağlı) sorular dahil
+TYT,TUR,TYT.TUR.05,Paragrafta Anlatım Biçimleri ve Düşünceyi Geliştirme Yolları,öyküleme;betimleme;açıklama;tartışma;tanımlama;örnekleme;karşılaştırma;tanık gösterme;benzetme;kişileştirme;anlatıcı/bakış açısı,9-12,Parçanın anlatımında kullanılan/kullanılmayan teknikler ve bir alıntının işlevi
+TYT,TUR,TYT.TUR.06,Paragraf Tamamlama ve Cümle Yerleştirme,paragrafın başına cümle;ortadaki boşluğa cümle;paragrafın sonuna cümle;verilen cümleyi uygun yere yerleştirme;diyalog/röportajda boşluğa soru getirme,9-12,Düşüncenin akışına göre eksik bölümü tamamlama
+TYT,TUR,TYT.TUR.07,"Paragrafta Yapı (Akış, Bölme, Sıralama)",düşüncenin akışını bozan cümle;paragrafı ikiye bölme;cümle sıralama;giriş/sonuç cümlesi,9-12,Paragrafın yapısal bütünlüğü
+TYT,TUR,TYT.TUR.08,Ses Bilgisi,ünlü düşmesi;ünlü daralması;ünsüz yumuşaması;ünsüz benzeşmesi (sertleşme);ünsüz düşmesi;kaynaştırma;ünlü/ünsüz uyumları,9,Ses olayları
+TYT,TUR,TYT.TUR.09,Yazım Kuralları,"büyük harflerin yazımı;birleşik sözcüklerin yazımı;sayıların ve kısaltmaların yazımı;ek-fiil, de/da, ki, mi yazımı;özel adların yazımı",9-10,TDK yazım kuralları
+TYT,TUR,TYT.TUR.10,Noktalama İşaretleri,nokta;virgül;noktalı virgül;iki nokta;üç nokta;soru ve ünlem işareti;kısa çizgi/uzun çizgi;tırnak ve kesme işareti,9-10,Noktalama işaretlerinin işlevi ve doğru kullanımı
+TYT,TUR,TYT.TUR.11,Sözcük Yapısı ve Ekler,"kök ve gövde;yapım ekleri;çekim ekleri (hal, iyelik, çokluk, tamlayan);fiil çekim ekleri (kip, kişi);basit/türemiş/birleşik sözcük",9-10,Ek bulma ve sözcük yapısı
+TYT,TUR,TYT.TUR.12,İsimler ve İsim Tamlamaları,isim türleri;belirtili/belirtisiz isim tamlaması;zincirleme tamlama;tamlama türlerini ayırt etme,10,İsim ve tamlamalar
+TYT,TUR,TYT.TUR.13,Sıfatlar ve Sıfat Tamlamaları,niteleme sıfatı;belirtme sıfatları;sıfat tamlaması;adlaşmış sıfat,10,Sıfatlar
+TYT,TUR,TYT.TUR.14,Zamirler,kişi zamiri;işaret zamiri;belgisiz zamir;soru zamiri;dönüşlülük zamiri,10,Zamirler
+TYT,TUR,TYT.TUR.15,Zarflar,durum zarfı;zaman zarfı;yer-yön zarfı;miktar zarfı;soru zarfı,10,Zarflar
+TYT,TUR,TYT.TUR.16,"Edat, Bağlaç, Ünlem",edatlar;bağlaçlar;ünlemler,10,Görevli sözcükler
+TYT,TUR,TYT.TUR.17,Sözcük Türleri (Karma),"birden çok sözcük türünün birlikte sorulduğu sorular (isim, sıfat, zamir, zarf, edat, bağlaç, fiilimsi)",10,Tek seçenekte birden çok türü ayırt etmeyi gerektiren karma sorular
+TYT,TUR,TYT.TUR.18,"Fiiller: Kip, Kişi ve Ek Fiil",haber ve dilek kipleri;kişi ekleri;birleşik zamanlı fiil;zaman kayması;ek fiil;fiilde yapı,10-11,Fiil çekimi ve ek fiil
+TYT,TUR,TYT.TUR.19,Fiilimsiler,isim-fiil;sıfat-fiil;zarf-fiil,11,Fiilimsiler
+TYT,TUR,TYT.TUR.20,Fiilde Çatı,etken/edilgen;dönüşlü;işteş;geçişli/geçişsiz,11,Fiilde çatı
+TYT,TUR,TYT.TUR.21,Cümlenin Ögeleri,özne;yüklem;belirtili/belirtisiz nesne;yer tamlayıcısı;zarf tümleci;öge dizilişi;ögeye göre sözcük türü,11,Cümlenin ögeleri
+TYT,TUR,TYT.TUR.22,Cümle Türleri,yüklemin türüne göre (isim/fiil);yüklemin yerine göre;anlamına göre;yapısına göre,11,Cümle türleri
+TYT,TUR,TYT.TUR.23,Anlatım Bozuklukları,anlamsal bozukluklar;yapısal bozukluklar,11-12,Anlatım bozuklukları
+TYT,TMAT,TYT.TMAT.01,Temel Kavramlar,sayı kümeleri;tek-çift sayılar;pozitif-negatif sayılar;ardışık sayılar;asal sayılar ve asal çarpanlar;faktöriyel;dört işlem ve işlem önceliği,9,"Sayı türleri, tek-çift ve işaret kuralları, asal çarpanlar, sayılarla temel işlemler"
+TYT,TMAT,TYT.TMAT.02,Sayı Basamakları,basamak değeri;çözümleme;rakamları farklı sayılar,9,Rakam ve basamak kavramı ile sayıların çözümlenmesi
+TYT,TMAT,TYT.TMAT.03,Bölme ve Bölünebilme,bölüm-kalan;bölünebilme kuralları;kalan sınıfları,9,Bölme algoritması ve bölünebilme kuralları
+TYT,TMAT,TYT.TMAT.04,EBOB-EKOK,ortak bölen;ortak kat;periyodik olaylar,9,En büyük ortak bölen ve en küçük ortak kat problemleri
+TYT,TMAT,TYT.TMAT.05,Rasyonel Sayılar,kesirler;ondalık gösterim;sıralama;sayı doğrusu,9,Kesir ve ondalık sayılarla işlem ve karşılaştırma
+TYT,TMAT,TYT.TMAT.06,Basit Eşitsizlikler,eşitsizlik özellikleri;aralıklar;en büyük-en küçük değer,9,Birinci dereceden eşitsizlikler ve aralık bulma
+TYT,TMAT,TYT.TMAT.07,Mutlak Değer,sayı doğrusunda uzaklık;mutlak değerli denklemler;mutlak değerli eşitsizlikler,9,Mutlak değer tanımı ve uygulamaları
+TYT,TMAT,TYT.TMAT.08,Üslü Sayılar,üs kuralları;bilimsel gösterim;üslü denklemler,9,Üslü ifadelerle işlem ve karşılaştırma
+TYT,TMAT,TYT.TMAT.09,Köklü Sayılar,kök kuralları;kesrin karekökü;köklü ifadelerde sıralama,9,Köklü ifadelerle işlem
+TYT,TMAT,TYT.TMAT.10,Çarpanlara Ayırma,özdeşlikler;ortak çarpan;sadeleştirme,9,Cebirsel ifadeleri çarpanlarına ayırma ve özdeşlikler
+TYT,TMAT,TYT.TMAT.11,Oran-Orantı,doğru orantı;ters orantı;bileşik orantı;ölçek,9,Oran ve orantı kavramları
+TYT,TMAT,TYT.TMAT.12,Denklem Çözme,birinci dereceden denklemler;denklem sistemleri;cebirsel ifadeler,9,Bir ve iki bilinmeyenli birinci dereceden denklemler
+TYT,TMAT,TYT.TMAT.13,Problemler,sayı problemleri;kesir problemleri;yaş problemleri;işçi problemleri;hareket problemleri;yüzde problemleri;kâr-zarar problemleri;karışım problemleri;grafik problemleri;rutin olmayan problemler,9,Sözel problemler; alt türü subtopic alanında
+TYT,TMAT,TYT.TMAT.14,Kümeler,küme kavramı;alt küme;kümelerde işlemler;Venn şeması;kartezyen çarpım,9,Kümeler ve kümelerde işlemler
+TYT,TMAT,TYT.TMAT.15,Mantık,önermeler;bileşik önermeler;niceleyiciler;koşullu önermeler,9,Önermeler mantığı
+TYT,TMAT,TYT.TMAT.16,Fonksiyonlar,fonksiyon kavramı;fonksiyon grafiği;bileşke ve ters fonksiyon;fonksiyonlarda işlemler,10,Fonksiyon tanımı ve işlemleri
+TYT,TMAT,TYT.TMAT.17,Polinomlar,polinom kavramı;polinomlarda işlemler;polinom bölmesi,10,Polinomlar
+TYT,TMAT,TYT.TMAT.18,İkinci Dereceden Denklemler,kökler;kök-katsayı ilişkisi;diskriminant,10,İkinci dereceden bir bilinmeyenli denklemler
+TYT,TMAT,TYT.TMAT.19,Permütasyon ve Kombinasyon,sayma prensipleri;permütasyon;kombinasyon,10,Sayma yöntemleri
+TYT,TMAT,TYT.TMAT.20,Olasılık,basit olasılık;koşullu olasılık;bağımsız olaylar,10,Olasılık hesapları
+TYT,TMAT,TYT.TMAT.21,Veri ve İstatistik,merkezi eğilim ölçüleri (ortalama-medyan-mod);açıklık;grafikler ve tablolar,9-10,Veri analizi ve istatistik ölçüleri
+TYT,GEO,TYT.GEO.01,Doğruda ve Üçgende Açılar,doğruda açılar;paralel doğrularda açılar;üçgende iç-dış açılar,9,Açı kavramı ve üçgende açılar
+TYT,GEO,TYT.GEO.02,Dik Üçgen ve Trigonometri,Pisagor teoremi;özel dik üçgenler;Öklid bağıntıları;dik üçgende trigonometrik oranlar,9,Dik üçgen bağıntıları
+TYT,GEO,TYT.GEO.03,İkizkenar ve Eşkenar Üçgen,ikizkenar üçgen;eşkenar üçgen,9,İkizkenar ve eşkenar üçgen özellikleri
+TYT,GEO,TYT.GEO.04,Açıortay ve Kenarortay,açıortay;kenarortay;ağırlık merkezi,9,Üçgende yardımcı elemanlar
+TYT,GEO,TYT.GEO.05,Üçgende Eşlik ve Benzerlik,eşlik;benzerlik oranı;Tales,9,Üçgenlerde eşlik ve benzerlik
+TYT,GEO,TYT.GEO.06,Üçgende Alan,alan formülleri;alan oranları,9,Üçgenin alanı
+TYT,GEO,TYT.GEO.07,Üçgende Açı-Kenar Bağıntıları,üçgen eşitsizliği;açı-kenar sıralaması,9,Kenar uzunlukları ile açılar arasındaki ilişki
+TYT,GEO,TYT.GEO.08,Çokgenler,çokgende açılar;düzgün çokgenler;düzgün altıgen,10,Çokgen özellikleri
+TYT,GEO,TYT.GEO.09,Dörtgenler,genel dörtgen;yamuk;paralelkenar;eşkenar dörtgen;dikdörtgen;kare;deltoid,10,Dörtgen türleri ve özellikleri
+TYT,GEO,TYT.GEO.10,Çember ve Daire,çemberde açı;çemberde uzunluk;dairenin alanı ve çevresi;daire dilimi,10-11,Çember ve daire
+TYT,GEO,TYT.GEO.11,Analitik Geometri,noktanın analitiği;doğrunun analitiği;uzaklık;koordinat düzlemi,10-11,Koordinat düzleminde nokta ve doğru
+TYT,GEO,TYT.GEO.12,Katı Cisimler,dikdörtgenler prizması;küp;silindir;piramit;koni;küre,10-12,Katı cisimlerin alan ve hacimleri

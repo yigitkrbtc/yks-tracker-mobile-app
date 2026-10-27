@@ -1,0 +1,66 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Host/Host.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/BuildingBlocks.Api/BuildingBlocks.Api.csproj" />
+    <Project Path="src/BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj" />
+    <Project Path="src/BuildingBlocks/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj" />
+    <Project Path="src/BuildingBlocks/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Analytics/">
+    <Project Path="src/Modules/Analytics/Analytics.Api/Analytics.Api.csproj" />
+    <Project Path="src/Modules/Analytics/Analytics.Application/Analytics.Application.csproj" />
+    <Project Path="src/Modules/Analytics/Analytics.Contracts/Analytics.Contracts.csproj" />
+    <Project Path="src/Modules/Analytics/Analytics.Engine/Analytics.Engine.csproj" />
+    <Project Path="src/Modules/Analytics/Analytics.Infrastructure/Analytics.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Curriculum/">
+    <Project Path="src/Modules/Curriculum/Curriculum.Api/Curriculum.Api.csproj" />
+    <Project Path="src/Modules/Curriculum/Curriculum.Application/Curriculum.Application.csproj" />
+    <Project Path="src/Modules/Curriculum/Curriculum.Contracts/Curriculum.Contracts.csproj" />
+    <Project Path="src/Modules/Curriculum/Curriculum.Domain/Curriculum.Domain.csproj" />
+    <Project Path="src/Modules/Curriculum/Curriculum.Infrastructure/Curriculum.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Engagement/">
+    <Project Path="src/Modules/Engagement/Engagement.Api/Engagement.Api.csproj" />
+    <Project Path="src/Modules/Engagement/Engagement.Application/Engagement.Application.csproj" />
+    <Project Path="src/Modules/Engagement/Engagement.Contracts/Engagement.Contracts.csproj" />
+    <Project Path="src/Modules/Engagement/Engagement.Domain/Engagement.Domain.csproj" />
+    <Project Path="src/Modules/Engagement/Engagement.Infrastructure/Engagement.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Identity/">
+    <Project Path="src/Modules/Identity/Identity.Api/Identity.Api.csproj" />
+    <Project Path="src/Modules/Identity/Identity.Application/Identity.Application.csproj" />
+    <Project Path="src/Modules/Identity/Identity.Contracts/Identity.Contracts.csproj" />
+    <Project Path="src/Modules/Identity/Identity.Domain/Identity.Domain.csproj" />
+    <Project Path="src/Modules/Identity/Identity.Infrastructure/Identity.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Platform/">
+    <Project Path="src/Modules/Platform/Platform.Api/Platform.Api.csproj" />
+    <Project Path="src/Modules/Platform/Platform.Application/Platform.Application.csproj" />
+    <Project Path="src/Modules/Platform/Platform.Contracts/Platform.Contracts.csproj" />
+    <Project Path="src/Modules/Platform/Platform.Domain/Platform.Domain.csproj" />
+    <Project Path="src/Modules/Platform/Platform.Infrastructure/Platform.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Recommendation/">
+    <Project Path="src/Modules/Recommendation/Recommendation.Api/Recommendation.Api.csproj" />
+    <Project Path="src/Modules/Recommendation/Recommendation.Application/Recommendation.Application.csproj" />
+    <Project Path="src/Modules/Recommendation/Recommendation.Contracts/Recommendation.Contracts.csproj" />
+    <Project Path="src/Modules/Recommendation/Recommendation.Domain/Recommendation.Domain.csproj" />
+    <Project Path="src/Modules/Recommendation/Recommendation.Infrastructure/Recommendation.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Tracking/">
+    <Project Path="src/Modules/Tracking/Tracking.Api/Tracking.Api.csproj" />
+    <Project Path="src/Modules/Tracking/Tracking.Application/Tracking.Application.csproj" />
+    <Project Path="src/Modules/Tracking/Tracking.Contracts/Tracking.Contracts.csproj" />
+    <Project Path="src/Modules/Tracking/Tracking.Domain/Tracking.Domain.csproj" />
+    <Project Path="src/Modules/Tracking/Tracking.Infrastructure/Tracking.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ArchitectureTests/ArchitectureTests.csproj" />
+    <Project Path="tests/BuildingBlocks.UnitTests/BuildingBlocks.UnitTests.csproj" />
+    <Project Path="tests/Host.IntegrationTests/Host.IntegrationTests.csproj" />
+  </Folder>
+</Solution>
