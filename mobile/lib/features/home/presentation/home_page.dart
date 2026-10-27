@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/design/design.dart';
+import '../../../core/design/gallery/design_gallery_page.dart';
 import '../../auth/application/session_controller.dart';
 
 /// Shell with the three MVP areas. Each tab is filled by its own feature in later sprints.
@@ -46,6 +49,12 @@ class _HomePageState extends ConsumerState<HomePage> {
       appBar: AppBar(
         title: const Text(AppConfig.appName),
         actions: [
+          if (kDebugMode)
+            IconButton(
+              tooltip: 'Tasarım sistemi',
+              icon: const Icon(Icons.palette_outlined),
+              onPressed: () => context.push(DesignGalleryPage.path),
+            ),
           PopupMenuButton<_AccountAction>(
             tooltip: 'Hesap',
             icon: const Icon(Icons.account_circle_outlined),
@@ -63,13 +72,11 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (firstName != null) Text('Merhaba $firstName'),
-            Text('${tab.label} yakında'),
-          ],
+      body: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: NCard(
+          title: firstName == null ? tab.label : 'Merhaba $firstName',
+          description: '${tab.label} yakında',
         ),
       ),
       bottomNavigationBar: NavigationBar(

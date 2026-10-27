@@ -1,4 +1,4 @@
-# ADR-0011: Kimlik doğrulama: kendi Identity modülü, JWT + dönen refresh token
+# ADR-0012: Kimlik doğrulama: kendi Identity modülü, JWT + dönen refresh token
 
 - Durum: Kabul edildi
 - Tarih: 2026-10-27

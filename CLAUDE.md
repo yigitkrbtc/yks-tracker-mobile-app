@@ -45,6 +45,7 @@ cd admin && npm run lint && npm run build
 
 - `lib/features/<özellik>/{domain, application, data, presentation}`; bağımlılık içe akar, özellikler birbirinin `data`/`presentation` katmanını import etmez.
 - Durum yönetimi Riverpod, yönlendirme go_router. Yazmalar önce yerel Drift + outbox'a (Sprint 3).
+- UI yalnız `lib/core/design/design.dart` (token + `N*` bileşenleri) üzerinden; `shadcn_ui` doğrudan yalnız `core/design` ve `app` içinde (ADR-0011, mimari test).
 - Yapılandırma `--dart-define` ile (`AppConfig`).
 
 ## Süreç

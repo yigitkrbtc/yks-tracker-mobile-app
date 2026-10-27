@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/design/gallery/design_gallery_page.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/auth/presentation/auth_routes.dart';
 import '../features/home/presentation/home_page.dart';
@@ -35,6 +36,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: _splash, builder: (context, state) => const _SplashPage()),
       GoRoute(path: '/', builder: (context, state) => const HomePage()),
       ...AuthRoutes.routes,
+      GoRoute(
+        path: DesignGalleryPage.path,
+        builder: (context, state) => const DesignGalleryPage(),
+      ),
     ],
   );
   ref.onDispose(router.dispose);
