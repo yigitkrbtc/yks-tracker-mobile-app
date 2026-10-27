@@ -1,5 +1,9 @@
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Nirengi.Modules.Identity.Application.Abstractions;
 using Testcontainers.PostgreSql;
 
 namespace Nirengi.Host.IntegrationTests;
@@ -8,6 +12,12 @@ namespace Nirengi.Host.IntegrationTests;
 public sealed class NirengiApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17-alpine").Build();
+
+    public static readonly string TestSigningKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+    public const string AdminEmail = "admin@nirengi.test";
+
+    public FakeEmailSender Mail { get; } = new();
 
     public string ConnectionString => _postgres.GetConnectionString();
 
@@ -25,6 +35,13 @@ public sealed class NirengiApiFactory : WebApplicationFactory<Program>, IAsyncLi
         builder.UseSetting("ConnectionStrings:Database", ConnectionString);
         builder.UseSetting("Database:MigrateOnStartup", "true");
         builder.UseSetting("Outbox:PollInterval", "00:00:00.200");
+        builder.UseSetting("Jwt:SigningKey", TestSigningKey);
+        builder.UseSetting("RateLimiting:Auth:PermitLimit", "10000");
+        builder.UseSetting("Identity:Security:HashKey", Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));
+        builder.UseSetting("Identity:AdminEmails:0", AdminEmail);
+        builder.UseSetting("Smtp:Host", "localhost");
+        builder.UseSetting("Smtp:FromAddress", "test@nirengi.local");
+        builder.ConfigureTestServices(services => services.AddSingleton<IEmailSender>(Mail));
     }
 }
 
