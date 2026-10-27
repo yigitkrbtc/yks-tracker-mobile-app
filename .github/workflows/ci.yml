@@ -31,6 +31,7 @@ jobs:
         run: |
           dotnet test --project tests/ArchitectureTests --no-build -c Release
           dotnet test --project tests/BuildingBlocks.UnitTests --no-build -c Release
+          dotnet test --project tests/Identity.UnitTests --no-build -c Release
       - name: Integration tests (Testcontainers)
         run: dotnet test --project tests/Host.IntegrationTests --no-build -c Release
 
