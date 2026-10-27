@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20261027184513_AddIdentityCore")]
+    [Migration("20261027190857_AddIdentityCore")]
     partial class AddIdentityCore
     {
         /// <inheritdoc />
@@ -391,6 +391,10 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_users");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_users_created_at")
+                        .HasFilter("status = 'PendingVerification'");
 
                     b.HasIndex("DeletionRequestedAt")
                         .HasDatabaseName("ix_users_deletion_requested_at")

@@ -6,7 +6,10 @@ using Nirengi.Modules.Identity.Contracts;
 
 namespace Nirengi.Modules.Identity.Application.Features.Deletion;
 
-/// <summary>Hard-deletes accounts whose grace period ended and announces each with <see cref="UserDeleted"/>.</summary>
+/// <summary>
+/// Hard-deletes accounts whose deletion grace period ended and sign-ups never verified within the retention
+/// period, announcing each with <see cref="UserDeleted"/>.
+/// </summary>
 public sealed record PurgeDeletedAccountsCommand(int BatchSize = 100) : ICommand<int>;
 
 internal sealed class PurgeDeletedAccountsHandler(
@@ -18,7 +21,9 @@ internal sealed class PurgeDeletedAccountsHandler(
     public async Task<Result<int>> Handle(PurgeDeletedAccountsCommand command, CancellationToken cancellationToken)
     {
         var now = clock.UtcNow;
-        var due = await users.GetDeletionRequestedBefore(now - options.DeletionGracePeriod, command.BatchSize, cancellationToken);
+        var due = (await users.GetDeletionRequestedBefore(now - options.DeletionGracePeriod, command.BatchSize, cancellationToken))
+            .Concat(await users.GetUnverifiedCreatedBefore(now - options.UnverifiedRetention, command.BatchSize, cancellationToken))
+            .ToList();
         foreach (var user in due)
         {
             unitOfWork.Enqueue(new UserDeleted(Guid.CreateVersion7(now), now, user.Id));

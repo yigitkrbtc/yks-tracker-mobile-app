@@ -95,6 +95,26 @@ public sealed class AccountLifecycleTests(NirengiApiFactory factory)
         announced.ShouldContain(p => p.Contains(userId.ToString(), StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task Purge_removes_sign_ups_left_unverified_for_a_week()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var stale = AuthApi.NewEmail();
+        var fresh = AuthApi.NewEmail();
+        await _api.Post("/v1/auth/register", AuthApi.Registration(stale));
+        await _api.Post("/v1/auth/register", AuthApi.Registration(fresh));
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE identity.users SET created_at = now() - interval '8 days' WHERE email = {stale}", ct);
+
+        (await scope.ServiceProvider.GetRequiredService<IDispatcher>().Send(new PurgeDeletedAccountsCommand(), ct)).IsSuccess.ShouldBeTrue();
+
+        (await db.Users.AnyAsync(u => u.Email == stale, ct)).ShouldBeFalse();
+        (await db.Users.AnyAsync(u => u.Email == fresh, ct)).ShouldBeTrue();
+    }
+
     private Task<HttpResponseMessage> RequestDeletion(string accessToken, string password)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, "/v1/me/deletion") { Content = JsonContent.Create(new { password }) };

@@ -21,6 +21,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.TotpSecret).HasMaxLength(500);
         builder.Property(u => u.PendingTotpSecret).HasMaxLength(500);
         builder.HasIndex(u => u.DeletionRequestedAt).HasFilter("deletion_requested_at IS NOT NULL");
+        builder.HasIndex(u => u.CreatedAt).HasFilter("status = 'PendingVerification'");
         builder.Property<uint>("Version").IsRowVersion();
         builder.Ignore(u => u.IsAdmin);
         builder.Ignore(u => u.TotpEnabled);

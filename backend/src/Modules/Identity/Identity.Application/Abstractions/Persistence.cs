@@ -14,6 +14,8 @@ public interface IUserRepository
 
     Task<IReadOnlyList<User>> GetDeletionRequestedBefore(DateTimeOffset cutoff, int take, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<User>> GetUnverifiedCreatedBefore(DateTimeOffset cutoff, int take, CancellationToken cancellationToken);
+
     void Add(User user);
 
     /// <summary>Hard delete; codes, tokens and consent records cascade.</summary>

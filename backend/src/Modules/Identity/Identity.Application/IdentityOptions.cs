@@ -30,4 +30,7 @@ public sealed class IdentityOptions
     public TimeSpan LockoutDuration { get; set; } = TimeSpan.FromMinutes(15);
 
     public TimeSpan DeletionGracePeriod { get; set; } = TimeSpan.FromDays(30);
+
+    /// <summary>Unverified sign-ups are removed after this (privacy notice: 7 days).</summary>
+    public TimeSpan UnverifiedRetention { get; set; } = TimeSpan.FromDays(7);
 }

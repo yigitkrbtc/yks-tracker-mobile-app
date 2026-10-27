@@ -389,6 +389,10 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_users");
 
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_users_created_at")
+                        .HasFilter("status = 'PendingVerification'");
+
                     b.HasIndex("DeletionRequestedAt")
                         .HasDatabaseName("ix_users_deletion_requested_at")
                         .HasFilter("deletion_requested_at IS NOT NULL");

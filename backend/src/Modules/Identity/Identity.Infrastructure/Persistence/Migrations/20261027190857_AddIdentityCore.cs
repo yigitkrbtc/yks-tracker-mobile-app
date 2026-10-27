@@ -192,6 +192,13 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_users_created_at",
+                schema: "identity",
+                table: "users",
+                column: "created_at",
+                filter: "status = 'PendingVerification'");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_users_deletion_requested_at",
                 schema: "identity",
                 table: "users",

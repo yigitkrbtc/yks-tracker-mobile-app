@@ -23,6 +23,13 @@ internal sealed class UserRepository(IdentityDbContext db) : IUserRepository
             .Take(take)
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<User>> GetUnverifiedCreatedBefore(DateTimeOffset cutoff, int take, CancellationToken cancellationToken) =>
+        await db.Users
+            .Where(u => u.Status == UserStatus.PendingVerification && u.CreatedAt < cutoff)
+            .OrderBy(u => u.CreatedAt)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
     public void Add(User user) => db.Users.Add(user);
 
     public void Remove(User user) => db.Users.Remove(user);
