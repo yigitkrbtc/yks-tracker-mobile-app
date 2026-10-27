@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Engagement.Infrastructure/Engagement.Infrastructure.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/BuildingBlocks.Api/BuildingBlocks.Api.csproj" />
+  </ItemGroup>
+</Project>
