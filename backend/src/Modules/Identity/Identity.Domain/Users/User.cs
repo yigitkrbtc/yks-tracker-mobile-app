@@ -89,6 +89,25 @@ public sealed class User : AggregateRoot<Guid>
             CreatedAt = now,
         };
 
+    /// <summary>
+    /// A repeated sign-up before verification replaces the details: whoever proves the mailbox owns the account,
+    /// so an unverified registration cannot squat someone else's address.
+    /// </summary>
+    public Result ReplacePendingRegistration(string firstName, string lastName, string passwordHash, int birthYear, bool marketingConsent)
+    {
+        if (Status != UserStatus.PendingVerification)
+        {
+            return IdentityErrors.AlreadyVerified;
+        }
+
+        FirstName = firstName.Trim();
+        LastName = lastName.Trim();
+        PasswordHash = passwordHash;
+        BirthYear = birthYear;
+        MarketingConsent = marketingConsent;
+        return Result.Success();
+    }
+
     public Result VerifyEmail(DateTimeOffset now)
     {
         if (Status != UserStatus.PendingVerification)

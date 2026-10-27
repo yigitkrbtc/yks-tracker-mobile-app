@@ -8,5 +8,8 @@ internal static class OpenApiBuildSecrets
     public static readonly IReadOnlyDictionary<string, string?> Values = new Dictionary<string, string?>
     {
         ["Jwt:SigningKey"] = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),
+        ["Identity:Security:HashKey"] = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),
+        ["Smtp:Host"] = "localhost",
+        ["Smtp:FromAddress"] = "openapi@localhost",
     };
 }

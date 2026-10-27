@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using Nirengi.BuildingBlocks.Api.Security;
@@ -25,6 +26,7 @@ builder.Host.UseSerilog((context, logger) => logger
     .WriteTo.Console());
 
 builder.Services.AddProblemDetails();
+builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi("v1");
 builder.Services.AddNirengiSecurity(builder.Configuration);
 builder.Services.AddHealthChecks()

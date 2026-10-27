@@ -32,6 +32,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Database: Host=postgres;Port=5432;Database=nirengi;Username=nirengi;Password=nirengi
       Database__MigrateOnStartup: "true"
+      Smtp__Host: mailpit
     ports:
       - "8080:8080"
     depends_on:
