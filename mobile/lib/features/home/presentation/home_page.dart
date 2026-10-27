@@ -1,6 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/design/design.dart';
+import '../../../core/design/gallery/design_gallery_page.dart';
 
 /// Shell with the three MVP areas. Each tab is filled by its own feature in later sprints.
 class HomePage extends StatefulWidget {
@@ -23,8 +27,21 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final tab = _tabs[_index];
     return Scaffold(
-      appBar: AppBar(title: const Text(AppConfig.appName)),
-      body: Center(child: Text('${tab.label} yakında')),
+      appBar: AppBar(
+        title: const Text(AppConfig.appName),
+        actions: [
+          if (kDebugMode)
+            IconButton(
+              tooltip: 'Tasarım sistemi',
+              icon: const Icon(Icons.palette_outlined),
+              onPressed: () => context.push(DesignGalleryPage.path),
+            ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: NCard(title: tab.label, description: '${tab.label} yakında'),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),

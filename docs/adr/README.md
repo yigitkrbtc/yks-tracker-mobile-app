@@ -12,5 +12,6 @@
 | 0008 | [OpenAPI sözleşmesi repoda, CI'da kontrol](0008-openapi-sozlesmesi.md) | Kabul |
 | 0009 | [Konteyner, bulut bağımsız dağıtım](0009-konteyner-bulut-bagimsiz.md) | Kabul |
 | 0010 | [Deneme kaydı ayrı aggregate](0010-deneme-kaydi.md) | Kabul |
+| 0011 | [Mobil tasarım sistemi shadcn_ui üzerine](0011-mobil-tasarim-sistemi.md) | Kabul |
 
 Yeni karar: sıradaki numarayla aynı şablonda (Bağlam, Karar, Sonuçlar) dosya ekle. Değişen karar silinmez; yeni ADR eskisini "Yerine geçti" olarak işaretler.
