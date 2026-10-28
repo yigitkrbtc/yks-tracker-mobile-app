@@ -25,7 +25,9 @@ internal sealed class GetMeHandler(IUserRepository users, IClock clock) : IQuery
     public async Task<Result<UserProfile>> Handle(GetMeQuery query, CancellationToken cancellationToken)
     {
         var user = await users.GetById(query.UserId, cancellationToken);
-        if (user is null)
+
+        // An access token outlives a deletion request by up to its lifetime; the account is gone for the client.
+        if (user is null || user.Status != UserStatus.Active)
         {
             return IdentityErrors.UserNotFound;
         }

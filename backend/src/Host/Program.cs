@@ -42,6 +42,7 @@ foreach (var module in ModuleCatalog.All)
 
 var app = builder.Build();
 
+app.UseNirengiForwardedHeaders();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseSerilogRequestLogging();

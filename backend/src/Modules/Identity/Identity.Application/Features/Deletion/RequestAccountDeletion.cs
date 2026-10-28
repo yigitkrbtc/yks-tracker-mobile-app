@@ -6,6 +6,7 @@ using Nirengi.Modules.Identity.Application.Abstractions;
 using Nirengi.Modules.Identity.Application.SignIn;
 using Nirengi.Modules.Identity.Domain;
 using Nirengi.Modules.Identity.Domain.Tokens;
+using Nirengi.Modules.Identity.Domain.Users;
 
 namespace Nirengi.Modules.Identity.Application.Features.Deletion;
 
@@ -31,17 +32,25 @@ internal sealed class RequestAccountDeletionHandler(
     public async Task<Result<DeletionScheduled>> Handle(RequestAccountDeletionCommand command, CancellationToken cancellationToken)
     {
         var user = await users.GetById(command.UserId, cancellationToken);
-        if (user is null)
+        if (user is null || user.Status != UserStatus.Active)
         {
             return IdentityErrors.UserNotFound;
         }
 
-        if (hasher.Verify(user.PasswordHash, command.Password) == PasswordCheck.Failed)
+        // Same lockout as sign-in, so a stolen access token cannot be used to guess the password.
+        var now = clock.UtcNow;
+        if (user.IsLockedOut(now))
         {
             return IdentityErrors.InvalidPassword;
         }
 
-        var now = clock.UtcNow;
+        if (hasher.Verify(user.PasswordHash, command.Password) == PasswordCheck.Failed)
+        {
+            user.RecordFailedLogin(now, options.LockoutThreshold, options.LockoutDuration);
+            await unitOfWork.SaveChanges(cancellationToken);
+            return IdentityErrors.InvalidPassword;
+        }
+
         user.RequestDeletion(now);
         await signIn.RevokeAll(user.Id, RevokeReason.AccountDeletion, now, cancellationToken);
         await unitOfWork.SaveChanges(cancellationToken);

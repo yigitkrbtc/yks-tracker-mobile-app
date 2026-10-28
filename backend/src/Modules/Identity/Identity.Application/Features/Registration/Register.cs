@@ -93,7 +93,7 @@ internal sealed class RegisterHandler(
         }
         else
         {
-            user.ReplacePendingRegistration(command.FirstName, command.LastName, passwordHash, command.BirthYear, command.MarketingConsent);
+            user.ReplacePendingRegistration(command.FirstName, command.LastName, passwordHash, command.BirthYear, command.MarketingConsent, now);
         }
 
         consents.Add(ConsentRecord.Record(user.Id, ConsentKind.Terms, options.TermsVersion, granted: true, now));
@@ -104,7 +104,12 @@ internal sealed class RegisterHandler(
         }
 
         var code = await codes.Issue(user, CodePurpose.EmailVerification, now, cancellationToken);
-        await unitOfWork.SaveChanges(cancellationToken);
+
+        // A concurrent sign-up for the same address won; its code is the one in the mailbox.
+        if (!await unitOfWork.TrySaveChanges(cancellationToken))
+        {
+            return Unit.Value;
+        }
 
         if (code is not null)
         {

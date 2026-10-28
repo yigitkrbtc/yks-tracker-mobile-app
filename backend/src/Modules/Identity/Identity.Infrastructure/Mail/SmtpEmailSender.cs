@@ -12,14 +12,15 @@ internal sealed partial class SmtpEmailSender(IOptions<SmtpOptions> options, ILo
     public async Task Send(EmailMessage message, CancellationToken cancellationToken)
     {
         var smtp = options.Value;
-        using var mime = new MimeMessage();
-        mime.From.Add(new MailboxAddress(smtp.FromName, smtp.FromAddress));
-        mime.To.Add(MailboxAddress.Parse(message.To));
-        mime.Subject = message.Subject;
-        mime.Body = new TextPart("plain") { Text = message.Body };
-
         try
         {
+            // Inside the try: an address our looser check accepts can still fail MimeKit's parser.
+            using var mime = new MimeMessage();
+            mime.From.Add(new MailboxAddress(smtp.FromName, smtp.FromAddress));
+            mime.To.Add(MailboxAddress.Parse(message.To));
+            mime.Subject = message.Subject;
+            mime.Body = new TextPart("plain") { Text = message.Body };
+
             using var client = new SmtpClient();
             await client.ConnectAsync(smtp.Host, smtp.Port, ToMailKit(smtp.Security), cancellationToken);
             if (!string.IsNullOrEmpty(smtp.Username))

@@ -91,9 +91,10 @@ public sealed class User : AggregateRoot<Guid>
 
     /// <summary>
     /// A repeated sign-up before verification replaces the details: whoever proves the mailbox owns the account,
-    /// so an unverified registration cannot squat someone else's address.
+    /// so an unverified registration cannot squat someone else's address. The unverified-retention clock restarts,
+    /// so the purge cannot remove the account while the new code is still valid.
     /// </summary>
-    public Result ReplacePendingRegistration(string firstName, string lastName, string passwordHash, int birthYear, bool marketingConsent)
+    public Result ReplacePendingRegistration(string firstName, string lastName, string passwordHash, int birthYear, bool marketingConsent, DateTimeOffset now)
     {
         if (Status != UserStatus.PendingVerification)
         {
@@ -105,6 +106,7 @@ public sealed class User : AggregateRoot<Guid>
         PasswordHash = passwordHash;
         BirthYear = birthYear;
         MarketingConsent = marketingConsent;
+        CreatedAt = now;
         return Result.Success();
     }
 

@@ -50,6 +50,20 @@ void main() {
     expect((state as SignedInState).profile.firstName, 'Ada');
   });
 
+  test('a transient server failure at start keeps the session', () async {
+    repository.refreshError = const AuthException(AuthFailure.tooManyRequests);
+    final store = MemorySessionStore(
+      refreshToken: 'refresh-old',
+      profile: testProfile,
+    );
+    final container = containerWith(store);
+
+    final state = await container.read(sessionControllerProvider.future);
+
+    expect((state as SignedInState).profile.firstName, 'Ada');
+    expect(store.refreshToken, 'refresh-old');
+  });
+
   test('a revoked session at start signs out and forgets the token', () async {
     repository.refreshError = expiredSession;
     final store = MemorySessionStore(

@@ -42,13 +42,13 @@ class SessionController extends AsyncNotifier<SessionState> {
       await store.save(refreshToken: tokens.refreshToken!, profile: profile);
       return SignedInState(profile);
     } on AuthException catch (e) {
-      if (e.failure == AuthFailure.network) {
+      // Only a rejected session ends it (the token manager has already cleared it). A
+      // transient failure (offline, 429, 5xx) keeps the stored session for the next try.
+      if (e.failure != AuthFailure.sessionExpired) {
         final cached = await store.readProfile();
         if (cached != null) {
           return SignedInState(cached);
         }
-      } else {
-        await tokens.clear();
       }
       return const SignedOutState();
     }

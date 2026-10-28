@@ -41,13 +41,15 @@ internal static class AuthEndpoints
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
-        auth.MapPost("/refresh", async (RefreshSessionCommand command, IDispatcher dispatcher, CancellationToken ct) =>
+        var session = v1.MapGroup("/auth").AllowAnonymous().RequireRateLimiting(RateLimitPolicies.Session);
+
+        session.MapPost("/refresh", async (RefreshSessionCommand command, IDispatcher dispatcher, CancellationToken ct) =>
                 (await dispatcher.Send(command, ct)).Match(Results.Ok))
             .WithName("RefreshSession")
             .Produces<AuthTokens>()
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
-        auth.MapPost("/logout", async (LogoutCommand command, IDispatcher dispatcher, CancellationToken ct) =>
+        session.MapPost("/logout", async (LogoutCommand command, IDispatcher dispatcher, CancellationToken ct) =>
                 (await dispatcher.Send(command, ct)).Match(_ => Results.NoContent()))
             .WithName("Logout")
             .Produces(StatusCodes.Status204NoContent);

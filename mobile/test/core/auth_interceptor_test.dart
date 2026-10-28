@@ -19,6 +19,10 @@ class _Tokens implements SessionTokens {
 
 /// Accepts only the "new" token, like an API whose access token just expired.
 class _Server implements HttpClientAdapter {
+  _Server({this.acceptNew = true});
+
+  /// False: rejects the refreshed token too, so the replay fails.
+  final bool acceptNew;
   final seen = <String?>[];
 
   @override
@@ -29,7 +33,7 @@ class _Server implements HttpClientAdapter {
   ) async {
     final auth = options.headers['Authorization'] as String?;
     seen.add(auth);
-    final ok = auth == 'Bearer new';
+    final ok = acceptNew && auth == 'Bearer new';
     return ResponseBody.fromString(
       jsonEncode({'ok': ok}),
       ok ? 200 : 401,
@@ -50,7 +54,9 @@ void main() {
       final tokens = _Tokens();
       final server = _Server();
       final dio = Dio()..httpClientAdapter = server;
-      dio.interceptors.add(AuthInterceptor(tokens, dio));
+      dio.interceptors.add(
+        AuthInterceptor(tokens, Dio()..httpClientAdapter = server),
+      );
 
       final response = await dio.get<Map<String, dynamic>>(
         'https://api.test/v1/me',
@@ -61,4 +67,28 @@ void main() {
       expect(server.seen, ['Bearer old', 'Bearer new']);
     },
   );
+
+  test('a failed replay surfaces its error instead of hanging', () async {
+    final tokens = _Tokens();
+    final server = _Server(acceptNew: false);
+    final dio = Dio()..httpClientAdapter = server;
+    dio.interceptors.add(
+      AuthInterceptor(tokens, Dio()..httpClientAdapter = server),
+    );
+
+    for (var i = 0; i < 2; i++) {
+      await expectLater(
+        dio
+            .get<dynamic>('https://api.test/v1/me')
+            .timeout(const Duration(seconds: 2)),
+        throwsA(
+          isA<DioException>().having(
+            (e) => e.response?.statusCode,
+            'status',
+            401,
+          ),
+        ),
+      );
+    }
+  });
 }
