@@ -12,10 +12,7 @@ namespace Nirengi.Host;
 
 internal static class DatabaseMigrator
 {
-    /// <summary>
-    /// Applies every module's pending migrations (each module keeps its own history table in its schema), then
-    /// loads reference data that ships with the code, so a migrated database is always a usable one.
-    /// </summary>
+    /// <summary>Applies every module's pending migrations. Each module keeps its own history table in its schema.</summary>
     public static async Task MigrateAll(IServiceProvider services, CancellationToken cancellationToken = default)
     {
         await using var scope = services.CreateAsyncScope();
@@ -26,7 +23,15 @@ internal static class DatabaseMigrator
         await Migrate<RecommendationDbContext>(scope.ServiceProvider, cancellationToken);
         await Migrate<EngagementDbContext>(scope.ServiceProvider, cancellationToken);
         await Migrate<PlatformDbContext>(scope.ServiceProvider, cancellationToken);
+    }
 
+    /// <summary>
+    /// Loads reference data that ships with the code (a no-op when unchanged). Runs on every start, also where
+    /// migrations are applied out of band, so a deploy never serves an empty curriculum.
+    /// </summary>
+    public static async Task SeedReferenceData(IServiceProvider services, CancellationToken cancellationToken = default)
+    {
+        await using var scope = services.CreateAsyncScope();
         await scope.ServiceProvider.GetRequiredService<CurriculumSeeder>().Seed(cancellationToken);
     }
 

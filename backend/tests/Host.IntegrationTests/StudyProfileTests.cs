@@ -51,6 +51,16 @@ public sealed class StudyProfileTests(NirengiApiFactory factory)
     }
 
     [Fact]
+    public async Task Missing_score_type_is_rejected_not_defaulted()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+
+        var response = await _api.Send(HttpMethod.Put, "/v1/profile", tokens.AccessToken, new { grade = "Twelfth", targetExamYear = NextExam });
+
+        await AuthApi.ShouldBeProblem(response, HttpStatusCode.BadRequest, "validation.failed");
+    }
+
+    [Fact]
     public async Task Purged_account_loses_its_profile()
     {
         var ct = TestContext.Current.CancellationToken;

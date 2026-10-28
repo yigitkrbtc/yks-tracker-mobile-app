@@ -63,6 +63,11 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
     await DatabaseMigrator.MigrateAll(app.Services);
 }
 
+if (app.Configuration.GetValue("Database:SeedOnStartup", defaultValue: true))
+{
+    await DatabaseMigrator.SeedReferenceData(app.Services);
+}
+
 await app.RunAsync();
 return 0;
 

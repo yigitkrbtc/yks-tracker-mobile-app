@@ -34,11 +34,12 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Signed in: the study profile decides between onboarding and the app. If it cannot be loaded
       // (offline), the app opens anyway and the topic list offers a retry.
+      // A reload (e.g. sign-in after sign-out) still carries the previous user's value; never decide on it.
       final profile = ref.read(studyProfileProvider);
-      if (profile.isLoading && !profile.hasValue && !profile.hasError) {
+      if (profile.isLoading) {
         return location == _splash ? null : _splash;
       }
-      final needsOnboarding = profile.hasValue && profile.value == null;
+      final needsOnboarding = !profile.hasError && profile.value == null;
       if (needsOnboarding) {
         return location == ProfilePage.onboardingPath
             ? null

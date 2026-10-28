@@ -43,7 +43,7 @@ final visibleSubjectsProvider = Provider<AsyncValue<List<Subject>>>((ref) {
   final curriculum = ref.watch(curriculumProvider);
   final profile = ref.watch(studyProfileProvider);
   for (final source in [curriculum, profile]) {
-    if (source.hasError && !source.hasValue) {
+    if (source.hasError && source.value == null) {
       return AsyncError(source.error!, source.stackTrace!);
     }
   }

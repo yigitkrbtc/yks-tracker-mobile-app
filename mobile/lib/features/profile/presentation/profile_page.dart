@@ -132,7 +132,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         context.pop();
       }
     } on ProfileException catch (e) {
-      setState(() => _error = e.message);
+      if (mounted) {
+        setState(() => _error = e.message);
+      }
+    } on Object {
+      if (mounted) {
+        setState(() => _error = 'Bir şeyler ters gitti; tekrar dene.');
+      }
     } finally {
       if (mounted) {
         setState(() => _saving = false);

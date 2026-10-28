@@ -1,6 +1,6 @@
 # Seed verisi
 
-ÖSYM 2019–2026 TYT ve AYT kitapçıklarından soru soru çıkarılan konu taksonomisi ve konu ağırlıkları. Curriculum modülü bu dosyaları derlemeye gömer ve her migrate sonrası `curriculum` şemasına idempotent yükler (içerik hash'i değişmediyse atlar; ADR-0013).
+ÖSYM 2019–2026 TYT ve AYT kitapçıklarından soru soru çıkarılan konu taksonomisi ve konu ağırlıkları. Curriculum modülü bu dosyaları derlemeye gömer ve API her açılışta `curriculum` şemasına idempotent yükler (içerik hash'i değişmediyse atlar; ADR-0013).
 
 | Dosya | Satır | İçerik |
 | --- | --- | --- |

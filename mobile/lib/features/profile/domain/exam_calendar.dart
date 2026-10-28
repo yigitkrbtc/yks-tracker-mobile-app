@@ -1,6 +1,7 @@
 /// YKS is held every June; from July on, the next sitting is the following year's. Mirrors the API rule.
 abstract final class ExamCalendar {
-  static const maxYearsAhead = 4;
+  /// A 9th grader's regular exam is three sittings after the next one.
+  static const maxYearsAhead = 3;
 
   // Türkiye is UTC+3 all year.
   static const _turkeyOffset = Duration(hours: 3);

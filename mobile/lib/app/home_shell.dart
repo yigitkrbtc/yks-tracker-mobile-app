@@ -63,6 +63,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
               onPressed: () => context.push(DesignGalleryPage.path),
             ),
           PopupMenuButton<_AccountAction>(
+            tooltip: 'Hesap',
             icon: const Icon(Icons.account_circle_outlined),
             onSelected: _onAccountAction,
             itemBuilder: (context) => const [

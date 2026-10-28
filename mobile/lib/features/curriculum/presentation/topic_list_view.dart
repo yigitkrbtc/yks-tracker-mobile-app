@@ -152,7 +152,8 @@ class _SubjectList extends StatelessWidget {
       itemBuilder: (context, i) {
         final entry = filtered[i];
         return ExpansionTile(
-          key: PageStorageKey(entry.subject.code),
+          // initiallyExpanded is read once; a new key per mode opens every match while searching.
+          key: PageStorageKey('${entry.subject.code}|${query.isNotEmpty}'),
           initiallyExpanded: query.isNotEmpty,
           title: Text(entry.subject.name),
           subtitle: Text('${entry.topics.length} konu'),

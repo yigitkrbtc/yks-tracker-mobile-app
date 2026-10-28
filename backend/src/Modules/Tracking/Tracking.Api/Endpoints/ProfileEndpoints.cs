@@ -10,11 +10,11 @@ using Nirengi.Modules.Tracking.Domain.Profiles;
 namespace Nirengi.Modules.Tracking.Api.Endpoints;
 
 public sealed record SaveStudyProfileRequest(
-    Grade Grade,
-    ScoreType PrimaryScoreType,
+    Grade? Grade,
+    ScoreType? PrimaryScoreType,
     ScoreType? SecondaryScoreType,
     YdtLanguage? YdtLanguage,
-    int TargetExamYear,
+    int? TargetExamYear,
     int? WeeklyQuestionGoal);
 
 internal static class ProfileEndpoints

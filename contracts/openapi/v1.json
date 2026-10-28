@@ -1117,10 +1117,24 @@
         "type": "object",
         "properties": {
           "grade": {
-            "$ref": "#/components/schemas/Grade"
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Grade"
+              }
+            ]
           },
           "primaryScoreType": {
-            "$ref": "#/components/schemas/ScoreType"
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ScoreType"
+              }
+            ]
           },
           "secondaryScoreType": {
             "oneOf": [
@@ -1145,6 +1159,7 @@
           "targetExamYear": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
+              "null",
               "integer",
               "string"
             ],

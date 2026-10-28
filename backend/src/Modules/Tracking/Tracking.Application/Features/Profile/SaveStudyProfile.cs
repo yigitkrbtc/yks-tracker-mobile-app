@@ -11,19 +11,20 @@ namespace Nirengi.Modules.Tracking.Application.Features.Profile;
 /// <summary>Creates or replaces the caller's study profile (idempotent PUT, ADR-0005).</summary>
 public sealed record SaveStudyProfileCommand(
     Guid UserId,
-    Grade Grade,
-    ScoreType PrimaryScoreType,
+    Grade? Grade,
+    ScoreType? PrimaryScoreType,
     ScoreType? SecondaryScoreType,
     YdtLanguage? YdtLanguage,
-    int TargetExamYear,
+    int? TargetExamYear,
     int? WeeklyQuestionGoal) : ICommand<StudyProfileResponse>;
 
 internal sealed class SaveStudyProfileValidator : AbstractValidator<SaveStudyProfileCommand>
 {
     public SaveStudyProfileValidator(IClock clock)
     {
-        RuleFor(c => c.Grade).IsInEnum();
-        RuleFor(c => c.PrimaryScoreType).IsInEnum();
+        // Nullable so a missing field is a validation error, not a silent default (SAY, 0).
+        RuleFor(c => c.Grade).NotNull().IsInEnum();
+        RuleFor(c => c.PrimaryScoreType).NotNull().IsInEnum();
         RuleFor(c => c.SecondaryScoreType)
             .IsInEnum()
             .NotEqual(c => c.PrimaryScoreType).WithMessage("İkinci puan türü birincisinden farklı olmalı.");
@@ -33,7 +34,7 @@ internal sealed class SaveStudyProfileValidator : AbstractValidator<SaveStudyPro
         When(c => c.PrimaryScoreType != ScoreType.DIL && c.SecondaryScoreType != ScoreType.DIL, () =>
             RuleFor(c => c.YdtLanguage).Null().WithMessage("YDT dili yalnızca dil puan türünde seçilir."));
 
-        RuleFor(c => c.TargetExamYear).Must((_, year) =>
+        RuleFor(c => c.TargetExamYear).NotNull().Must((_, year) =>
             {
                 var next = ExamCalendar.NextExamYear(clock.UtcNow);
                 return year >= next && year <= next + ExamCalendar.MaxYearsAhead;
@@ -57,11 +58,11 @@ internal sealed class SaveStudyProfileHandler(
         {
             profile = StudyProfile.Create(
                 command.UserId,
-                command.Grade,
-                command.PrimaryScoreType,
+                command.Grade!.Value,
+                command.PrimaryScoreType!.Value,
                 command.SecondaryScoreType,
                 command.YdtLanguage,
-                command.TargetExamYear,
+                command.TargetExamYear!.Value,
                 command.WeeklyQuestionGoal,
                 now);
             profiles.Add(profile);
@@ -69,11 +70,11 @@ internal sealed class SaveStudyProfileHandler(
         else
         {
             profile.Update(
-                command.Grade,
-                command.PrimaryScoreType,
+                command.Grade!.Value,
+                command.PrimaryScoreType!.Value,
                 command.SecondaryScoreType,
                 command.YdtLanguage,
-                command.TargetExamYear,
+                command.TargetExamYear!.Value,
                 command.WeeklyQuestionGoal,
                 now);
         }

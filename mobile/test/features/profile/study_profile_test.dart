@@ -9,13 +9,12 @@ void main() {
     expect(ExamCalendar.nextExamYear(DateTime.utc(2027, 1, 15)), 2027);
   });
 
-  test('selectable years are the next five sittings', () {
+  test('selectable years are the next four sittings', () {
     expect(ExamCalendar.selectableYears(DateTime.utc(2026, 10, 28)), [
       2027,
       2028,
       2029,
       2030,
-      2031,
     ]);
   });
 

@@ -97,4 +97,42 @@ void main() {
     expect(find.text('Merhaba Ada'), findsOneWidget);
     expect(find.text('Türkçe'), findsOneWidget);
   });
+
+  testWidgets('search opens the sections that hold matching topics', (
+    tester,
+  ) async {
+    await pumpApp(tester, MemorySessionStore(refreshToken: 'refresh-old'));
+    expect(find.text('Türkçe konu 1'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), 'türkçe konu');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Türkçe konu 1'), findsOneWidget);
+  });
+
+  testWidgets('signing in again with a profile skips onboarding', (
+    tester,
+  ) async {
+    await pumpApp(tester, MemorySessionStore(refreshToken: 'refresh-old'));
+    await tester.tap(find.byIcon(Icons.account_circle_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Çıkış yap'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'E-posta'),
+      'ada@example.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Şifre'),
+      'dogruSifre123',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Giriş yap'));
+    await tester.pump();
+    expect(find.text('Hoş geldin'), findsNothing);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hoş geldin'), findsNothing);
+    expect(find.text('Merhaba Ada'), findsOneWidget);
+  });
 }

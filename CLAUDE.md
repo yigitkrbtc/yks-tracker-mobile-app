@@ -10,7 +10,7 @@ YKS (TYT/AYT) konu testi ve deneme takibi + açıklanabilir analiz. Gereksinim v
 | `mobile/` | Flutter uygulaması |
 | `admin/` | React + TypeScript admin paneli |
 | `contracts/openapi/v1.json` | Koddan üretilen API sözleşmesi (commit'lenir) |
-| `data/seed/` | ÖSYM 2019–2026 konu taksonomisi, ağırlıkları, sınav yapısı (Curriculum'a derlenir, migrate sonrası yüklenir) |
+| `data/seed/` | ÖSYM 2019–2026 konu taksonomisi, ağırlıkları, sınav yapısı (Curriculum'a derlenir, API açılışında yüklenir) |
 | `docs/adr/` | Mimari karar kayıtları |
 
 ## Backend kuralları
