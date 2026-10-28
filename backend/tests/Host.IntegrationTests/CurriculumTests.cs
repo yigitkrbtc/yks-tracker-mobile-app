@@ -1,0 +1,97 @@
+using System.Net;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Nirengi.Modules.Curriculum.Domain.Topics;
+using Nirengi.Modules.Curriculum.Infrastructure;
+using Nirengi.Modules.Curriculum.Infrastructure.Seed;
+using Nirengi.Modules.Tracking.Domain.Profiles;
+using Shouldly;
+
+namespace Nirengi.Host.IntegrationTests;
+
+[Trait("Category", "Integration")]
+[Collection(ApiTestGroup.Name)]
+public sealed class CurriculumTests(NirengiApiFactory factory)
+{
+    private readonly AuthApi _api = new(factory);
+
+    [Fact]
+    public async Task Curriculum_requires_sign_in()
+    {
+        var response = await _api.Client.GetAsync("/v1/curriculum", TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Seeded_curriculum_is_served_whole_and_revalidated_by_etag()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+
+        var response = await _api.Send(HttpMethod.Get, "/v1/curriculum", tokens.AccessToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var etag = response.Headers.ETag.ShouldNotBeNull().ToString();
+        var curriculum = await AuthApi.Read<Curriculum>(response);
+        etag.ShouldBe($"\"{curriculum.Version}\"");
+        curriculum.ExamYear.ShouldBe(2027);
+        curriculum.Subjects.Count.ShouldBe(20);
+        curriculum.Subjects.Sum(s => s.Topics.Count).ShouldBe(370);
+        curriculum.ScoreTypes.Single(s => s.Code == "SAY").TestCodes.ShouldContain("AYT-FEN");
+        var integral = curriculum.Subjects.Single(s => s.Code == "AYT.AMAT").Topics.Single(t => t.Code == "AYT.AMAT.26");
+        integral.Id.ShouldBe(TopicIdentity.For("AYT.AMAT.26"));
+        integral.Tier.ShouldBe("High");
+
+        var revalidated = await _api.Send(HttpMethod.Get, "/v1/curriculum", tokens.AccessToken, ifNoneMatch: etag);
+        revalidated.StatusCode.ShouldBe(HttpStatusCode.NotModified);
+    }
+
+    [Fact]
+    public async Task Tracking_score_types_match_curriculum_codes()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+
+        var curriculum = await AuthApi.Read<Curriculum>(await _api.Send(HttpMethod.Get, "/v1/curriculum", tokens.AccessToken));
+
+        curriculum.ScoreTypes.Select(s => s.Code).ShouldBe(Enum.GetNames<ScoreType>(), ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task Reseeding_is_idempotent_and_retires_dropped_topics()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var scope = factory.Services.CreateAsyncScope();
+        var seeder = scope.ServiceProvider.GetRequiredService<CurriculumSeeder>();
+        var db = scope.ServiceProvider.GetRequiredService<CurriculumDbContext>();
+
+        (await seeder.Seed(ct)).ShouldBeFalse();
+
+        var shipped = CurriculumSeed.LoadEmbedded();
+        var dropped = shipped.Topics[0];
+        var trimmed = shipped with { Topics = [.. shipped.Topics.Skip(1)], Hash = new string('0', 64) };
+        try
+        {
+            (await seeder.Apply(trimmed, ct)).ShouldBeTrue();
+            var retired = await db.Topics.AsNoTracking().SingleAsync(t => t.Code == dropped.Code, ct);
+            retired.Status.ShouldBe(TopicStatus.Retired);
+            (await db.TopicWeights.AnyAsync(w => w.TopicId == retired.Id, ct)).ShouldBeFalse();
+        }
+        finally
+        {
+            (await seeder.Seed(ct)).ShouldBeTrue();
+        }
+
+        var restored = await db.Topics.AsNoTracking().SingleAsync(t => t.Code == dropped.Code, ct);
+        restored.Status.ShouldBe(TopicStatus.Active);
+        (await db.Topics.CountAsync(ct)).ShouldBe(370);
+        (await db.TopicWeights.CountAsync(ct)).ShouldBe(370);
+    }
+
+    private sealed record Curriculum(string Version, int ExamYear, List<ScoreTypeItem> ScoreTypes, List<SubjectItem> Subjects);
+
+    private sealed record ScoreTypeItem(string Code, List<string> TestCodes);
+
+    private sealed record SubjectItem(string Code, List<TopicItem> Topics);
+
+    private sealed record TopicItem(Guid Id, string Code, string Tier);
+}

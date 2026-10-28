@@ -9,4 +9,14 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <!-- Single source of truth is data/seed at the repo root; the files are compiled in, not copied. -->
+  <ItemGroup>
+    <EmbeddedResource Include="../../../../../data/seed/exam_structure.json" LogicalName="Seed.exam_structure.json" />
+    <EmbeddedResource Include="../../../../../data/seed/konu_taksonomisi.csv" LogicalName="Seed.konu_taksonomisi.csv" />
+    <EmbeddedResource Include="../../../../../data/seed/konu_agirliklari.csv" LogicalName="Seed.konu_agirliklari.csv" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Nirengi.Curriculum.UnitTests" />
+    <InternalsVisibleTo Include="Nirengi.Host.IntegrationTests" />
+  </ItemGroup>
 </Project>
