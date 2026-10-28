@@ -529,6 +529,147 @@
           }
         }
       }
+    },
+    "/v1/curriculum": {
+      "get": {
+        "tags": [
+          "Curriculum"
+        ],
+        "operationId": "GetCurriculum",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurriculumResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/profile": {
+      "get": {
+        "tags": [
+          "Tracking"
+        ],
+        "operationId": "GetStudyProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudyProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Tracking"
+        ],
+        "operationId": "SaveStudyProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveStudyProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudyProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -609,6 +750,47 @@
           }
         }
       },
+      "CurriculumResponse": {
+        "required": [
+          "version",
+          "examYear",
+          "scoreTypes",
+          "tests",
+          "subjects"
+        ],
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "examYear": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "scoreTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScoreTypeDto"
+            }
+          },
+          "tests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExamTestDto"
+            }
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubjectDto"
+            }
+          }
+        }
+      },
       "DeleteAccountRequest": {
         "required": [
           "password"
@@ -632,6 +814,40 @@
           }
         }
       },
+      "ExamSession": {
+        "enum": [
+          "TYT",
+          "AYT"
+        ]
+      },
+      "ExamTestDto": {
+        "required": [
+          "code",
+          "session",
+          "name",
+          "questionCount"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "session": {
+            "$ref": "#/components/schemas/ExamSession"
+          },
+          "name": {
+            "type": "string"
+          },
+          "questionCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "ForgotPasswordCommand": {
         "required": [
           "email"
@@ -642,6 +858,15 @@
             "type": "string"
           }
         }
+      },
+      "Grade": {
+        "enum": [
+          "Ninth",
+          "Tenth",
+          "Eleventh",
+          "Twelfth",
+          "Graduate"
+        ]
       },
       "HttpValidationProblemDetails": {
         "type": "object",
@@ -880,6 +1105,92 @@
           }
         }
       },
+      "SaveStudyProfileRequest": {
+        "required": [
+          "grade",
+          "primaryScoreType",
+          "secondaryScoreType",
+          "ydtLanguage",
+          "targetExamYear",
+          "weeklyQuestionGoal"
+        ],
+        "type": "object",
+        "properties": {
+          "grade": {
+            "$ref": "#/components/schemas/Grade"
+          },
+          "primaryScoreType": {
+            "$ref": "#/components/schemas/ScoreType"
+          },
+          "secondaryScoreType": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ScoreType"
+              }
+            ]
+          },
+          "ydtLanguage": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/YdtLanguage"
+              }
+            ]
+          },
+          "targetExamYear": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "weeklyQuestionGoal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ScoreType": {
+        "enum": [
+          "SAY",
+          "EA",
+          "SOZ",
+          "DIL"
+        ]
+      },
+      "ScoreTypeDto": {
+        "required": [
+          "code",
+          "name",
+          "testCodes"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "testCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "SignInResult": {
         "required": [
           "tokens",
@@ -906,6 +1217,158 @@
                 "$ref": "#/components/schemas/MfaChallenge"
               }
             ]
+          }
+        }
+      },
+      "StudyProfileResponse": {
+        "required": [
+          "grade",
+          "primaryScoreType",
+          "secondaryScoreType",
+          "ydtLanguage",
+          "targetExamYear",
+          "weeklyQuestionGoal",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "grade": {
+            "$ref": "#/components/schemas/Grade"
+          },
+          "primaryScoreType": {
+            "$ref": "#/components/schemas/ScoreType"
+          },
+          "secondaryScoreType": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ScoreType"
+              }
+            ]
+          },
+          "ydtLanguage": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/YdtLanguage"
+              }
+            ]
+          },
+          "targetExamYear": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "weeklyQuestionGoal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SubjectDto": {
+        "required": [
+          "code",
+          "session",
+          "name",
+          "testCodes",
+          "topics"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "session": {
+            "$ref": "#/components/schemas/ExamSession"
+          },
+          "name": {
+            "type": "string"
+          },
+          "testCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicDto"
+            }
+          }
+        }
+      },
+      "TopicDto": {
+        "required": [
+          "id",
+          "code",
+          "name",
+          "subtopics",
+          "gradeMin",
+          "gradeMax",
+          "expectedQuestions",
+          "tier"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "subtopics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gradeMin": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "gradeMax": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "expectedQuestions": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "tier": {
+            "$ref": "#/components/schemas/WeightTier"
           }
         }
       },
@@ -1007,12 +1470,36 @@
             "type": "string"
           }
         }
+      },
+      "WeightTier": {
+        "enum": [
+          "Rare",
+          "Low",
+          "Medium",
+          "High"
+        ]
+      },
+      "YdtLanguage": {
+        "enum": [
+          "English",
+          "German",
+          "French",
+          "Russian",
+          "Arabic",
+          null
+        ]
       }
     }
   },
   "tags": [
     {
       "name": "Identity"
+    },
+    {
+      "name": "Curriculum"
+    },
+    {
+      "name": "Tracking"
     }
   ]
 }
