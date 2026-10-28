@@ -1,0 +1,6 @@
+# Only backend/ and data/seed/ are needed by the API image.
+**
+!backend/
+!data/seed/
+**/bin/
+**/obj/

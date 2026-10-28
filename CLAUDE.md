@@ -10,7 +10,7 @@ YKS (TYT/AYT) konu testi ve deneme takibi + açıklanabilir analiz. Gereksinim v
 | `mobile/` | Flutter uygulaması |
 | `admin/` | React + TypeScript admin paneli |
 | `contracts/openapi/v1.json` | Koddan üretilen API sözleşmesi (commit'lenir) |
-| `data/seed/` | ÖSYM 2019–2026 konu taksonomisi ve ağırlıkları |
+| `data/seed/` | ÖSYM 2019–2026 konu taksonomisi, ağırlıkları, sınav yapısı (Curriculum'a derlenir, migrate sonrası yüklenir) |
 | `docs/adr/` | Mimari karar kayıtları |
 
 ## Backend kuralları
@@ -32,6 +32,8 @@ dotnet build Nirengi.slnx                     # contracts/openapi/v1.json da yen
 dotnet test --project tests/ArchitectureTests
 dotnet test --project tests/BuildingBlocks.UnitTests
 dotnet test --project tests/Identity.UnitTests
+dotnet test --project tests/Curriculum.UnitTests  # data/seed doğrulaması dahil
+dotnet test --project tests/Tracking.UnitTests
 dotnet test --project tests/Host.IntegrationTests   # Docker gerekir
 dotnet ef migrations add <Ad> -p src/Modules/<M>/<M>.Infrastructure -s src/Host -c <M>DbContext -o Persistence/Migrations
 

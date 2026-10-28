@@ -32,6 +32,8 @@ jobs:
           dotnet test --project tests/ArchitectureTests --no-build -c Release
           dotnet test --project tests/BuildingBlocks.UnitTests --no-build -c Release
           dotnet test --project tests/Identity.UnitTests --no-build -c Release
+          dotnet test --project tests/Curriculum.UnitTests --no-build -c Release
+          dotnet test --project tests/Tracking.UnitTests --no-build -c Release
       - name: Integration tests (Testcontainers)
         run: dotnet test --project tests/Host.IntegrationTests --no-build -c Release
 
@@ -40,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Build API image
-        run: docker build -f backend/src/Host/Dockerfile -t nirengi-api:ci backend
+        run: docker build -f backend/src/Host/Dockerfile -t nirengi-api:ci .
 
   mobile:
     runs-on: ubuntu-latest
