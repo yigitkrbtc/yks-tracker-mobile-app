@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Nirengi.BuildingBlocks.Application.Events;
+using Npgsql;
 using Nirengi.Modules.Identity.Application.Abstractions;
 using Nirengi.Modules.Identity.Domain.Codes;
 using Nirengi.Modules.Identity.Domain.Consents;
@@ -75,4 +76,18 @@ internal sealed class IdentityUnitOfWork(IdentityDbContext db) : IIdentityUnitOf
     public void Enqueue(IIntegrationEvent integrationEvent) => db.Enqueue(integrationEvent);
 
     public Task SaveChanges(CancellationToken cancellationToken) => db.SaveChangesAsync(cancellationToken);
+
+    public async Task<bool> TrySaveChanges(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateException ex) when (ex is DbUpdateConcurrencyException || ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            db.ChangeTracker.Clear();
+            return false;
+        }
+    }
 }

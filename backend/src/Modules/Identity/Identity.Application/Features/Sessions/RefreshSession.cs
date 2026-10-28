@@ -38,7 +38,7 @@ internal sealed class RefreshSessionHandler(
         if (token.RevokeReason == RevokeReason.Rotated)
         {
             await signIn.RevokeFamily(token.FamilyId, RevokeReason.ReuseDetected, now, cancellationToken);
-            await unitOfWork.SaveChanges(cancellationToken);
+            await unitOfWork.TrySaveChanges(cancellationToken);
             return IdentityErrors.InvalidRefreshToken;
         }
 
@@ -51,12 +51,13 @@ internal sealed class RefreshSessionHandler(
         if (user is null || user.Status != UserStatus.Active)
         {
             await signIn.RevokeFamily(token.FamilyId, RevokeReason.UserInactive, now, cancellationToken);
-            await unitOfWork.SaveChanges(cancellationToken);
+            await unitOfWork.TrySaveChanges(cancellationToken);
             return IdentityErrors.InvalidRefreshToken;
         }
 
         var tokens = signIn.Rotate(user, token, now);
-        await unitOfWork.SaveChanges(cancellationToken);
-        return tokens;
+
+        // Another request rotated or revoked this token in the meantime: it is spent for this caller.
+        return await unitOfWork.TrySaveChanges(cancellationToken) ? tokens : IdentityErrors.InvalidRefreshToken;
     }
 }

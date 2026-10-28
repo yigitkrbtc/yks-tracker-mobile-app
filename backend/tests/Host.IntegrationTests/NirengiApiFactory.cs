@@ -37,6 +37,7 @@ public sealed class NirengiApiFactory : WebApplicationFactory<Program>, IAsyncLi
         builder.UseSetting("Outbox:PollInterval", "00:00:00.200");
         builder.UseSetting("Jwt:SigningKey", TestSigningKey);
         builder.UseSetting("RateLimiting:Auth:PermitLimit", "10000");
+        builder.UseSetting("RateLimiting:Session:PermitLimit", "10000");
         builder.UseSetting("Identity:Security:HashKey", Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));
         builder.UseSetting("Identity:AdminEmails:0", AdminEmail);
         builder.UseSetting("Smtp:Host", "localhost");

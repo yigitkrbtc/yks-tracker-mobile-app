@@ -69,6 +69,28 @@ public sealed class AccountLifecycleTests(NirengiApiFactory factory)
     }
 
     [Fact]
+    public async Task Deletion_password_guesses_count_toward_lockout()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        for (var i = 0; i < 10; i++)
+        {
+            await AuthApi.ShouldBeProblem(await RequestDeletion(tokens.AccessToken, "yanlisSifre99"), HttpStatusCode.BadRequest, "identity.invalid_password");
+        }
+
+        await AuthApi.ShouldBeProblem(await RequestDeletion(tokens.AccessToken, AuthApi.Password), HttpStatusCode.BadRequest, "identity.invalid_password");
+    }
+
+    [Fact]
+    public async Task Access_token_issued_before_deletion_no_longer_reads_the_profile()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+
+        (await RequestDeletion(tokens.AccessToken, AuthApi.Password)).StatusCode.ShouldBe(HttpStatusCode.Accepted);
+
+        (await _api.GetMe(tokens.AccessToken)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task Purge_removes_expired_accounts_and_announces_them()
     {
         var ct = TestContext.Current.CancellationToken;

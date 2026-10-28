@@ -56,4 +56,10 @@ public interface IConsentRepository
 public interface IIdentityUnitOfWork : IEventOutbox
 {
     Task SaveChanges(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// False, with nothing written, when a concurrent request changed the same rows (row version) or took the
+    /// same unique key first. For handlers where losing such a race is an expected outcome, not a bug.
+    /// </summary>
+    Task<bool> TrySaveChanges(CancellationToken cancellationToken);
 }

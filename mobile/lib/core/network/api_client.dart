@@ -20,6 +20,9 @@ final publicApiProvider = Provider<Dio>((ref) => _dio());
 /// Client for everything behind sign-in; attaches and refreshes the access token.
 final apiClientProvider = Provider<Dio>((ref) {
   final dio = _dio();
-  dio.interceptors.add(AuthInterceptor(ref.watch(sessionTokensProvider), dio));
+  final retryClient = _dio()..httpClientAdapter = dio.httpClientAdapter;
+  dio.interceptors.add(
+    AuthInterceptor(ref.watch(sessionTokensProvider), retryClient),
+  );
   return dio;
 });

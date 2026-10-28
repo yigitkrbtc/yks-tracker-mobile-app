@@ -24,6 +24,17 @@ public sealed class UserTests
     }
 
     [Fact]
+    public void Repeated_sign_up_restarts_the_unverified_retention()
+    {
+        var user = NewUser();
+
+        user.ReplacePendingRegistration("Ada", "Yılmaz", "hash2", 2008, marketingConsent: false, Now.AddDays(6)).IsSuccess.ShouldBeTrue();
+
+        user.CreatedAt.ShouldBe(Now.AddDays(6));
+        user.PasswordHash.ShouldBe("hash2");
+    }
+
+    [Fact]
     public void Locks_out_after_threshold_failures()
     {
         var user = NewUser();

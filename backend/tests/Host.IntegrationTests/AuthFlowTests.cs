@@ -157,6 +157,37 @@ public sealed class AuthFlowTests(NirengiApiFactory factory)
     }
 
     [Fact]
+    public async Task Concurrent_refreshes_of_one_token_let_at_most_one_through()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 5)
+            .Select(_ => _api.Post("/v1/auth/refresh", new { refreshToken = tokens.RefreshToken })));
+
+        responses.ShouldAllBe(r => r.StatusCode == HttpStatusCode.OK || r.StatusCode == HttpStatusCode.Unauthorized);
+        responses.Count(r => r.StatusCode == HttpStatusCode.OK).ShouldBeLessThanOrEqualTo(1);
+    }
+
+    [Fact]
+    public async Task Concurrent_sign_ups_for_one_address_all_get_202()
+    {
+        var email = AuthApi.NewEmail();
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 5)
+            .Select(_ => _api.Post("/v1/auth/register", AuthApi.Registration(email))));
+
+        responses.ShouldAllBe(r => r.StatusCode == HttpStatusCode.Accepted);
+    }
+
+    [Fact]
+    public async Task An_address_the_mailer_cannot_parse_still_gets_202()
+    {
+        var response = await _api.Post("/v1/auth/register", AuthApi.Registration($"a\"{Guid.NewGuid():N}@example.com"));
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Accepted);
+    }
+
+    [Fact]
     public async Task Logout_ends_the_session()
     {
         var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());

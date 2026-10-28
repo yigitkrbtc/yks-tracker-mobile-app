@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Nirengi.BuildingBlocks.Api.Results;
+using Nirengi.BuildingBlocks.Api.Security;
 using Nirengi.BuildingBlocks.Application.Abstractions;
 using Nirengi.BuildingBlocks.Application.Messaging;
 using Nirengi.Modules.Identity.Application.Features.Deletion;
@@ -27,6 +28,7 @@ internal static class MeEndpoints
                 (await dispatcher.Send(new RequestAccountDeletionCommand(user.UserId, request.Password), ct))
                     .Match(scheduled => Results.Accepted(value: scheduled)))
             .WithName("RequestAccountDeletion")
+            .RequireRateLimiting(RateLimitPolicies.Auth)
             .Produces<DeletionScheduled>(StatusCodes.Status202Accepted)
             .ProducesValidationProblem();
     }

@@ -1,7 +1,9 @@
+using System.Net;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -18,13 +20,23 @@ public static class Policies
 
 public static class RateLimitPolicies
 {
-    /// <summary>Anonymous credential and code endpoints, partitioned by client IP.</summary>
+    /// <summary>Credential and code endpoints (password guessing), partitioned by client IP.</summary>
     public const string Auth = "auth";
+
+    /// <summary>Token refresh and logout: routine traffic, so its own looser budget, partitioned by client IP.</summary>
+    public const string Session = "session";
 }
 
 public sealed class AuthRateLimitOptions
 {
     public int PermitLimit { get; set; } = 10;
+
+    public TimeSpan Window { get; set; } = TimeSpan.FromMinutes(1);
+}
+
+public sealed class SessionRateLimitOptions
+{
+    public int PermitLimit { get; set; } = 60;
 
     public TimeSpan Window { get; set; } = TimeSpan.FromMinutes(1);
 }
@@ -63,16 +75,38 @@ public static class SecurityRegistration
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, HttpCurrentUser>();
 
-        var limits = configuration.GetSection("RateLimiting:Auth").Get<AuthRateLimitOptions>() ?? new AuthRateLimitOptions();
+        // Rate limits partition by client IP, so behind a reverse proxy its X-Forwarded-For must be honoured.
+        // Only listed proxies (plus loopback) are trusted; anyone else could spoof the header.
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            foreach (var proxy in configuration.GetSection("ForwardedHeaders:KnownProxies").Get<string[]>() ?? [])
+            {
+                options.KnownProxies.Add(IPAddress.Parse(proxy));
+            }
+        });
+
+        var auth = configuration.GetSection("RateLimiting:Auth").Get<AuthRateLimitOptions>() ?? new AuthRateLimitOptions();
+        var session = configuration.GetSection("RateLimiting:Session").Get<SessionRateLimitOptions>() ?? new SessionRateLimitOptions();
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.AddPolicy(RateLimitPolicies.Auth, context => RateLimitPartition.GetFixedWindowLimiter(
-                context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-                _ => new FixedWindowRateLimiterOptions { PermitLimit = limits.PermitLimit, Window = limits.Window }));
+                ClientIp(context),
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = auth.PermitLimit, Window = auth.Window }));
+            options.AddPolicy(RateLimitPolicies.Session, context => RateLimitPartition.GetFixedWindowLimiter(
+                ClientIp(context),
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = session.PermitLimit, Window = session.Window }));
         });
 
         return services;
+    }
+
+    /// <summary>Call first in the pipeline, so logging and rate limiting see the real client IP.</summary>
+    public static WebApplication UseNirengiForwardedHeaders(this WebApplication app)
+    {
+        app.UseForwardedHeaders();
+        return app;
     }
 
     public static WebApplication UseNirengiSecurity(this WebApplication app)
@@ -82,6 +116,8 @@ public static class SecurityRegistration
         app.UseRateLimiter();
         return app;
     }
+
+    private static string ClientIp(HttpContext context) => context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
     private static int SigningKeyLength(string key)
     {
