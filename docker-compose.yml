@@ -26,8 +26,8 @@ services:
 
   api:
     build:
-      context: ./backend
-      dockerfile: src/Host/Dockerfile
+      context: .
+      dockerfile: backend/src/Host/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Database: Host=postgres;Port=5432;Database=nirengi;Username=nirengi;Password=nirengi

@@ -3,22 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/config/app_config.dart';
-import '../../../core/design/design.dart';
-import '../../../core/design/gallery/design_gallery_page.dart';
-import '../../auth/application/session_controller.dart';
+import '../core/config/app_config.dart';
+import '../core/design/design.dart';
+import '../core/design/gallery/design_gallery_page.dart';
+import '../features/auth/application/session_controller.dart';
+import '../features/curriculum/presentation/topic_list_view.dart';
+import '../features/profile/presentation/profile_page.dart';
 
-/// Shell with the three MVP areas. Each tab is filled by its own feature in later sprints.
-class HomePage extends ConsumerStatefulWidget {
-  const HomePage({super.key});
+/// Shell with the three MVP areas. It lives in `app/` because it composes several features' screens.
+class HomeShell extends ConsumerStatefulWidget {
+  const HomeShell({super.key});
 
   @override
-  ConsumerState<HomePage> createState() => _HomePageState();
+  ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
-enum _AccountAction { logout, deleteAccount }
+enum _AccountAction { studyProfile, logout, deleteAccount }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _HomeShellState extends ConsumerState<HomeShell> {
   var _index = 0;
 
   static const _tabs = [
@@ -29,10 +31,11 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   void _onAccountAction(_AccountAction action) {
     switch (action) {
+      case _AccountAction.studyProfile:
+        context.push(ProfilePage.editPath);
       case _AccountAction.logout:
         ref.read(sessionControllerProvider.notifier).logout();
       case _AccountAction.deleteAccount:
-        // Route path, not an import: features do not reach into each other's presentation.
         context.push('/account/delete');
     }
   }
@@ -47,7 +50,11 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppConfig.appName),
+        title: Text(
+          _index == 0 && firstName != null
+              ? 'Merhaba $firstName'
+              : AppConfig.appName,
+        ),
         actions: [
           if (kDebugMode)
             IconButton(
@@ -61,6 +68,10 @@ class _HomePageState extends ConsumerState<HomePage> {
             onSelected: _onAccountAction,
             itemBuilder: (context) => const [
               PopupMenuItem(
+                value: _AccountAction.studyProfile,
+                child: Text('Çalışma profilim'),
+              ),
+              PopupMenuItem(
                 value: _AccountAction.logout,
                 child: Text('Çıkış yap'),
               ),
@@ -72,13 +83,15 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: NCard(
-          title: firstName == null ? tab.label : 'Merhaba $firstName',
-          description: '${tab.label} yakında',
-        ),
-      ),
+      body: _index == 0
+          ? const TopicListView()
+          : Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: NCard(
+                title: tab.label,
+                description: '${tab.label} yakında',
+              ),
+            ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),

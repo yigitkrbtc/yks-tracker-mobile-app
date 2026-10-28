@@ -1,8 +1,9 @@
-# Build context: backend/
+# Build context: repo root (the Curriculum module compiles in data/seed).
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-WORKDIR /src
-COPY .editorconfig global.json Directory.Build.props Directory.Packages.props Nirengi.slnx ./
-COPY src/ src/
+WORKDIR /repo/backend
+COPY backend/.editorconfig backend/global.json backend/Directory.Build.props backend/Directory.Packages.props backend/Nirengi.slnx ./
+COPY backend/src/ src/
+COPY data/seed/ /repo/data/seed/
 RUN dotnet publish src/Host/Host.csproj -c Release -o /app /p:OpenApiGenerateDocumentsOnBuild=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime

@@ -2,6 +2,7 @@
   <ItemGroup>
     <ProjectReference Include="../Tracking.Domain/Tracking.Domain.csproj" />
     <ProjectReference Include="../Tracking.Contracts/Tracking.Contracts.csproj" />
+    <ProjectReference Include="../../Identity/Identity.Contracts/Identity.Contracts.csproj" />
     <ProjectReference Include="../../../BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj" />
   </ItemGroup>
 </Project>

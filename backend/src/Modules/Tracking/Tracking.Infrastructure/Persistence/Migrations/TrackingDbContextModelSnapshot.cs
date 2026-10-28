@@ -66,6 +66,62 @@ namespace Nirengi.Modules.Tracking.Infrastructure.Persistence.Migrations
 
                     b.ToTable("outbox_messages", "tracking");
                 });
+
+            modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.Profiles.StudyProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Grade")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("grade");
+
+                    b.Property<string>("PrimaryScoreType")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("primary_score_type");
+
+                    b.Property<string>("SecondaryScoreType")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("secondary_score_type");
+
+                    b.Property<int>("TargetExamYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("target_exam_year");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<int?>("WeeklyQuestionGoal")
+                        .HasColumnType("integer")
+                        .HasColumnName("weekly_question_goal");
+
+                    b.Property<string>("YdtLanguage")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("ydt_language");
+
+                    b.HasKey("Id")
+                        .HasName("pk_study_profiles");
+
+                    b.ToTable("study_profiles", "tracking");
+                });
 #pragma warning restore 612, 618
         }
     }

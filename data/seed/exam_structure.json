@@ -1,0 +1,41 @@
+{
+  "examYear": 2027,
+  "tests": [
+    { "code": "TYT-TUR", "session": "TYT", "name": "Türkçe", "questionCount": 40 },
+    { "code": "TYT-SOS", "session": "TYT", "name": "Sosyal Bilimler", "questionCount": 20 },
+    { "code": "TYT-MAT", "session": "TYT", "name": "Temel Matematik", "questionCount": 40 },
+    { "code": "TYT-FEN", "session": "TYT", "name": "Fen Bilimleri", "questionCount": 20 },
+    { "code": "AYT-TDE-SB1", "session": "AYT", "name": "Türk Dili ve Edebiyatı–Sosyal Bilimler-1", "questionCount": 40 },
+    { "code": "AYT-SB2", "session": "AYT", "name": "Sosyal Bilimler-2", "questionCount": 40 },
+    { "code": "AYT-MAT", "session": "AYT", "name": "Matematik", "questionCount": 40 },
+    { "code": "AYT-FEN", "session": "AYT", "name": "Fen Bilimleri", "questionCount": 40 }
+  ],
+  "units": [
+    { "code": "TYT.TUR", "name": "Türkçe", "tests": ["TYT-TUR"] },
+    { "code": "TYT.TMAT", "name": "Temel Matematik", "tests": ["TYT-MAT"] },
+    { "code": "TYT.GEO", "name": "Geometri", "tests": ["TYT-MAT"] },
+    { "code": "TYT.TAR", "name": "Tarih", "tests": ["TYT-SOS"] },
+    { "code": "TYT.COG", "name": "Coğrafya", "tests": ["TYT-SOS"] },
+    { "code": "TYT.FEL", "name": "Felsefe", "tests": ["TYT-SOS"] },
+    { "code": "TYT.DKAB", "name": "Din Kültürü ve Ahlak Bilgisi", "tests": ["TYT-SOS"] },
+    { "code": "TYT.FIZ", "name": "Fizik", "tests": ["TYT-FEN"] },
+    { "code": "TYT.KIM", "name": "Kimya", "tests": ["TYT-FEN"] },
+    { "code": "TYT.BIY", "name": "Biyoloji", "tests": ["TYT-FEN"] },
+    { "code": "AYT.AMAT", "name": "Matematik", "tests": ["AYT-MAT"] },
+    { "code": "AYT.GEO", "name": "Geometri", "tests": ["AYT-MAT"] },
+    { "code": "AYT.FIZ", "name": "Fizik", "tests": ["AYT-FEN"] },
+    { "code": "AYT.KIM", "name": "Kimya", "tests": ["AYT-FEN"] },
+    { "code": "AYT.BIY", "name": "Biyoloji", "tests": ["AYT-FEN"] },
+    { "code": "AYT.EDB", "name": "Türk Dili ve Edebiyatı", "tests": ["AYT-TDE-SB1"] },
+    { "code": "AYT.TAR", "name": "Tarih", "tests": ["AYT-TDE-SB1", "AYT-SB2"] },
+    { "code": "AYT.COG", "name": "Coğrafya", "tests": ["AYT-TDE-SB1", "AYT-SB2"] },
+    { "code": "AYT.FEL", "name": "Felsefe Grubu", "tests": ["AYT-SB2"] },
+    { "code": "AYT.DKAB", "name": "Din Kültürü ve Ahlak Bilgisi", "tests": ["AYT-SB2"] }
+  ],
+  "scoreTypes": [
+    { "code": "SAY", "name": "Sayısal", "tests": ["TYT-TUR", "TYT-SOS", "TYT-MAT", "TYT-FEN", "AYT-MAT", "AYT-FEN"] },
+    { "code": "EA", "name": "Eşit Ağırlık", "tests": ["TYT-TUR", "TYT-SOS", "TYT-MAT", "TYT-FEN", "AYT-TDE-SB1", "AYT-MAT"] },
+    { "code": "SOZ", "name": "Sözel", "tests": ["TYT-TUR", "TYT-SOS", "TYT-MAT", "TYT-FEN", "AYT-TDE-SB1", "AYT-SB2"] },
+    { "code": "DIL", "name": "Dil", "tests": ["TYT-TUR", "TYT-SOS", "TYT-MAT", "TYT-FEN"] }
+  ]
+}

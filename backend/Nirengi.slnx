@@ -61,7 +61,9 @@
   <Folder Name="/tests/">
     <Project Path="tests/ArchitectureTests/ArchitectureTests.csproj" />
     <Project Path="tests/BuildingBlocks.UnitTests/BuildingBlocks.UnitTests.csproj" />
+    <Project Path="tests/Curriculum.UnitTests/Curriculum.UnitTests.csproj" />
     <Project Path="tests/Host.IntegrationTests/Host.IntegrationTests.csproj" />
     <Project Path="tests/Identity.UnitTests/Identity.UnitTests.csproj" />
+    <Project Path="tests/Tracking.UnitTests/Tracking.UnitTests.csproj" />
   </Folder>
 </Solution>

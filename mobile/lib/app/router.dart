@@ -5,18 +5,21 @@ import 'package:go_router/go_router.dart';
 import '../core/design/gallery/design_gallery_page.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/auth/presentation/auth_routes.dart';
-import '../features/home/presentation/home_page.dart';
+import '../features/profile/application/profile_providers.dart';
+import '../features/profile/presentation/profile_page.dart';
+import 'home_shell.dart';
 
 const _splash = '/splash';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final sessionChanges = ValueNotifier<int>(0);
-  ref.listen(sessionControllerProvider, (_, _) => sessionChanges.value++);
-  ref.onDispose(sessionChanges.dispose);
+  final changes = ValueNotifier<int>(0);
+  ref.listen(sessionControllerProvider, (_, _) => changes.value++);
+  ref.listen(studyProfileProvider, (_, _) => changes.value++);
+  ref.onDispose(changes.dispose);
 
   final router = GoRouter(
     initialLocation: _splash,
-    refreshListenable: sessionChanges,
+    refreshListenable: changes,
     redirect: (context, state) {
       final session = ref.read(sessionControllerProvider);
       final location = state.matchedLocation;
@@ -28,13 +31,37 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!signedIn) {
         return AuthRoutes.isPublic(location) ? null : AuthRoutes.login;
       }
-      return location == _splash || AuthRoutes.isSignedOutOnly(location)
+
+      // Signed in: the study profile decides between onboarding and the app. If it cannot be loaded
+      // (offline), the app opens anyway and the topic list offers a retry.
+      // A reload (e.g. sign-in after sign-out) still carries the previous user's value; never decide on it.
+      final profile = ref.read(studyProfileProvider);
+      if (profile.isLoading) {
+        return location == _splash ? null : _splash;
+      }
+      final needsOnboarding = !profile.hasError && profile.value == null;
+      if (needsOnboarding) {
+        return location == ProfilePage.onboardingPath
+            ? null
+            : ProfilePage.onboardingPath;
+      }
+      return location == _splash ||
+              location == ProfilePage.onboardingPath ||
+              AuthRoutes.isSignedOutOnly(location)
           ? '/'
           : null;
     },
     routes: [
       GoRoute(path: _splash, builder: (context, state) => const _SplashPage()),
-      GoRoute(path: '/', builder: (context, state) => const HomePage()),
+      GoRoute(path: '/', builder: (context, state) => const HomeShell()),
+      GoRoute(
+        path: ProfilePage.onboardingPath,
+        builder: (context, state) => const ProfilePage(onboarding: true),
+      ),
+      GoRoute(
+        path: ProfilePage.editPath,
+        builder: (context, state) => const ProfilePage(),
+      ),
       ...AuthRoutes.routes,
       GoRoute(
         path: DesignGalleryPage.path,

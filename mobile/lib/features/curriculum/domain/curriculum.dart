@@ -1,0 +1,144 @@
+/// How often a topic is asked, from our tagging of past ÖSYM booklets (not an official figure).
+enum WeightTier {
+  rare('Rare'),
+  low('Low'),
+  medium('Medium'),
+  high('High');
+
+  const WeightTier(this.code);
+
+  final String code;
+
+  static WeightTier fromCode(String code) =>
+      values.firstWhere((t) => t.code == code);
+}
+
+enum ExamSession { tyt, ayt }
+
+class Topic {
+  const Topic({
+    required this.id,
+    required this.code,
+    required this.name,
+    required this.subtopics,
+    required this.gradeMin,
+    required this.gradeMax,
+    required this.expectedQuestions,
+    required this.tier,
+  });
+
+  final String id;
+  final String code;
+  final String name;
+  final List<String> subtopics;
+  final int gradeMin;
+  final int gradeMax;
+
+  /// Average questions per exam over 2022–2026.
+  final double expectedQuestions;
+  final WeightTier tier;
+
+  /// Not asked at all in the years the average covers.
+  bool get notAskedRecently => expectedQuestions == 0;
+
+  String get gradeLabel =>
+      gradeMin == gradeMax ? '$gradeMin. sınıf' : '$gradeMin–$gradeMax. sınıf';
+
+  factory Topic.fromJson(Map<String, dynamic> json) => Topic(
+    id: json['id'] as String,
+    code: json['code'] as String,
+    name: json['name'] as String,
+    subtopics: (json['subtopics'] as List<dynamic>).cast<String>(),
+    gradeMin: json['gradeMin'] as int,
+    gradeMax: json['gradeMax'] as int,
+    expectedQuestions: (json['expectedQuestions'] as num).toDouble(),
+    tier: WeightTier.fromCode(json['tier'] as String),
+  );
+}
+
+class Subject {
+  const Subject({
+    required this.code,
+    required this.session,
+    required this.name,
+    required this.testCodes,
+    required this.topics,
+  });
+
+  final String code;
+  final ExamSession session;
+  final String name;
+
+  /// Tests this subject is asked in; AYT history and geography are in two.
+  final List<String> testCodes;
+  final List<Topic> topics;
+
+  factory Subject.fromJson(Map<String, dynamic> json) => Subject(
+    code: json['code'] as String,
+    session: _session(json['session'] as String),
+    name: json['name'] as String,
+    testCodes: (json['testCodes'] as List<dynamic>).cast<String>(),
+    topics: [
+      for (final t in json['topics'] as List<dynamic>)
+        Topic.fromJson(t as Map<String, dynamic>),
+    ],
+  );
+}
+
+class ScoreTypeTests {
+  const ScoreTypeTests({required this.code, required this.testCodes});
+
+  final String code;
+  final List<String> testCodes;
+}
+
+/// The published curriculum. The server decides which tests each score type covers; the client only filters.
+class Curriculum {
+  const Curriculum({
+    required this.version,
+    required this.examYear,
+    required this.scoreTypes,
+    required this.subjects,
+  });
+
+  /// Content hash; sent back as the ETag to skip unchanged downloads.
+  final String version;
+  final int examYear;
+  final List<ScoreTypeTests> scoreTypes;
+  final List<Subject> subjects;
+
+  /// Subjects a student of the given score type codes studies, in curriculum order.
+  List<Subject> subjectsFor(Iterable<String> scoreTypeCodes) {
+    final codes = scoreTypeCodes.toSet();
+    final tests = {
+      for (final s in scoreTypes)
+        if (codes.contains(s.code)) ...s.testCodes,
+    };
+    return [
+      for (final subject in subjects)
+        if (subject.testCodes.any(tests.contains)) subject,
+    ];
+  }
+
+  factory Curriculum.fromJson(Map<String, dynamic> json) => Curriculum(
+    version: json['version'] as String,
+    examYear: json['examYear'] as int,
+    scoreTypes: [
+      for (final s in json['scoreTypes'] as List<dynamic>)
+        ScoreTypeTests(
+          code: (s as Map<String, dynamic>)['code'] as String,
+          testCodes: (s['testCodes'] as List<dynamic>).cast<String>(),
+        ),
+    ],
+    subjects: [
+      for (final s in json['subjects'] as List<dynamic>)
+        Subject.fromJson(s as Map<String, dynamic>),
+    ],
+  );
+}
+
+ExamSession _session(String value) => switch (value) {
+  'TYT' => ExamSession.tyt,
+  'AYT' => ExamSession.ayt,
+  _ => throw FormatException('Unknown exam session $value'),
+};
