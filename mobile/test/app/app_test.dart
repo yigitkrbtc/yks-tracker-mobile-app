@@ -3,13 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nirengi/app/app.dart';
 
+import '../support/app_fakes.dart';
 import '../support/auth_fakes.dart';
 
 void main() {
-  Future<void> pumpApp(WidgetTester tester, MemorySessionStore store) async {
+  Future<void> pumpApp(
+    WidgetTester tester,
+    MemorySessionStore store, {
+    FakeProfileRepository? profiles,
+  }) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: fakeAuthOverrides(FakeAuthRepository(), store),
+        overrides: fakeAppOverrides(store: store, profiles: profiles),
         child: const NirengiApp(),
       ),
     );
@@ -22,18 +27,57 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Giriş yap'), findsOneWidget);
   });
 
-  testWidgets('stored session opens the home shell with three tabs', (
+  testWidgets('stored session opens the topics of the student\'s score type', (
     tester,
   ) async {
     await pumpApp(tester, MemorySessionStore(refreshToken: 'refresh-old'));
 
     expect(find.text('Merhaba Ada'), findsOneWidget);
     expect(find.byType(NavigationDestination), findsNWidgets(3));
-    expect(find.text('Konular yakında'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'AYT'), findsOneWidget);
+    expect(find.text('Türkçe'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(Tab, 'AYT'));
+    await tester.pumpAndSettle();
+    expect(find.text('Fizik'), findsOneWidget);
+    expect(find.text('Türk Dili ve Edebiyatı'), findsNothing);
+
+    await tester.tap(find.text('Fizik'));
+    await tester.pumpAndSettle();
+    expect(find.text('Fizik konu 1'), findsOneWidget);
+    expect(find.text('Çok çıkar'), findsOneWidget);
+    expect(find.text('Son yıllarda çıkmadı'), findsOneWidget);
 
     await tester.tap(find.text('Denemeler'));
     await tester.pumpAndSettle();
     expect(find.text('Denemeler yakında'), findsOneWidget);
+  });
+
+  testWidgets('first sign-in goes through onboarding, then shows topics', (
+    tester,
+  ) async {
+    final profiles = FakeProfileRepository();
+    await pumpApp(
+      tester,
+      MemorySessionStore(refreshToken: 'refresh-old'),
+      profiles: profiles,
+    );
+
+    expect(find.text('Hoş geldin'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, '12. sınıf'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Sözel').first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Başla'));
+    await tester.tap(find.text('Başla'));
+    await tester.pumpAndSettle();
+
+    expect(profiles.saved, hasLength(1));
+    expect(find.text('Merhaba Ada'), findsOneWidget);
+    await tester.tap(find.widgetWithText(Tab, 'AYT'));
+    await tester.pumpAndSettle();
+    expect(find.text('Felsefe Grubu'), findsOneWidget);
   });
 
   testWidgets('logging in from the login screen opens home', (tester) async {
@@ -51,5 +95,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Merhaba Ada'), findsOneWidget);
+    expect(find.text('Türkçe'), findsOneWidget);
   });
 }
