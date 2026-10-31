@@ -40,13 +40,16 @@ dotnet ef migrations add <Ad> -p src/Modules/<M>/<M>.Infrastructure -s src/Host 
 docker compose up -d                          # kökten: PostgreSQL 17, Mailpit, API (http://localhost:8080)
 
 cd mobile && flutter analyze && flutter test
+cd mobile && dart run build_runner build      # Drift şeması değişince; .g.dart commit'lenir
 cd admin && npm run lint && npm run build
 ```
 
 ## Mobil kuralları
 
 - `lib/features/<özellik>/{domain, application, data, presentation}`; bağımlılık içe akar, özellikler birbirinin `data`/`presentation` katmanını import etmez.
-- Durum yönetimi Riverpod, yönlendirme go_router. Yazmalar önce yerel Drift + outbox'a (Sprint 3).
+- Durum yönetimi Riverpod, yönlendirme go_router.
+- Kayıt yazmaları önce yerel Drift + outbox'a, aynı transaction'da (ADR-0014). Şema `core/database`'te; özellik `SyncHandler` yazar, `app/composition.dart` `offlineRecordOverrides`'a ekler. Core hiçbir özelliği import etmez.
+- Başka özelliğin ekranına geçiş `app/`'ten verilen geri çağırmayla (mimari test).
 - UI yalnız `lib/core/design/design.dart` (token + `N*` bileşenleri) üzerinden; `shadcn_ui` doğrudan yalnız `core/design` ve `app` içinde (ADR-0011, mimari test).
 - Yapılandırma `--dart-define` ile (`AppConfig`).
 
