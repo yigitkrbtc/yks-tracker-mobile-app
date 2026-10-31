@@ -29,6 +29,15 @@ internal sealed record TopicSeed(
 
 internal sealed record SourceSeed(string Code, string Name, SourceKind Kind);
 
+internal sealed record MockSectionSeed(
+    string Code,
+    string TestCode,
+    string? SubjectCode,
+    string Name,
+    int QuestionCount,
+    string? ParentCode,
+    string? AlternativeOf);
+
 /// <summary>
 /// The curriculum as shipped in data/seed (compiled into this assembly). Parsing validates cross references,
 /// so a broken seed fails the build's tests and the deploy, never a student's request.
@@ -40,10 +49,11 @@ internal sealed record CurriculumSeed(
     IReadOnlyList<ScoreTypeSeed> ScoreTypes,
     IReadOnlyList<TopicSeed> Topics,
     IReadOnlyList<SourceSeed> Sources,
+    IReadOnlyList<MockSectionSeed> MockSections,
     string Hash)
 {
     // Bump when the mapping from files to rows changes, so already seeded databases pick it up.
-    private const string ParserVersion = "2";
+    private const string ParserVersion = "3";
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -78,6 +88,7 @@ internal sealed record CurriculumSeed(
         }
 
         var subjectCodes = subjects.Select(s => s.Code).ToHashSet(StringComparer.Ordinal);
+        var mockSections = ParseMockSections(structure.MockSections ?? [], tests, subjects);
         var weights = Csv.Read(weightsCsv).ToDictionary(r => r["topic_code"], StringComparer.Ordinal);
         var topics = new List<TopicSeed>();
         foreach (var row in Csv.Read(taxonomyCsv))
@@ -133,7 +144,90 @@ internal sealed record CurriculumSeed(
 
         var hash = Convert.ToHexStringLower(SHA256.HashData(
             System.Text.Encoding.UTF8.GetBytes(string.Join('\u001f', ParserVersion, structureJson, taxonomyCsv, weightsCsv, sourcesCsv))));
-        return new CurriculumSeed(structure.ExamYear, tests, subjects, scoreTypes, topics, sources, hash);
+        return new CurriculumSeed(structure.ExamYear, tests, subjects, scoreTypes, topics, sources, mockSections, hash);
+    }
+
+    /// <summary>
+    /// Checks the score sheet template: each listed test has one root section with the test's question count;
+    /// children of a block add up to it; an alternative replaces a sibling of the same size.
+    /// </summary>
+    private static List<MockSectionSeed> ParseMockSections(List<MockSectionFile> files, List<TestSeed> tests, List<SubjectSeed> subjects)
+    {
+        var sections = files.Select(f => new MockSectionSeed(
+                f.Code.Trim(),
+                f.Test,
+                string.IsNullOrWhiteSpace(f.Subject) ? null : f.Subject,
+                f.Name.Trim(),
+                f.QuestionCount,
+                string.IsNullOrWhiteSpace(f.Parent) ? null : f.Parent,
+                string.IsNullOrWhiteSpace(f.AlternativeOf) ? null : f.AlternativeOf))
+            .ToList();
+        if (sections.Count == 0)
+        {
+            return sections;
+        }
+
+        var byCode = new Dictionary<string, MockSectionSeed>(StringComparer.Ordinal);
+        foreach (var s in sections)
+        {
+            if (s.Code.Length is 0 or > MockSection.CodeMaxLength || s.Name.Length is 0 or > MockSection.NameMaxLength || s.QuestionCount <= 0)
+            {
+                throw new FormatException($"Mock section '{s.Code}' has an empty or too long code or name, or no questions.");
+            }
+
+            if (!byCode.TryAdd(s.Code, s))
+            {
+                throw new FormatException($"Mock section {s.Code} appears more than once.");
+            }
+        }
+
+        var testsByCode = tests.ToDictionary(t => t.Code, StringComparer.Ordinal);
+        var subjectsByCode = subjects.ToDictionary(s => s.Code, StringComparer.Ordinal);
+        foreach (var s in sections)
+        {
+            if (!testsByCode.ContainsKey(s.TestCode))
+            {
+                throw new FormatException($"Mock section {s.Code} refers to unknown test {s.TestCode}.");
+            }
+
+            if (s.SubjectCode is not null
+                && (!subjectsByCode.TryGetValue(s.SubjectCode, out var subject) || !subject.TestCodes.Contains(s.TestCode)))
+            {
+                throw new FormatException($"Mock section {s.Code} refers to subject {s.SubjectCode}, which is not part of test {s.TestCode}.");
+            }
+
+            if (s.ParentCode is not null
+                && (!byCode.TryGetValue(s.ParentCode, out var parent) || parent.ParentCode is not null || parent.TestCode != s.TestCode))
+            {
+                throw new FormatException($"Mock section {s.Code} has an invalid parent {s.ParentCode}.");
+            }
+
+            if (s.AlternativeOf is not null
+                && (!byCode.TryGetValue(s.AlternativeOf, out var original)
+                    || original.ParentCode != s.ParentCode
+                    || original.AlternativeOf is not null
+                    || original.QuestionCount != s.QuestionCount))
+            {
+                throw new FormatException($"Mock section {s.Code} is an alternative of {s.AlternativeOf}, which is not a same-size sibling.");
+            }
+        }
+
+        foreach (var test in tests)
+        {
+            var roots = sections.Where(s => s.TestCode == test.Code && s.ParentCode is null).ToList();
+            if (roots.Count != 1 || roots[0].QuestionCount != test.QuestionCount)
+            {
+                throw new FormatException($"Test {test.Code} needs exactly one root mock section with {test.QuestionCount} questions.");
+            }
+
+            var children = sections.Where(s => s.ParentCode == roots[0].Code && s.AlternativeOf is null).ToList();
+            if (children.Count > 0 && children.Sum(c => c.QuestionCount) != test.QuestionCount)
+            {
+                throw new FormatException($"The mock sections of test {test.Code} do not add up to {test.QuestionCount} questions.");
+            }
+        }
+
+        return sections;
     }
 
     private static string ReadResource(Assembly assembly, string name)
@@ -203,11 +297,25 @@ internal sealed record CurriculumSeed(
         _ => throw new FormatException($"Source {code} has an unknown kind '{value}'."),
     };
 
-    private sealed record StructureFile(int ExamYear, List<TestFile> Tests, List<UnitFile> Units, List<ScoreTypeFile> ScoreTypes);
+    private sealed record StructureFile(
+        int ExamYear,
+        List<TestFile> Tests,
+        List<UnitFile> Units,
+        List<ScoreTypeFile> ScoreTypes,
+        List<MockSectionFile>? MockSections);
 
     private sealed record TestFile(string Code, string Session, string Name, int QuestionCount);
 
     private sealed record UnitFile(string Code, string Name, List<string> Tests);
 
     private sealed record ScoreTypeFile(string Code, string Name, List<string> Tests);
+
+    private sealed record MockSectionFile(
+        string Code,
+        string Test,
+        string? Subject,
+        string Name,
+        int QuestionCount,
+        string? Parent,
+        string? AlternativeOf);
 }

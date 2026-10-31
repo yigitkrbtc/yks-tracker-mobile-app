@@ -16,6 +16,8 @@ public interface ICurriculumRepository
 
     Task<IReadOnlyList<Subject>> GetSubjects(CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<MockSection>> GetMockSections(CancellationToken cancellationToken);
+
     Task<IReadOnlyList<Topic>> GetActiveTopics(CancellationToken cancellationToken);
 
     Task<IReadOnlyList<Source>> GetActiveSources(CancellationToken cancellationToken);

@@ -115,4 +115,41 @@ public sealed class CurriculumSeedTests
 
         Should.Throw<FormatException>(() => CurriculumSeed.Parse(structure, taxonomy, weights, sources)).Message.ShouldContain(message);
     }
+
+    [Fact]
+    public void Shipped_mock_sections_add_up_to_each_test()
+    {
+        Seed.MockSections.Count.ShouldBe(27);
+        foreach (var test in Seed.Tests)
+        {
+            var root = Seed.MockSections.Single(s => s.TestCode == test.Code && s.ParentCode is null);
+            root.QuestionCount.ShouldBe(test.QuestionCount);
+            var children = Seed.MockSections.Where(s => s.ParentCode == root.Code && s.AlternativeOf is null).ToList();
+            if (children.Count > 0)
+            {
+                children.Sum(c => c.QuestionCount).ShouldBe(test.QuestionCount);
+            }
+        }
+
+        Seed.MockSections.Single(s => s.Code == "TYT-SOS.FEL2").AlternativeOf.ShouldBe("TYT-SOS.DKAB");
+        Seed.MockSections.Single(s => s.Code == "AYT-SB2.FEL2").AlternativeOf.ShouldBe("AYT-SB2.DKAB");
+        Seed.MockSections.Single(s => s.Code == "TYT-MAT").SubjectCode.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData("""[{"code":"T","test":"T","name":"T","questionCount":3}]""", "exactly one root")]
+    [InlineData("""[{"code":"T","test":"T","name":"T","questionCount":2},{"code":"T.A","test":"T","name":"A","questionCount":1,"parent":"T"}]""", "do not add up")]
+    [InlineData("""[{"code":"T","test":"T","name":"T","questionCount":2},{"code":"T","test":"T","name":"A","questionCount":2}]""", "more than once")]
+    [InlineData("""[{"code":"T","test":"X","name":"T","questionCount":2}]""", "unknown test")]
+    [InlineData("""[{"code":"T","test":"T","name":"T","questionCount":2,"subject":"TYT.B"}]""", "not part of test")]
+    [InlineData("""[{"code":"T","test":"T","name":"T","questionCount":2},{"code":"T.A","test":"T","name":"A","questionCount":2,"parent":"T.B"}]""", "invalid parent")]
+    [InlineData("""[{"code":"T","test":"T","name":"T","questionCount":2},{"code":"T.A","test":"T","name":"A","questionCount":2,"parent":"T"},{"code":"T.B","test":"T","name":"B","questionCount":1,"parent":"T","alternativeOf":"T.A"}]""", "same-size sibling")]
+    public void Invalid_mock_sections_are_rejected(string sections, string message)
+    {
+        var structure = $$"""{"examYear":2027,"tests":[{"code":"T","session":"TYT","name":"T","questionCount":2}],"units":[{"code":"TYT.A","name":"A","tests":["T"]}],"scoreTypes":[],"mockSections":{{sections}}}""";
+        const string taxonomy = "session,unit,topic_code,topic,subtopics,grade,description\nTYT,A,TYT.A.01,X,y,9,\n";
+        const string weights = "topic_code,q_i,tier,years_present\nTYT.A.01,1,az,1/8\n";
+
+        Should.Throw<FormatException>(() => CurriculumSeed.Parse(structure, taxonomy, weights, NoSources)).Message.ShouldContain(message);
+    }
 }

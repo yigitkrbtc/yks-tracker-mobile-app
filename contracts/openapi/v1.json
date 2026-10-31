@@ -980,7 +980,8 @@
           "scoreTypes",
           "tests",
           "subjects",
-          "sources"
+          "sources",
+          "mockSections"
         ],
         "type": "object",
         "properties": {
@@ -1017,6 +1018,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SourceDto"
+            }
+          },
+          "mockSections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MockSectionDto"
             }
           }
         }
@@ -1204,6 +1211,55 @@
           "Totp",
           "TotpSetup"
         ]
+      },
+      "MockSectionDto": {
+        "required": [
+          "code",
+          "testCode",
+          "subjectCode",
+          "name",
+          "questionCount",
+          "parentCode",
+          "alternativeOf"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "testCode": {
+            "type": "string"
+          },
+          "subjectCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "questionCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "parentCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "alternativeOf": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
       },
       "ProblemDetails": {
         "type": "object",

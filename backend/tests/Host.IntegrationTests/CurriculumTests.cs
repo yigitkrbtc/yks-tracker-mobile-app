@@ -43,6 +43,7 @@ public sealed class CurriculumTests(NirengiApiFactory factory)
         var integral = curriculum.Subjects.Single(s => s.Code == "AYT.AMAT").Topics.Single(t => t.Code == "AYT.AMAT.26");
         integral.Id.ShouldBe(TopicIdentity.For("AYT.AMAT.26"));
         integral.Tier.ShouldBe("High");
+        curriculum.MockSections.Single(s => s.Code == "AYT-SB2.FEL2").AlternativeOf.ShouldBe("AYT-SB2.DKAB");
         var pastPapers = curriculum.Sources.Single(s => s.Code == "OSYM");
         pastPapers.Id.ShouldBe(SourceIdentity.For("OSYM"));
         pastPapers.Kind.ShouldBe("Official");
@@ -105,9 +106,25 @@ public sealed class CurriculumTests(NirengiApiFactory factory)
         topics.ShouldHaveSingleItem().ShouldBe(new CatalogTopic(integral, "AYT.AMAT", true));
         (await catalog.GetSource(SourceIdentity.For("OSYM"), ct)).ShouldBe(new CatalogSource(SourceIdentity.For("OSYM"), true));
         (await catalog.GetSource(Guid.NewGuid(), ct)).ShouldBeNull();
+
+        var sections = await catalog.GetMockSections(ct);
+        sections.Count.ShouldBe(27);
+        sections.Single(s => s.Code == "TYT-MAT").SubjectCodes.ShouldBe(["TYT.TMAT", "TYT.GEO"]);
+        sections.Single(s => s.Code == "AYT-SB2.TAR").ShouldSatisfyAllConditions(
+            s => s.Session.ShouldBe("AYT"),
+            s => s.SubjectCodes.ShouldBe(["AYT.TAR"]),
+            s => s.ParentCode.ShouldBe("AYT-SB2"));
     }
 
-    private sealed record Curriculum(string Version, int ExamYear, List<ScoreTypeItem> ScoreTypes, List<SubjectItem> Subjects, List<SourceItem> Sources);
+    private sealed record Curriculum(
+        string Version,
+        int ExamYear,
+        List<ScoreTypeItem> ScoreTypes,
+        List<SubjectItem> Subjects,
+        List<SourceItem> Sources,
+        List<MockSectionItem> MockSections);
+
+    private sealed record MockSectionItem(string Code, string TestCode, string? SubjectCode, int QuestionCount, string? ParentCode, string? AlternativeOf);
 
     private sealed record SourceItem(Guid Id, string Code, string Name, string Kind);
 

@@ -17,6 +17,8 @@ public sealed class CurriculumDbContext(DbContextOptions<CurriculumDbContext> op
 
     public DbSet<ScoreType> ScoreTypes => Set<ScoreType>();
 
+    public DbSet<MockSection> MockSections => Set<MockSection>();
+
     public DbSet<Topic> Topics => Set<Topic>();
 
     public DbSet<TopicWeight> TopicWeights => Set<TopicWeight>();

@@ -21,6 +21,9 @@ internal sealed class CurriculumRepository(CurriculumDbContext db) : ICurriculum
     public async Task<IReadOnlyList<Subject>> GetSubjects(CancellationToken cancellationToken) =>
         await db.Subjects.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<MockSection>> GetMockSections(CancellationToken cancellationToken) =>
+        await db.MockSections.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
+
     public async Task<IReadOnlyList<Topic>> GetActiveTopics(CancellationToken cancellationToken) =>
         await db.Topics.AsNoTracking().Where(t => t.Status == TopicStatus.Active).OrderBy(t => t.SortOrder).ToListAsync(cancellationToken);
 
