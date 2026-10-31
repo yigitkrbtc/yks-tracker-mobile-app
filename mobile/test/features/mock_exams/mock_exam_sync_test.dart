@@ -232,29 +232,32 @@ void main() {
     expect(await repository.lastSource(), (id: 'src-pub', name: null));
   });
 
-  test('a version 1 database gains the mock exam tables and keeps its rows', () async {
-    final raw = NativeDatabase.memory(
-      setup: (d) {
-        d.execute(
-          'CREATE TABLE topic_tests (id TEXT NOT NULL PRIMARY KEY, studied_on TEXT NOT NULL, '
-          'source_id TEXT NULL, source_name TEXT NULL, is_repeat INTEGER NOT NULL, difficulty TEXT NULL, '
-          'duration_minutes INTEGER NULL, note TEXT NULL, client_modified_at INTEGER NOT NULL, '
-          'deleted INTEGER NOT NULL DEFAULT 0, change_seq INTEGER NOT NULL DEFAULT 0)',
-        );
-        d.execute(
-          "INSERT INTO topic_tests (id, studied_on, is_repeat, client_modified_at) VALUES ('t1', '2026-10-30', 0, 1)",
-        );
-        d.execute('PRAGMA user_version = 1');
-      },
-    );
-    final old = AppDatabase(raw);
-    addTearDown(old.close);
+  test(
+    'a version 1 database gains the mock exam tables and keeps its rows',
+    () async {
+      final raw = NativeDatabase.memory(
+        setup: (d) {
+          d.execute(
+            'CREATE TABLE topic_tests (id TEXT NOT NULL PRIMARY KEY, studied_on TEXT NOT NULL, '
+            'source_id TEXT NULL, source_name TEXT NULL, is_repeat INTEGER NOT NULL, difficulty TEXT NULL, '
+            'duration_minutes INTEGER NULL, note TEXT NULL, client_modified_at INTEGER NOT NULL, '
+            'deleted INTEGER NOT NULL DEFAULT 0, change_seq INTEGER NOT NULL DEFAULT 0)',
+          );
+          d.execute(
+            "INSERT INTO topic_tests (id, studied_on, is_repeat, client_modified_at) VALUES ('t1', '2026-10-30', 0, 1)",
+          );
+          d.execute('PRAGMA user_version = 1');
+        },
+      );
+      final old = AppDatabase(raw);
+      addTearDown(old.close);
 
-    expect(await old.select(old.topicTests).get(), hasLength(1));
-    expect(await old.select(old.mockExams).get(), isEmpty);
-    final version = await old
-        .customSelect('PRAGMA user_version', variables: <Variable>[])
-        .getSingle();
-    expect(version.data.values.single, 2);
-  });
+      expect(await old.select(old.topicTests).get(), hasLength(1));
+      expect(await old.select(old.mockExams).get(), isEmpty);
+      final version = await old
+          .customSelect('PRAGMA user_version', variables: <Variable>[])
+          .getSingle();
+      expect(version.data.values.single, 2);
+    },
+  );
 }

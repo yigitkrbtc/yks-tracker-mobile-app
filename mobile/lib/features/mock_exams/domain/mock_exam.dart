@@ -107,13 +107,14 @@ class MockExam {
   int get blank => sections.fold(0, (s, x) => s + x.blank);
   double get net => MockExamRules.net(correct, wrong);
 
-  List<TopicMark> marksOf(String sectionCode) =>
-      [for (final m in marks) if (m.sectionCode == sectionCode) m];
+  List<TopicMark> marksOf(String sectionCode) => [
+    for (final m in marks)
+      if (m.sectionCode == sectionCode) m,
+  ];
 
   TaggingStatus taggingOf(MockSectionResult section) {
-    final tagged = marksOf(
-      section.sectionCode,
-    ).fold(0, (s, m) => s + m.wrong + m.blank);
+    final tagged = marksOf(section.sectionCode)
+        .fold(0, (s, m) => s + m.wrong + m.blank);
     return tagged == section.lost
         ? TaggingStatus.full
         : tagged == 0

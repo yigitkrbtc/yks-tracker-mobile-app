@@ -4,5 +4,6 @@ library;
 export 'components/n_badge.dart';
 export 'components/n_button.dart';
 export 'components/n_card.dart';
+export 'format.dart';
 export 'tokens/colors.dart';
 export 'tokens/spacing.dart';

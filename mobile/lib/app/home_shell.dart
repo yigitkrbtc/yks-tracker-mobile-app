@@ -9,6 +9,7 @@ import '../core/design/gallery/design_gallery_page.dart';
 import '../core/sync/sync_providers.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/curriculum/presentation/topic_list_view.dart';
+import '../features/mock_exams/presentation/mock_exam_list_view.dart';
 import '../features/profile/presentation/profile_page.dart';
 import '../features/topic_tests/presentation/topic_test_form_page.dart';
 import '../features/topic_tests/presentation/topic_test_list_view.dart';
@@ -128,6 +129,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
               context.push(TopicTestFormPage.newForTopic(topic.id)),
         ),
         1 => const TopicTestListView(),
+        2 => const MockExamListView(),
         _ => Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: NCard(title: tab.label, description: '${tab.label} yakında'),
