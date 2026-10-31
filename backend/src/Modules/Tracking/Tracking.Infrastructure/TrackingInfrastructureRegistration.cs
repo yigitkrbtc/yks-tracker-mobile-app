@@ -13,6 +13,7 @@ public static class TrackingInfrastructureRegistration
         services.AddModuleInfrastructure<TrackingDbContext>(configuration, TrackingDbContext.SchemaName, Application.AssemblyReference.Assembly);
         services.AddScoped<IStudyProfileRepository, StudyProfileRepository>();
         services.AddScoped<ITopicTestRepository, TopicTestRepository>();
+        services.AddScoped<IMockExamRepository, MockExamRepository>();
         services.AddScoped<ITrackingUnitOfWork, TrackingUnitOfWork>();
         return services;
     }

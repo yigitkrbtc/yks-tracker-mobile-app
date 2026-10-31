@@ -1,4 +1,5 @@
 using Nirengi.BuildingBlocks.Application.Events;
+using Nirengi.Modules.Tracking.Domain.MockExams;
 using Nirengi.Modules.Tracking.Domain.Profiles;
 using Nirengi.Modules.Tracking.Domain.TopicTests;
 
@@ -28,8 +29,22 @@ public interface ITopicTestRepository
     Task DeleteForUser(Guid userId, CancellationToken cancellationToken);
 }
 
+public interface IMockExamRepository
+{
+    /// <summary>Any user's exam, deleted ones included; the caller checks ownership.</summary>
+    Task<MockExam?> Get(Guid id, CancellationToken cancellationToken);
+
+    void Add(MockExam exam);
+
+    /// <summary>The user's exams changed after <paramref name="since"/>, tombstones included, in change-feed order.</summary>
+    Task<IReadOnlyList<MockExam>> GetChanges(Guid userId, long since, int limit, CancellationToken cancellationToken);
+
+    /// <summary>Deletes immediately (no SaveChanges), sections and marks included; a no-op when there is nothing to delete.</summary>
+    Task DeleteForUser(Guid userId, CancellationToken cancellationToken);
+}
+
 /// <summary>
-/// Commits the Tracking changes in one transaction. Changed topic tests get their change-feed position here,
+/// Commits the Tracking changes in one transaction. Changed synced records (topic tests, mock exams) get their change-feed position here,
 /// under a per-user lock, so a user's positions commit in order and GET /v1/sync never skips a write.
 /// </summary>
 public interface ITrackingUnitOfWork

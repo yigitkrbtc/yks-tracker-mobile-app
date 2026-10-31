@@ -69,6 +69,204 @@ namespace Nirengi.Modules.Tracking.Infrastructure.Persistence.Migrations
                     b.ToTable("outbox_messages", "tracking");
                 });
 
+            modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.MockExams.MockExam", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<long>("ChangeSeq")
+                        .HasColumnType("bigint")
+                        .HasColumnName("change_seq");
+
+                    b.Property<DateTimeOffset>("ClientModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("client_modified_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int?>("DurationMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("duration_minutes");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<Guid?>("SourceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_id");
+
+                    b.Property<string>("SourceName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("source_name");
+
+                    b.Property<DateOnly>("TakenOn")
+                        .HasColumnType("date")
+                        .HasColumnName("taken_on");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_mock_exams");
+
+                    b.HasIndex("UserId", "ChangeSeq")
+                        .HasDatabaseName("ix_mock_exams_user_id_change_seq");
+
+                    b.HasIndex("UserId", "TakenOn")
+                        .HasDatabaseName("ix_mock_exams_user_id_taken_on")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("mock_exams", "tracking", t =>
+                        {
+                            t.HasCheckConstraint("ck_mock_exams_source", "deleted_at IS NOT NULL OR (source_id IS NULL) <> (source_name IS NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.MockExams.MockExamSection", b =>
+                {
+                    b.Property<Guid>("MockExamId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("mock_exam_id");
+
+                    b.Property<string>("SectionCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("section_code");
+
+                    b.Property<int>("Blank")
+                        .HasColumnType("integer")
+                        .HasColumnName("blank");
+
+                    b.Property<int>("Correct")
+                        .HasColumnType("integer")
+                        .HasColumnName("correct");
+
+                    b.Property<decimal>("Net")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("net");
+
+                    b.Property<int>("QuestionCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("question_count");
+
+                    b.Property<string>("TaggingStatus")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("tagging_status");
+
+                    b.Property<DateOnly>("TakenOn")
+                        .HasColumnType("date")
+                        .HasColumnName("taken_on");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<int>("Wrong")
+                        .HasColumnType("integer")
+                        .HasColumnName("wrong");
+
+                    b.HasKey("MockExamId", "SectionCode")
+                        .HasName("pk_mock_exam_sections");
+
+                    b.HasIndex("UserId", "SectionCode", "TakenOn")
+                        .HasDatabaseName("ix_mock_exam_sections_user_id_section_code_taken_on");
+
+                    b.ToTable("mock_exam_sections", "tracking", t =>
+                        {
+                            t.HasCheckConstraint("ck_mock_exam_sections_counts", "correct >= 0 AND wrong >= 0 AND blank >= 0 AND correct + wrong + blank = question_count AND question_count BETWEEN 1 AND 80");
+                        });
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.MockExams.MockExamTopicMark", b =>
+                {
+                    b.Property<Guid>("MockExamId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("mock_exam_id");
+
+                    b.Property<string>("SectionCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("section_code");
+
+                    b.Property<Guid>("TopicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("topic_id");
+
+                    b.Property<int>("Blank")
+                        .HasColumnType("integer")
+                        .HasColumnName("blank");
+
+                    b.Property<int?>("MistakeAttention")
+                        .HasColumnType("integer")
+                        .HasColumnName("mistake_attention");
+
+                    b.Property<int?>("MistakeKnowledge")
+                        .HasColumnType("integer")
+                        .HasColumnName("mistake_knowledge");
+
+                    b.Property<int?>("MistakeTime")
+                        .HasColumnType("integer")
+                        .HasColumnName("mistake_time");
+
+                    b.Property<DateOnly>("TakenOn")
+                        .HasColumnType("date")
+                        .HasColumnName("taken_on");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<int>("Wrong")
+                        .HasColumnType("integer")
+                        .HasColumnName("wrong");
+
+                    b.HasKey("MockExamId", "SectionCode", "TopicId")
+                        .HasName("pk_mock_exam_topic_marks");
+
+                    b.HasIndex("UserId", "TopicId", "TakenOn")
+                        .HasDatabaseName("ix_mock_exam_topic_marks_user_id_topic_id_taken_on");
+
+                    b.ToTable("mock_exam_topic_marks", "tracking", t =>
+                        {
+                            t.HasCheckConstraint("ck_mock_exam_topic_marks_counts", "wrong >= 0 AND blank >= 0 AND wrong + blank >= 1");
+                        });
+                });
+
             modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.Profiles.StudyProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -271,6 +469,26 @@ namespace Nirengi.Modules.Tracking.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.MockExams.MockExamSection", b =>
+                {
+                    b.HasOne("Nirengi.Modules.Tracking.Domain.MockExams.MockExam", null)
+                        .WithMany("Sections")
+                        .HasForeignKey("MockExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_mock_exam_sections_mock_exams_mock_exam_id");
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.MockExams.MockExamTopicMark", b =>
+                {
+                    b.HasOne("Nirengi.Modules.Tracking.Domain.MockExams.MockExam", null)
+                        .WithMany("Marks")
+                        .HasForeignKey("MockExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_mock_exam_topic_marks_mock_exams_mock_exam_id");
+                });
+
             modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.TopicTests.TopicResult", b =>
                 {
                     b.HasOne("Nirengi.Modules.Tracking.Domain.TopicTests.TopicTest", null)
@@ -279,6 +497,13 @@ namespace Nirengi.Modules.Tracking.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_topic_test_results_topic_tests_topic_test_id");
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.MockExams.MockExam", b =>
+                {
+                    b.Navigation("Marks");
+
+                    b.Navigation("Sections");
                 });
 
             modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.TopicTests.TopicTest", b =>

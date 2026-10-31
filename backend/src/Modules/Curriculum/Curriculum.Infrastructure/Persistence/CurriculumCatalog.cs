@@ -24,7 +24,7 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
     {
         var sections = await db.MockSections.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
         var tests = await db.Tests.AsNoTracking().ToDictionaryAsync(t => t.Id, t => t.Session, cancellationToken);
-        var subjects = await db.Subjects.AsNoTracking().ToListAsync(cancellationToken);
+        var subjects = await db.Subjects.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
         return [.. sections.Select(s => new CatalogMockSection(
             s.Id,
             s.TestCode,

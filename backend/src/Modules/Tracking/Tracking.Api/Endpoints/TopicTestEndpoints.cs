@@ -59,14 +59,5 @@ internal static class TopicTestEndpoints
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
-
-        v1.MapGet("/sync", async (ICurrentUser user, IDispatcher dispatcher, CancellationToken ct, long since = 0, int limit = GetChangesQuery.MaxLimit) =>
-                (await dispatcher.Query(new GetChangesQuery(user.UserId, since, limit), ct)).Match(Results.Ok))
-            .RequireAuthorization()
-            .WithName("GetChanges")
-            .WithSummary("The caller's records changed after the cursor, deletions included.")
-            .Produces<SyncResponse>()
-            .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
     }
 }
