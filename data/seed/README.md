@@ -7,6 +7,7 @@
 | `exam_structure.json` | 8 test, 20 ders, 4 puan türü | Sınav yılı, testler, ders → test ve puan türü → test eşlemesi. DİL'de YDT testi yok (taksonomisi henüz yok). |
 | `konu_taksonomisi.csv` | 370 konu | `session, unit, topic_code, topic, subtopics, grade, description`; `topic_code` kalıcı anahtar (ör. `AYT.AMAT.26`) |
 | `konu_agirliklari.csv` | 370 konu | Yıl başına soru sayısı (2019–2026), `q_i` (2022–2026 ortalaması, test toplamına normalize), `tier` (çok/orta/az/nadir) |
+| `kaynaklar.csv` | 28 kaynak | Konu testi kaydında seçilen kaynaklar: `source_code, name, kind` (`publisher`, `official`, `institution`). `source_code` kalıcı anahtar; kimlik UUID v5(kaynak namespace'i, kod). Listede olmayan kaynak uygulamada "Diğer" ile serbest metin girilir. |
 | `tum_etiketler.csv` | 2.328 soru | Soru bazında etiket: yıl, oturum, test, soru no, konu, alt konu, ikincil konu, güven |
 
 `tools/aggregate.py` etiketlerden ağırlıkları üreten betik (kaynak PDF'ler repoda değil). Kurallar:

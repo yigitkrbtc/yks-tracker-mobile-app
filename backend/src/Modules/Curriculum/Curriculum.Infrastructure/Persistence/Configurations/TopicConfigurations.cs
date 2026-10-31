@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nirengi.Modules.Curriculum.Domain;
 using Nirengi.Modules.Curriculum.Domain.Exams;
+using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence.Configurations;
@@ -43,5 +44,20 @@ internal sealed class CurriculumReleaseConfiguration : IEntityTypeConfiguration<
         builder.HasKey(r => r.ExamYear);
         builder.Property(r => r.ExamYear).ValueGeneratedNever();
         builder.Property(r => r.SeedHash).HasMaxLength(CurriculumRelease.HashLength).IsFixedLength();
+    }
+}
+
+internal sealed class SourceConfiguration : IEntityTypeConfiguration<Source>
+{
+    public void Configure(EntityTypeBuilder<Source> builder)
+    {
+        builder.ToTable("sources");
+        builder.HasKey(s => s.Id);
+        builder.Property(s => s.Id).ValueGeneratedNever();
+        builder.Property(s => s.Code).HasMaxLength(Source.CodeMaxLength);
+        builder.HasIndex(s => s.Code).IsUnique();
+        builder.Property(s => s.Name).HasMaxLength(Source.NameMaxLength);
+        builder.Property(s => s.Kind).HasConversion<string>().HasMaxLength(20);
+        builder.Property(s => s.Status).HasConversion<string>().HasMaxLength(20);
     }
 }

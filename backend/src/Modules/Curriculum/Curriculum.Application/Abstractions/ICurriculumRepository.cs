@@ -1,5 +1,6 @@
 using Nirengi.Modules.Curriculum.Domain;
 using Nirengi.Modules.Curriculum.Domain.Exams;
+using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
 
 namespace Nirengi.Modules.Curriculum.Application.Abstractions;
@@ -16,6 +17,8 @@ public interface ICurriculumRepository
     Task<IReadOnlyList<Subject>> GetSubjects(CancellationToken cancellationToken);
 
     Task<IReadOnlyList<Topic>> GetActiveTopics(CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<Source>> GetActiveSources(CancellationToken cancellationToken);
 
     Task<IReadOnlyList<TopicWeight>> GetWeights(int examYear, CancellationToken cancellationToken);
 }

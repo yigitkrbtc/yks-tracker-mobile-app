@@ -16,3 +16,11 @@ public sealed class TopicIdentityTests
     public void Different_codes_get_different_ids() =>
         TopicIdentity.For("TYT.TUR.01").ShouldNotBe(TopicIdentity.For("TYT.TUR.02"));
 }
+
+public sealed class SourceIdentityTests
+{
+    // Reference value from Python's uuid.uuid5 with the same namespace.
+    [Fact]
+    public void Id_is_the_v5_uuid_of_the_code_in_the_source_namespace() =>
+        Nirengi.Modules.Curriculum.Domain.Sources.SourceIdentity.For("OSYM").ShouldBe(Guid.Parse("5a9430d6-3d07-5983-82af-327c49cdac7d"));
+}

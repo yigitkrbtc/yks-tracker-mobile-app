@@ -756,7 +756,8 @@
           "examYear",
           "scoreTypes",
           "tests",
-          "subjects"
+          "subjects",
+          "sources"
         ],
         "type": "object",
         "properties": {
@@ -787,6 +788,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SubjectDto"
+            }
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourceDto"
             }
           }
         }
@@ -1234,6 +1241,37 @@
             ]
           }
         }
+      },
+      "SourceDto": {
+        "required": [
+          "id",
+          "code",
+          "name",
+          "kind"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SourceKind"
+          }
+        }
+      },
+      "SourceKind": {
+        "enum": [
+          "Publisher",
+          "Official",
+          "Institution"
+        ]
       },
       "StudyProfileResponse": {
         "required": [

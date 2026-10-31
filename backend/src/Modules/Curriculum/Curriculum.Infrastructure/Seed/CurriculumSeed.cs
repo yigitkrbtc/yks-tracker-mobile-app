@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Nirengi.Modules.Curriculum.Domain.Exams;
+using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure.Seed;
@@ -26,6 +27,8 @@ internal sealed record TopicSeed(
     int YearsAsked,
     int YearsCounted);
 
+internal sealed record SourceSeed(string Code, string Name, SourceKind Kind);
+
 /// <summary>
 /// The curriculum as shipped in data/seed (compiled into this assembly). Parsing validates cross references,
 /// so a broken seed fails the build's tests and the deploy, never a student's request.
@@ -36,10 +39,11 @@ internal sealed record CurriculumSeed(
     IReadOnlyList<SubjectSeed> Subjects,
     IReadOnlyList<ScoreTypeSeed> ScoreTypes,
     IReadOnlyList<TopicSeed> Topics,
+    IReadOnlyList<SourceSeed> Sources,
     string Hash)
 {
     // Bump when the mapping from files to rows changes, so already seeded databases pick it up.
-    private const string ParserVersion = "1";
+    private const string ParserVersion = "2";
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -49,10 +53,11 @@ internal sealed record CurriculumSeed(
         return Parse(
             ReadResource(assembly, "Seed.exam_structure.json"),
             ReadResource(assembly, "Seed.konu_taksonomisi.csv"),
-            ReadResource(assembly, "Seed.konu_agirliklari.csv"));
+            ReadResource(assembly, "Seed.konu_agirliklari.csv"),
+            ReadResource(assembly, "Seed.kaynaklar.csv"));
     }
 
-    public static CurriculumSeed Parse(string structureJson, string taxonomyCsv, string weightsCsv)
+    public static CurriculumSeed Parse(string structureJson, string taxonomyCsv, string weightsCsv, string sourcesCsv)
     {
         var structure = JsonSerializer.Deserialize<StructureFile>(structureJson, Json)
             ?? throw new FormatException("exam_structure.json is empty.");
@@ -111,9 +116,24 @@ internal sealed record CurriculumSeed(
             throw new FormatException($"Topic {duplicate.Key} appears more than once.");
         }
 
+        var sources = Csv.Read(sourcesCsv)
+            .Select(r => new SourceSeed(r["source_code"].Trim(), r["name"].Trim(), ParseSourceKind(r["kind"], r["source_code"])))
+            .ToList();
+        var badSource = sources.FirstOrDefault(s => s.Code.Length is 0 or > Source.CodeMaxLength || s.Name.Length is 0 or > Source.NameMaxLength);
+        if (badSource is not null)
+        {
+            throw new FormatException($"Source '{badSource.Code}' has an empty or too long code or name.");
+        }
+
+        var duplicateSource = sources.GroupBy(s => s.Code, StringComparer.Ordinal).FirstOrDefault(g => g.Count() > 1);
+        if (duplicateSource is not null)
+        {
+            throw new FormatException($"Source {duplicateSource.Key} appears more than once.");
+        }
+
         var hash = Convert.ToHexStringLower(SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes(string.Join('\u001f', ParserVersion, structureJson, taxonomyCsv, weightsCsv))));
-        return new CurriculumSeed(structure.ExamYear, tests, subjects, scoreTypes, topics, hash);
+            System.Text.Encoding.UTF8.GetBytes(string.Join('\u001f', ParserVersion, structureJson, taxonomyCsv, weightsCsv, sourcesCsv))));
+        return new CurriculumSeed(structure.ExamYear, tests, subjects, scoreTypes, topics, sources, hash);
     }
 
     private static string ReadResource(Assembly assembly, string name)
@@ -173,6 +193,14 @@ internal sealed record CurriculumSeed(
         "az" => WeightTier.Low,
         "nadir" => WeightTier.Rare,
         _ => throw new FormatException($"Topic {code} has an unknown tier '{value}'."),
+    };
+
+    private static SourceKind ParseSourceKind(string value, string code) => value.Trim() switch
+    {
+        "publisher" => SourceKind.Publisher,
+        "official" => SourceKind.Official,
+        "institution" => SourceKind.Institution,
+        _ => throw new FormatException($"Source {code} has an unknown kind '{value}'."),
     };
 
     private sealed record StructureFile(int ExamYear, List<TestFile> Tests, List<UnitFile> Units, List<ScoreTypeFile> ScoreTypes);

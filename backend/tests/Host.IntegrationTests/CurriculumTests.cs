@@ -1,6 +1,8 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Nirengi.Modules.Curriculum.Contracts;
+using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
 using Nirengi.Modules.Curriculum.Infrastructure;
 using Nirengi.Modules.Curriculum.Infrastructure.Seed;
@@ -41,6 +43,9 @@ public sealed class CurriculumTests(NirengiApiFactory factory)
         var integral = curriculum.Subjects.Single(s => s.Code == "AYT.AMAT").Topics.Single(t => t.Code == "AYT.AMAT.26");
         integral.Id.ShouldBe(TopicIdentity.For("AYT.AMAT.26"));
         integral.Tier.ShouldBe("High");
+        var pastPapers = curriculum.Sources.Single(s => s.Code == "OSYM");
+        pastPapers.Id.ShouldBe(SourceIdentity.For("OSYM"));
+        pastPapers.Kind.ShouldBe("Official");
 
         var revalidated = await _api.Send(HttpMethod.Get, "/v1/curriculum", tokens.AccessToken, ifNoneMatch: etag);
         revalidated.StatusCode.ShouldBe(HttpStatusCode.NotModified);
@@ -87,7 +92,24 @@ public sealed class CurriculumTests(NirengiApiFactory factory)
         (await db.TopicWeights.CountAsync(ct)).ShouldBe(370);
     }
 
-    private sealed record Curriculum(string Version, int ExamYear, List<ScoreTypeItem> ScoreTypes, List<SubjectItem> Subjects);
+    [Fact]
+    public async Task Catalog_tells_other_modules_which_topics_and_sources_exist()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var scope = factory.Services.CreateAsyncScope();
+        var catalog = scope.ServiceProvider.GetRequiredService<ICurriculumCatalog>();
+        var integral = TopicIdentity.For("AYT.AMAT.26");
+
+        var topics = await catalog.GetTopics([integral, Guid.NewGuid()], ct);
+
+        topics.ShouldHaveSingleItem().ShouldBe(new CatalogTopic(integral, "AYT.AMAT", true));
+        (await catalog.GetSource(SourceIdentity.For("OSYM"), ct)).ShouldBe(new CatalogSource(SourceIdentity.For("OSYM"), true));
+        (await catalog.GetSource(Guid.NewGuid(), ct)).ShouldBeNull();
+    }
+
+    private sealed record Curriculum(string Version, int ExamYear, List<ScoreTypeItem> ScoreTypes, List<SubjectItem> Subjects, List<SourceItem> Sources);
+
+    private sealed record SourceItem(Guid Id, string Code, string Name, string Kind);
 
     private sealed record ScoreTypeItem(string Code, List<string> TestCodes);
 

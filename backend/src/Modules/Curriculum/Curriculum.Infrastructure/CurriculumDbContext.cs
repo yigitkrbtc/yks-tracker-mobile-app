@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Nirengi.BuildingBlocks.Infrastructure.Persistence;
 using Nirengi.Modules.Curriculum.Domain;
 using Nirengi.Modules.Curriculum.Domain.Exams;
+using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure;
@@ -19,6 +20,8 @@ public sealed class CurriculumDbContext(DbContextOptions<CurriculumDbContext> op
     public DbSet<Topic> Topics => Set<Topic>();
 
     public DbSet<TopicWeight> TopicWeights => Set<TopicWeight>();
+
+    public DbSet<Source> Sources => Set<Source>();
 
     public DbSet<CurriculumRelease> Releases => Set<CurriculumRelease>();
 
