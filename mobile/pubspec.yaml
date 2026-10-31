@@ -39,6 +39,9 @@ dependencies:
   dio: ^5.11.1
   flutter_secure_storage: ^11.2.0
   shadcn_ui: ^0.57.3
+  drift: ^2.35.3
+  drift_flutter: ^0.3.1
+  uuid: ^4.6.0
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +53,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  drift_dev: ^2.35.2
+  build_runner: ^2.17.1
 
 # The following section is specific to Flutter packages.
 flutter:

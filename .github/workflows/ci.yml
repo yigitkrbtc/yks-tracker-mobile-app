@@ -57,6 +57,11 @@ jobs:
           flutter-version: 3.47.8
           cache: true
       - run: flutter pub get
+      - name: Generated code is up to date
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          dart format lib
+          git diff --exit-code -- lib
       - name: Format
         run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/database/database_providers.dart';
 import '../application/session_controller.dart';
 import '../domain/auth_failure.dart';
 import 'auth_widgets.dart';
@@ -54,11 +55,14 @@ class _DeleteAccountPageState extends ConsumerState<DeleteAccountPage> {
     }
 
     final messenger = ScaffoldMessenger.of(context);
+    final db = ref.read(appDatabaseProvider);
     setState(() => _busy = true);
     try {
       final purgeAt = await ref
           .read(sessionControllerProvider.notifier)
           .deleteAccount(_password.text);
+      // The account's records stay on the server for the grace period; nothing is left on this device.
+      await db.wipe();
       final day = purgeAt.toLocal();
       messenger.showSnackBar(
         SnackBar(

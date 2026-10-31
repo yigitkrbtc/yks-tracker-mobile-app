@@ -6,6 +6,13 @@ abstract interface class CurriculumRepository {
   Future<Curriculum?> fetch({String? ifNoneMatch});
 }
 
+/// The last downloaded curriculum, kept on the device so topics show offline.
+abstract interface class CurriculumCache {
+  Future<Curriculum?> read();
+
+  Future<void> write(Curriculum curriculum);
+}
+
 class CurriculumException implements Exception {
   const CurriculumException(this.message);
 

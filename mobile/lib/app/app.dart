@@ -4,6 +4,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../core/config/app_config.dart';
 import '../core/design/theme/app_theme.dart';
+import 'local_data.dart';
 import 'router.dart';
 
 class NirengiApp extends ConsumerWidget {
@@ -11,6 +12,7 @@ class NirengiApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(localDataProvider);
     // ShadApp picks the light/dark shad theme and exposes the matching Material theme via Theme.of.
     return ShadApp.custom(
       theme: AppTheme.light(),
