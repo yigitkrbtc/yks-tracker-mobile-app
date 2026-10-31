@@ -41,4 +41,17 @@ void main() {
       );
     },
   );
+
+  test('a feature imports no other feature\'s data or presentation', () {
+    final crossFeature = RegExp(
+      r"import '\.\./\.\./(\w+)/(data|presentation)/",
+    );
+    final offenders = [
+      for (final f in dartFiles('lib/features'))
+        for (final m in crossFeature.allMatches(f.readAsStringSync()))
+          if (!f.path.contains('/features/${m.group(1)}/'))
+            '${f.path} → ${m.group(0)}',
+    ];
+    expect(offenders, isEmpty);
+  });
 }

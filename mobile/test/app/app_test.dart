@@ -33,7 +33,7 @@ void main() {
     await pumpApp(tester, MemorySessionStore(refreshToken: 'refresh-old'));
 
     expect(find.text('Merhaba Ada'), findsOneWidget);
-    expect(find.byType(NavigationDestination), findsNWidgets(3));
+    expect(find.byType(NavigationDestination), findsNWidgets(4));
     expect(find.widgetWithText(Tab, 'AYT'), findsOneWidget);
     expect(find.text('Türkçe'), findsOneWidget);
 

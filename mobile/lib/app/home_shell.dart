@@ -10,9 +10,11 @@ import '../core/sync/sync_providers.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/curriculum/presentation/topic_list_view.dart';
 import '../features/profile/presentation/profile_page.dart';
+import '../features/topic_tests/presentation/topic_test_form_page.dart';
+import '../features/topic_tests/presentation/topic_test_list_view.dart';
 import 'local_data.dart';
 
-/// Shell with the three MVP areas. It lives in `app/` because it composes several features' screens.
+/// Shell with the MVP areas. It lives in `app/` because it composes several features' screens.
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
 
@@ -27,6 +29,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   static const _tabs = [
     (icon: Icons.menu_book_outlined, label: 'Konular'),
+    (icon: Icons.edit_note_outlined, label: 'Testler'),
     (icon: Icons.assignment_outlined, label: 'Denemeler'),
     (icon: Icons.insights_outlined, label: 'Analiz'),
   ];
@@ -119,15 +122,17 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           ),
         ],
       ),
-      body: _index == 0
-          ? const TopicListView()
-          : Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: NCard(
-                title: tab.label,
-                description: '${tab.label} yakında',
-              ),
-            ),
+      body: switch (_index) {
+        0 => TopicListView(
+          onRecordTest: (topic) =>
+              context.push(TopicTestFormPage.newForTopic(topic.id)),
+        ),
+        1 => const TopicTestListView(),
+        _ => Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: NCard(title: tab.label, description: '${tab.label} yakında'),
+        ),
+      },
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),

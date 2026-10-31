@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/misc.dart';
+import 'package:nirengi/app/composition.dart';
 import 'package:nirengi/core/database/database_providers.dart';
 import 'package:nirengi/core/network/api_client.dart';
 import 'package:nirengi/features/curriculum/application/curriculum_providers.dart';
@@ -92,6 +93,20 @@ Curriculum seedCurriculum() {
           ],
         },
     ],
+    'sources': [
+      {
+        'id': 'src-osym',
+        'code': 'OSYM',
+        'name': 'ÖSYM çıkmış sorular',
+        'kind': 'Official',
+      },
+      {
+        'id': 'src-pub',
+        'code': 'YAYIN',
+        'name': 'Örnek Yayınları',
+        'kind': 'Publisher',
+      },
+    ],
   });
 }
 
@@ -116,4 +131,5 @@ List<Override> fakeAppOverrides({
   curriculumRepositoryProvider.overrideWithValue(
     curriculum ?? FakeCurriculumRepository(),
   ),
+  ...offlineRecordOverrides,
 ];
