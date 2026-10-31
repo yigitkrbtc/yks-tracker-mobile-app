@@ -19,6 +19,24 @@ public sealed record CatalogMockSection(
     string? ParentCode,
     string? AlternativeOf);
 
+/// <summary>A topic with its expected question count for the release's exam year (q_i).</summary>
+public sealed record CatalogWeightedTopic(Guid Id, string SubjectCode, decimal ExpectedQuestions, bool IsActive);
+
+public sealed record CatalogSubject(string Code, IReadOnlyList<string> TestCodes);
+
+public sealed record CatalogScoreType(string Code, IReadOnlyList<string> TestCodes);
+
+/// <summary>The curriculum slice the analysis engine needs.</summary>
+/// <param name="Version">Changes whenever any topic, weight or mapping changes (seed hash).</param>
+/// <param name="Topics">Retired topics included (old records use them), in display order.</param>
+public sealed record AnalysisCatalogData(
+    string Version,
+    int ExamYear,
+    IReadOnlyList<CatalogWeightedTopic> Topics,
+    IReadOnlyList<CatalogSubject> Subjects,
+    IReadOnlyList<CatalogScoreType> ScoreTypes,
+    IReadOnlyList<CatalogMockSection> MockSections);
+
 /// <summary>Lets other modules check topic and source references without reading Curriculum's tables.</summary>
 public interface ICurriculumCatalog
 {
@@ -29,4 +47,10 @@ public interface ICurriculumCatalog
 
     /// <summary>The whole mock exam template (a few dozen rows).</summary>
     Task<IReadOnlyList<CatalogMockSection>> GetMockSections(CancellationToken cancellationToken);
+
+    /// <summary>The latest release's analysis catalog; null before the seed is loaded.</summary>
+    Task<AnalysisCatalogData?> GetAnalysisCatalog(CancellationToken cancellationToken);
+
+    /// <summary>The latest release's version (seed hash), cheap to read; null before the seed is loaded.</summary>
+    Task<string?> GetVersion(CancellationToken cancellationToken);
 }

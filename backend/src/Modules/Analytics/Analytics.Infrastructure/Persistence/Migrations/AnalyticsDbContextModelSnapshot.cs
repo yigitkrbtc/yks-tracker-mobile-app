@@ -66,6 +66,155 @@ namespace Nirengi.Modules.Analytics.Infrastructure.Persistence.Migrations
 
                     b.ToTable("outbox_messages", "analytics");
                 });
+
+            modelBuilder.Entity("Nirengi.Modules.Analytics.Application.Snapshots.SectionSnapshot", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("SectionCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("section_code");
+
+                    b.Property<double>("Accuracy")
+                        .HasColumnType("double precision")
+                        .HasColumnName("accuracy");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("details");
+
+                    b.Property<int>("Exams")
+                        .HasColumnType("integer")
+                        .HasColumnName("exams");
+
+                    b.Property<bool>("GapWarning")
+                        .HasColumnType("boolean")
+                        .HasColumnName("gap_warning");
+
+                    b.Property<bool>("IsSufficient")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_sufficient");
+
+                    b.Property<double?>("PracticeGap")
+                        .HasColumnType("double precision")
+                        .HasColumnName("practice_gap");
+
+                    b.Property<string>("Trend")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("trend");
+
+                    b.HasKey("UserId", "SectionCode")
+                        .HasName("pk_section_snapshots");
+
+                    b.ToTable("section_snapshots", "analytics");
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Analytics.Application.Snapshots.TopicSnapshot", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("TopicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("topic_id");
+
+                    b.Property<string>("Band")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("band");
+
+                    b.Property<double?>("Confidence")
+                        .HasColumnType("double precision")
+                        .HasColumnName("confidence");
+
+                    b.Property<string>("ConfidenceLevel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("confidence_level");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("details");
+
+                    b.Property<double?>("Mastery")
+                        .HasColumnType("double precision")
+                        .HasColumnName("mastery");
+
+                    b.Property<double?>("MasteryHigh")
+                        .HasColumnType("double precision")
+                        .HasColumnName("mastery_high");
+
+                    b.Property<double?>("MasteryLow")
+                        .HasColumnType("double precision")
+                        .HasColumnName("mastery_low");
+
+                    b.Property<double?>("Priority")
+                        .HasColumnType("double precision")
+                        .HasColumnName("priority");
+
+                    b.Property<string>("Trend")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("trend");
+
+                    b.HasKey("UserId", "TopicId")
+                        .HasName("pk_topic_snapshots");
+
+                    b.ToTable("topic_snapshots", "analytics");
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Analytics.Application.Snapshots.UserAnalysis", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTimeOffset>("ComputedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("computed_at");
+
+                    b.Property<DateOnly>("ComputedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("computed_on");
+
+                    b.Property<int>("InvalidRecords")
+                        .HasColumnType("integer")
+                        .HasColumnName("invalid_records");
+
+                    b.Property<string>("RuleSetVersion")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("rule_set_version");
+
+                    b.Property<string>("SourceStamp")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("source_stamp");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("summary");
+
+                    b.HasKey("UserId")
+                        .HasName("pk_user_analyses");
+
+                    b.ToTable("user_analyses", "analytics");
+                });
 #pragma warning restore 612, 618
         }
     }

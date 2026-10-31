@@ -95,6 +95,43 @@ public sealed class EngineTests
         }
     }
 
+    /// <summary>Read-time recompute budget (ADR-0016): 2,000 topic lines + 200 mocks take ≈ 20 ms; the bound leaves CI headroom.</summary>
+    [Fact]
+    public void Heavy_history_is_analysed_quickly()
+    {
+        var random = new Random(11);
+        var subjects = Enumerable.Range(0, 20).Select(i => $"S{i}").ToArray();
+        var topics = Enumerable.Range(0, 370)
+            .Select(i => new CatalogTopicInfo(Guid.NewGuid(), subjects[i % subjects.Length], random.NextDouble() * 4))
+            .ToList();
+        var today = new DateOnly(2026, 10, 31);
+        var records = Enumerable.Range(0, 2000).Select(_ =>
+        {
+            var c = random.Next(1, 15);
+            var w = random.Next(6);
+            return new TopicRecord(Guid.NewGuid(), topics[random.Next(topics.Count)].Id, today.AddDays(-random.Next(365)), c + w, c, w, 0, false);
+        }).ToList();
+        var sections = subjects.Select(s => new CatalogSectionInfo(s, s, null, [s], 20)).ToList();
+        var exams = Enumerable.Range(0, 200).Select(i => new MockExamRecord(
+            Guid.NewGuid(),
+            today.AddDays(-random.Next(365)),
+            [.. subjects.Take(4).Select(s => new MockSectionRecord(s, 20, 12, 4, true, [new TopicMark(topics[random.Next(topics.Count)].Id, 0, 0)]))])).ToList();
+        var input = new AnalysisInput(
+            today,
+            new AnalysisCatalog(topics, [.. subjects.Select(s => new CatalogSubjectInfo(s, [s]))], sections),
+            subjects,
+            records,
+            exams);
+
+        Analyzer.Analyze(input, RuleSet.V1); // warm-up (JIT)
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        Analyzer.Analyze(input, RuleSet.V1);
+        watch.Stop();
+
+        TestContext.Current.SendDiagnosticMessage($"Analyze: {watch.ElapsedMilliseconds} ms");
+        watch.ElapsedMilliseconds.ShouldBeLessThan(500);
+    }
+
     private static AnalysisInput RandomInput(int seed)
     {
         var random = new Random(seed);

@@ -1047,10 +1047,242 @@
           }
         }
       }
+    },
+    "/v1/analytics/overview": {
+      "get": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "The caller's analysis panel; recomputed when records, profile or the day changed. Honours If-None-Match.",
+        "operationId": "GetAnalysisOverview",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisOverviewResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/analytics/topics/{topicId}": {
+      "get": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "The caller's topic card; a topic without records returns ConfidenceLevel None.",
+        "operationId": "GetTopicAnalysis",
+        "parameters": [
+          {
+            "name": "topicId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicAnalysisResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AggregateDto": {
+        "required": [
+          "code",
+          "isActive",
+          "mastery",
+          "masteryLow",
+          "masteryHigh",
+          "coverage",
+          "studiedTopics",
+          "topicCount"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "mastery": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "masteryLow": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "masteryHigh": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverage": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "studiedTopics": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "topicCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "AnalysisOverviewResponse": {
+        "required": [
+          "eTag",
+          "computedAt",
+          "computedOn",
+          "ruleSetVersion",
+          "invalidRecords",
+          "tests",
+          "subjects",
+          "priorities",
+          "lowDataTopics",
+          "sections",
+          "topics"
+        ],
+        "type": "object",
+        "properties": {
+          "eTag": {
+            "type": "string"
+          },
+          "computedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "computedOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "ruleSetVersion": {
+            "type": "string"
+          },
+          "invalidRecords": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AggregateDto"
+            }
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AggregateDto"
+            }
+          },
+          "priorities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriorityDto"
+            }
+          },
+          "lowDataTopics": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SectionDto"
+            }
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicStatusDto"
+            }
+          }
+        }
+      },
       "AuthTokens": {
         "required": [
           "accessToken",
@@ -1111,6 +1343,15 @@
             ]
           }
         }
+      },
+      "ConfidenceLevel": {
+        "enum": [
+          "None",
+          "VeryLow",
+          "Preliminary",
+          "Reasonable",
+          "Reliable"
+        ]
       },
       "ConfirmTotpSetupCommand": {
         "required": [
@@ -1339,6 +1580,15 @@
             "type": "string"
           }
         }
+      },
+      "MasteryBand": {
+        "enum": [
+          "None",
+          "Insufficient",
+          "Weak",
+          "Developing",
+          "Strong"
+        ]
       },
       "MfaChallenge": {
         "required": [
@@ -1623,6 +1873,137 @@
           }
         }
       },
+      "MockSignalDto": {
+        "required": [
+          "exposure",
+          "missed",
+          "wrong",
+          "blank",
+          "exams",
+          "rate",
+          "subjectRate",
+          "shown"
+        ],
+        "type": "object",
+        "properties": {
+          "exposure": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "missed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "wrong": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "blank": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "exams": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "rate": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "subjectRate": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "shown": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PriorityDto": {
+        "required": [
+          "topicId",
+          "priority",
+          "mastery",
+          "expectedQuestions",
+          "gain",
+          "mockBoost"
+        ],
+        "type": "object",
+        "properties": {
+          "topicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "priority": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "mastery": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "expectedQuestions": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "gain": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "mockBoost": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
       "ProblemDetails": {
         "type": "object",
         "properties": {
@@ -1658,6 +2039,58 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "RecentRecordDto": {
+        "required": [
+          "date",
+          "total",
+          "correct",
+          "wrong",
+          "blank",
+          "isRepeat"
+        ],
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "correct": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "wrong": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "blank": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "isRepeat": {
+            "type": "boolean"
           }
         }
       },
@@ -2038,6 +2471,111 @@
           }
         }
       },
+      "SectionDto": {
+        "required": [
+          "code",
+          "exams",
+          "isSufficient",
+          "accuracy",
+          "accuracyLow",
+          "accuracyHigh",
+          "markingRate",
+          "expectedNet",
+          "expectedNetLow",
+          "expectedNetHigh",
+          "trend",
+          "practiceGap",
+          "gapWarning"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "exams": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "isSufficient": {
+            "type": "boolean"
+          },
+          "accuracy": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "accuracyLow": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "accuracyHigh": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "markingRate": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "expectedNet": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "expectedNetLow": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "expectedNetHigh": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "trend": {
+            "$ref": "#/components/schemas/TrendDto"
+          },
+          "practiceGap": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "gapWarning": {
+            "type": "boolean"
+          }
+        }
+      },
       "SignInResult": {
         "required": [
           "tokens",
@@ -2232,6 +2770,166 @@
           "Partial",
           "Full"
         ]
+      },
+      "TopicAnalysisResponse": {
+        "required": [
+          "topicId",
+          "computedAt",
+          "ruleSetVersion",
+          "analysis"
+        ],
+        "type": "object",
+        "properties": {
+          "topicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "computedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ruleSetVersion": {
+            "type": "string"
+          },
+          "analysis": {
+            "$ref": "#/components/schemas/TopicDetails"
+          }
+        }
+      },
+      "TopicDetails": {
+        "required": [
+          "mastery",
+          "masteryLow",
+          "masteryHigh",
+          "markingRate",
+          "optimistic",
+          "expectedNetPerQuestion",
+          "effectiveQuestions",
+          "confidence",
+          "confidenceLevel",
+          "questionsToNextLevel",
+          "band",
+          "trend",
+          "priority",
+          "totals",
+          "mockSignal",
+          "recent"
+        ],
+        "type": "object",
+        "properties": {
+          "mastery": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "masteryLow": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "masteryHigh": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "markingRate": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "optimistic": {
+            "type": "boolean"
+          },
+          "expectedNetPerQuestion": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "effectiveQuestions": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "confidence": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "confidenceLevel": {
+            "$ref": "#/components/schemas/ConfidenceLevel"
+          },
+          "questionsToNextLevel": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "band": {
+            "$ref": "#/components/schemas/MasteryBand"
+          },
+          "trend": {
+            "$ref": "#/components/schemas/TrendDto"
+          },
+          "priority": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/TotalsDto"
+          },
+          "mockSignal": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MockSignalDto"
+              }
+            ]
+          },
+          "recent": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecentRecordDto"
+            }
+          }
+        }
       },
       "TopicDto": {
         "required": [
@@ -2599,6 +3297,60 @@
           }
         }
       },
+      "TopicStatusDto": {
+        "required": [
+          "topicId",
+          "mastery",
+          "masteryLow",
+          "masteryHigh",
+          "confidenceLevel",
+          "band",
+          "trend"
+        ],
+        "type": "object",
+        "properties": {
+          "topicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mastery": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "masteryLow": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "masteryHigh": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "confidenceLevel": {
+            "$ref": "#/components/schemas/ConfidenceLevel"
+          },
+          "band": {
+            "$ref": "#/components/schemas/MasteryBand"
+          },
+          "trend": {
+            "$ref": "#/components/schemas/TrendLabel"
+          }
+        }
+      },
       "TopicTestResponse": {
         "required": [
           "id",
@@ -2693,6 +3445,58 @@
           }
         }
       },
+      "TotalsDto": {
+        "required": [
+          "records",
+          "questions",
+          "correct",
+          "wrong",
+          "blank"
+        ],
+        "type": "object",
+        "properties": {
+          "records": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "questions": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "correct": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "wrong": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "blank": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "TotpEnrollment": {
         "required": [
           "tokens",
@@ -2725,6 +3529,46 @@
             "type": "string"
           }
         }
+      },
+      "TrendDto": {
+        "required": [
+          "label",
+          "probabilityUp",
+          "difference"
+        ],
+        "type": "object",
+        "properties": {
+          "label": {
+            "$ref": "#/components/schemas/TrendLabel"
+          },
+          "probabilityUp": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "difference": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "TrendLabel": {
+        "enum": [
+          "None",
+          "Insufficient",
+          "Improving",
+          "Stable",
+          "Declining"
+        ]
       },
       "UserProfile": {
         "required": [
@@ -2821,6 +3665,9 @@
     },
     {
       "name": "Tracking"
+    },
+    {
+      "name": "Analytics"
     }
   ]
 }
