@@ -165,4 +165,45 @@ void main() {
     expect(find.textContaining('Henüz konu testi yok'), findsOneWidget);
     await disposeApp(tester);
   });
+
+  testWidgets('a retired last source is not preselected for a new test', (
+    tester,
+  ) async {
+    server.records['old'] = {
+      'id': 'old',
+      'studiedOn': '2026-10-29',
+      'sourceId': 'src-retired',
+      'sourceName': null,
+      'isRepeat': false,
+      'difficulty': null,
+      'durationMinutes': null,
+      'note': null,
+      'results': [
+        {
+          'topicId': 'TYT.TUR.01',
+          'total': 10,
+          'correct': 7,
+          'wrong': 2,
+          'blank': 1,
+          'net': 6.5,
+        },
+      ],
+      'clientModifiedAt': '2026-10-29T18:30:00.000000+00:00',
+      'deleted': false,
+      'changeSeq': ++server.seq,
+    };
+    await pumpApp(tester);
+    await tester.tap(find.text('Testler'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Test ekle'));
+    await tester.pumpAndSettle();
+
+    await save(tester);
+
+    expect(
+      find.text('Listeden bir kaynak seç ya da kaynağın adını yaz.'),
+      findsOneWidget,
+    );
+    await disposeApp(tester);
+  });
 }

@@ -26,11 +26,12 @@ class TopicTestSyncHandler implements SyncHandler {
     final path = '/v1/topic-tests/${item.entityId}';
     final payload = jsonDecode(item.payload!) as Map<String, dynamic>;
     if (item.operation == 'delete') {
-      await api.delete<void>(
+      // 204 when deleted; 200 with the stored test when a newer edit from another device wins.
+      final response = await api.delete<Object?>(
         path,
         queryParameters: {'modifiedAt': payload['modifiedAt']},
       );
-      return null;
+      return response.data;
     }
     final response = await api.put<Map<String, dynamic>>(path, data: payload);
     return response.data;
@@ -39,10 +40,10 @@ class TopicTestSyncHandler implements SyncHandler {
   /// The server's answer is the stored state: a newer edit from another device or a delete wins here too.
   @override
   Future<void> onPushed(OutboxRow item, Object? response) async {
-    if (item.operation == 'delete') {
-      await _removeRow(item.entityId);
-    } else if (response is Map<String, dynamic>) {
+    if (response is Map<String, dynamic>) {
       await TopicTestRecords.storeServer(_db, response);
+    } else if (item.operation == 'delete') {
+      await _removeRow(item.entityId);
     }
   }
 

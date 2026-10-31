@@ -44,7 +44,9 @@ internal sealed class SaveTopicTestValidator : AbstractValidator<SaveTopicTestCo
         RuleFor(c => c.Id).NotEmpty();
         RuleFor(c => c.ClientModifiedAt).NotNull();
         RuleFor(c => c.IsRepeat).NotNull();
-        RuleFor(c => c.StudiedOn).NotNull()
+        // Separate rules: a trailing When() would also guard NotNull and let a missing value through.
+        RuleFor(c => c.StudiedOn).NotNull();
+        RuleFor(c => c.StudiedOn)
             .Must(d => TopicTestRules.IsAllowedStudyDate(d!.Value, clock.UtcNow)).When(c => c.StudiedOn.HasValue)
             .WithMessage($"Tarih bugün ile son {TopicTestRules.MaxDaysBack} gün arasında olmalı.");
 
@@ -58,7 +60,8 @@ internal sealed class SaveTopicTestValidator : AbstractValidator<SaveTopicTestCo
         RuleFor(c => c.DurationMinutes).InclusiveBetween(1, TopicTestRules.MaxDurationMinutes);
         RuleFor(c => c.Note).MaximumLength(TopicTestRules.NoteMaxLength);
 
-        RuleFor(c => c.Results).NotNull()
+        RuleFor(c => c.Results).NotNull();
+        RuleFor(c => c.Results)
             .Must(r => r!.Count is >= 1 and <= TopicTestRules.MaxTopics)
             .WithMessage($"Bir testte 1 ile {TopicTestRules.MaxTopics} arasında konu olur.")
             .Must(r => r!.Where(x => x?.TopicId is not null).Select(x => x.TopicId).Distinct().Count() == r!.Count(x => x?.TopicId is not null))

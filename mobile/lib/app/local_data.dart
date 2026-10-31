@@ -40,7 +40,9 @@ class LocalData {
     final cache = CacheStore(db);
     final owner = (await cache.read(ownerKey))?['userId'];
     if (owner != userId) {
-      // Another account used this device last (or nobody did): start from an empty database.
+      // Another account used this device last (or nobody did): start from an empty database. A sync still
+      // running for that account is abandoned first so it cannot write after the wipe.
+      _ref.read(syncSchedulerProvider).stop();
       await db.wipe();
       await cache.write(ownerKey, {'userId': userId});
     }
