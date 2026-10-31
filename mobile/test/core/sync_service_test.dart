@@ -276,12 +276,16 @@ void main() {
     expect((await outbox.find('thing', 'a'))!.rejected, isFalse);
   });
 
-  test('a feed this version cannot read backs off instead of throwing', () async {
-    api.route = (r) => FakeApi.json(200, {'things': <Object>[], 'cursor': 'x'});
+  test(
+    'a feed this version cannot read backs off instead of throwing',
+    () async {
+      api.route = (r) =>
+          FakeApi.json(200, {'things': <Object>[], 'cursor': 'x'});
 
-    expect(await service.sync(), SyncOutcome.offline);
-    expect(service.retryAt, now.add(const Duration(seconds: 2)));
-  });
+      expect(await service.sync(), SyncOutcome.offline);
+      expect(service.retryAt, now.add(const Duration(seconds: 2)));
+    },
+  );
 
   test('a sync asked for during a run runs again after it', () async {
     var pulls = 0;

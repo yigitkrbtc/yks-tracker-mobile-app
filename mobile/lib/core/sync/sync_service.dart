@@ -51,7 +51,8 @@ class SyncService {
   int _generation = 0;
   int _failures = 0;
   DateTime? _retryAt;
-  final Map<String, int> _serverFailures = {}; // per queued write (id:revision), this app session
+  final Map<String, int> _serverFailures =
+      {}; // per queued write (id:revision), this app session
 
   /// When the next attempt is due after a failure; null when the last run succeeded.
   DateTime? get retryAt => _retryAt;

@@ -241,20 +241,23 @@ void main() {
     expect(await repository.lastSource(), (id: null, name: 'Ders notu'));
   });
 
-  test('a delete older than another device\'s edit brings the test back', () async {
-    await repository.save(sample());
-    await sync.sync();
-    await repository.delete('t1');
-    final stored = server.records['t1']!;
-    api.route = (r) => r.method == 'DELETE'
-        ? FakeApi.json(200, {...stored, 'note': 'tablet'})
-        : server.handle(r);
+  test(
+    'a delete older than another device\'s edit brings the test back',
+    () async {
+      await repository.save(sample());
+      await sync.sync();
+      await repository.delete('t1');
+      final stored = server.records['t1']!;
+      api.route = (r) => r.method == 'DELETE'
+          ? FakeApi.json(200, {...stored, 'note': 'tablet'})
+          : server.handle(r);
 
-    expect(await sync.sync(), SyncOutcome.done);
+      expect(await sync.sync(), SyncOutcome.done);
 
-    final restored = (await repository.get('t1'))!;
-    expect(restored.note, 'tablet');
-    expect(restored.syncStatus, SyncStatus.synced);
-    expect(await outbox.queuedCount(), 0);
-  });
+      final restored = (await repository.get('t1'))!;
+      expect(restored.note, 'tablet');
+      expect(restored.syncStatus, SyncStatus.synced);
+      expect(await outbox.queuedCount(), 0);
+    },
+  );
 }
