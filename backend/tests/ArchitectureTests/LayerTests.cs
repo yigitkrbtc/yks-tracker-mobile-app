@@ -55,6 +55,18 @@ public sealed class LayerTests
         result.IsSuccessful.ShouldBeTrue(Describe(result));
     }
 
+    /// <summary>ADR-0003: the analysis engine is a pure library: nothing but the base class library.</summary>
+    [Fact]
+    public void Analytics_engine_references_only_the_base_class_library()
+    {
+        var references = Modules.Analytics.Engine.AssemblyReference.Assembly.GetReferencedAssemblies()
+            .Select(a => a.Name!)
+            .Where(n => n != "System.Runtime" && n != "System.Linq" && n != "System.Collections" && n != "netstandard")
+            .ToList();
+
+        references.ShouldBeEmpty();
+    }
+
     [Fact]
     public void Building_block_domain_is_framework_free()
     {

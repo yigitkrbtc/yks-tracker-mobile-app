@@ -59,6 +59,7 @@
     <Project Path="src/Modules/Tracking/Tracking.Infrastructure/Tracking.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Analytics.GoldenTests/Analytics.GoldenTests.csproj" />
     <Project Path="tests/ArchitectureTests/ArchitectureTests.csproj" />
     <Project Path="tests/BuildingBlocks.UnitTests/BuildingBlocks.UnitTests.csproj" />
     <Project Path="tests/Curriculum.UnitTests/Curriculum.UnitTests.csproj" />
