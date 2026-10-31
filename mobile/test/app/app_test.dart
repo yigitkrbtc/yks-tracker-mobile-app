@@ -48,9 +48,9 @@ void main() {
     expect(find.text('Çok çıkar'), findsOneWidget);
     expect(find.text('Son yıllarda çıkmadı'), findsOneWidget);
 
-    await tester.tap(find.text('Denemeler'));
+    await tester.tap(find.text('Analiz'));
     await tester.pumpAndSettle();
-    expect(find.text('Denemeler yakında'), findsOneWidget);
+    expect(find.text('Analiz yakında'), findsOneWidget);
   });
 
   testWidgets('first sign-in goes through onboarding, then shows topics', (

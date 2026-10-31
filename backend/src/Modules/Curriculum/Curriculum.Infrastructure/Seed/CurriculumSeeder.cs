@@ -35,6 +35,7 @@ public sealed partial class CurriculumSeeder(CurriculumDbContext db, IClock cloc
         await SyncTests(seed, cancellationToken);
         await SyncSubjects(seed, cancellationToken);
         await SyncScoreTypes(seed, cancellationToken);
+        await SyncMockSections(seed, cancellationToken);
         var topicIds = await SyncTopics(seed, cancellationToken);
         await SyncWeights(seed, topicIds, cancellationToken);
         await SyncSources(seed, cancellationToken);
@@ -110,6 +111,26 @@ public sealed partial class CurriculumSeeder(CurriculumDbContext db, IClock cloc
         }
 
         db.ScoreTypes.RemoveRange(existing.Values);
+    }
+
+    /// <summary>Removed codes are deleted: mock exams keep their own copy of a section's question count.</summary>
+    private async Task SyncMockSections(CurriculumSeed seed, CancellationToken cancellationToken)
+    {
+        var existing = await db.MockSections.ToDictionaryAsync(s => s.Id, cancellationToken);
+        for (var i = 0; i < seed.MockSections.Count; i++)
+        {
+            var s = seed.MockSections[i];
+            if (existing.Remove(s.Code, out var section))
+            {
+                section.Update(s.TestCode, s.SubjectCode, s.Name, s.QuestionCount, s.ParentCode, s.AlternativeOf, i);
+            }
+            else
+            {
+                db.MockSections.Add(MockSection.Create(s.Code, s.TestCode, s.SubjectCode, s.Name, s.QuestionCount, s.ParentCode, s.AlternativeOf, i));
+            }
+        }
+
+        db.MockSections.RemoveRange(existing.Values);
     }
 
     private async Task<Dictionary<string, Guid>> SyncTopics(CurriculumSeed seed, CancellationToken cancellationToken)

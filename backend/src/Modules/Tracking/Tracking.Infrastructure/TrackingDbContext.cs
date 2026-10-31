@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Nirengi.BuildingBlocks.Infrastructure.Persistence;
+using Nirengi.Modules.Tracking.Domain.MockExams;
 using Nirengi.Modules.Tracking.Domain.Profiles;
 using Nirengi.Modules.Tracking.Domain.TopicTests;
 
@@ -11,10 +12,12 @@ public sealed class TrackingDbContext(DbContextOptions<TrackingDbContext> option
 
     public DbSet<StudyProfile> StudyProfiles => Set<StudyProfile>();
 
-    /// <summary>Feeds <see cref="TopicTest.ChangeSeq"/>; one sequence for every syncable Tracking record.</summary>
+    /// <summary>Feeds <see cref="Domain.ISyncRecord.ChangeSeq"/>; one sequence for every syncable Tracking record.</summary>
     public const string ChangeSequenceName = "change_seq";
 
     public DbSet<TopicTest> TopicTests => Set<TopicTest>();
+
+    public DbSet<MockExam> MockExams => Set<MockExam>();
 
     protected override string Schema => SchemaName;
 

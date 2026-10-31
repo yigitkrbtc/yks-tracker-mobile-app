@@ -124,6 +124,54 @@ namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence.Migrations
                     b.ToTable("exam_tests", "curriculum");
                 });
 
+            modelBuilder.Entity("Nirengi.Modules.Curriculum.Domain.Exams.MockSection", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("code");
+
+                    b.Property<string>("AlternativeOf")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("alternative_of");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("ParentCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("parent_code");
+
+                    b.Property<int>("QuestionCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("question_count");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<string>("SubjectCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("subject_code");
+
+                    b.Property<string>("TestCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("test_code");
+
+                    b.HasKey("Id")
+                        .HasName("pk_mock_sections");
+
+                    b.ToTable("mock_sections", "curriculum");
+                });
+
             modelBuilder.Entity("Nirengi.Modules.Curriculum.Domain.Exams.ScoreType", b =>
                 {
                     b.Property<string>("Id")

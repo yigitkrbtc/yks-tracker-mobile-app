@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../core/design/gallery/design_gallery_page.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/auth/presentation/auth_routes.dart';
+import '../features/mock_exams/presentation/mock_exam_form_page.dart';
+import '../features/mock_exams/presentation/mock_exam_marks_page.dart';
 import '../features/profile/application/profile_providers.dart';
 import '../features/profile/presentation/profile_page.dart';
 import '../features/topic_tests/presentation/topic_test_form_page.dart';
@@ -72,6 +74,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: TopicTestFormPage.editPattern,
         builder: (context, state) =>
             TopicTestFormPage(id: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: MockExamFormPage.newPath,
+        builder: (context, state) => const MockExamFormPage(),
+      ),
+      GoRoute(
+        path: MockExamMarksPage.pattern,
+        builder: (context, state) =>
+            MockExamMarksPage(id: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: MockExamFormPage.editPattern,
+        builder: (context, state) =>
+            MockExamFormPage(id: state.pathParameters['id']),
       ),
       ...AuthRoutes.routes,
       GoRoute(

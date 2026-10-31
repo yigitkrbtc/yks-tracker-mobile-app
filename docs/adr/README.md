@@ -16,5 +16,6 @@
 | 0012 | [Kimlik doğrulama: JWT + dönen refresh token](0012-kimlik-dogrulama.md) | Kabul |
 | 0013 | [Müfredat seed'den yüklenir; çalışma profili Tracking'de](0013-mufredat-ve-calisma-profili.md) | Kabul |
 | 0014 | [Konu testi kaydı ve offline senkron](0014-konu-testi-ve-senkron.md) | Kabul |
+| 0015 | [Deneme kaydı, bölüm şablonu ve yanlış etiketleme](0015-deneme-kaydi-ve-etiketleme.md) | Kabul |
 
 Yeni karar: sıradaki numarayla aynı şablonda (Bağlam, Karar, Sonuçlar) dosya ekle. Değişen karar silinmez; yeni ADR eskisini "Yerine geçti" olarak işaretler.

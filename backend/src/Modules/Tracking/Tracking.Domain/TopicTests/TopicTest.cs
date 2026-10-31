@@ -7,7 +7,7 @@ namespace Nirengi.Modules.Tracking.Domain.TopicTests;
 /// UUID v7 and every change carries the client's edit time, so a late upload from an old device never
 /// overwrites a newer edit (last writer by edit time wins, ADR-0005). Deletion keeps a tombstone for sync.
 /// </summary>
-public sealed class TopicTest : AggregateRoot<Guid>
+public sealed class TopicTest : AggregateRoot<Guid>, ISyncRecord
 {
     private readonly List<TopicResult> _results = [];
 
@@ -51,7 +51,7 @@ public sealed class TopicTest : AggregateRoot<Guid>
     public static TopicTest Create(Guid id, Guid userId, TopicTestData data, DateTimeOffset clientModifiedAt, DateTimeOffset now)
     {
         var test = new TopicTest { Id = id, UserId = userId, CreatedAt = now };
-        test.Set(data, EditTime(clientModifiedAt, now), now);
+        test.Set(data, EditTime.Of(clientModifiedAt, now), now);
         return test;
     }
 
@@ -59,7 +59,7 @@ public sealed class TopicTest : AggregateRoot<Guid>
     /// <returns>False when nothing changed (a replay or a stale write); the stored state stands.</returns>
     public bool Apply(TopicTestData data, DateTimeOffset clientModifiedAt, DateTimeOffset now)
     {
-        var editTime = EditTime(clientModifiedAt, now);
+        var editTime = EditTime.Of(clientModifiedAt, now);
         if (editTime <= ClientModifiedAt)
         {
             return false;
@@ -73,7 +73,7 @@ public sealed class TopicTest : AggregateRoot<Guid>
     /// <returns>False when already deleted or a newer edit is stored.</returns>
     public bool Delete(DateTimeOffset clientModifiedAt, DateTimeOffset now)
     {
-        var editTime = EditTime(clientModifiedAt, now);
+        var editTime = EditTime.Of(clientModifiedAt, now);
         if (IsDeleted || editTime <= ClientModifiedAt)
         {
             return false;
@@ -87,13 +87,6 @@ public sealed class TopicTest : AggregateRoot<Guid>
     }
 
     public void AssignChangeSeq(long changeSeq) => ChangeSeq = changeSeq;
-
-    /// <summary>Capped at server time (a fast device clock cannot win forever), cut to PostgreSQL's microseconds.</summary>
-    private static DateTimeOffset EditTime(DateTimeOffset client, DateTimeOffset now)
-    {
-        var capped = client > now ? now : client;
-        return capped.AddTicks(-(capped.UtcTicks % 10));
-    }
 
     private void Set(TopicTestData data, DateTimeOffset editTime, DateTimeOffset now)
     {

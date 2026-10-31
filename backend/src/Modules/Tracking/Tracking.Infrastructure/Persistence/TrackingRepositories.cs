@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Nirengi.Modules.Tracking.Application.Abstractions;
 using Nirengi.BuildingBlocks.Application.Events;
+using Nirengi.Modules.Tracking.Domain;
+using Nirengi.Modules.Tracking.Domain.MockExams;
 using Nirengi.Modules.Tracking.Domain.Profiles;
 using Nirengi.Modules.Tracking.Domain.TopicTests;
 
@@ -39,6 +41,28 @@ internal sealed class TopicTestRepository(TrackingDbContext db) : ITopicTestRepo
         db.TopicTests.Where(t => t.UserId == userId).ExecuteDeleteAsync(cancellationToken);
 }
 
+internal sealed class MockExamRepository(TrackingDbContext db) : IMockExamRepository
+{
+    public Task<MockExam?> Get(Guid id, CancellationToken cancellationToken) =>
+        db.MockExams.Include(e => e.Sections).Include(e => e.Marks).AsSplitQuery().SingleOrDefaultAsync(e => e.Id == id, cancellationToken);
+
+    public void Add(MockExam exam) => db.MockExams.Add(exam);
+
+    public async Task<IReadOnlyList<MockExam>> GetChanges(Guid userId, long since, int limit, CancellationToken cancellationToken) =>
+        await db.MockExams.AsNoTracking()
+            .Include(e => e.Sections)
+            .Include(e => e.Marks)
+            .Where(e => e.UserId == userId && e.ChangeSeq > since)
+            .OrderBy(e => e.ChangeSeq)
+            .Take(limit)
+            .AsSplitQuery()
+            .ToListAsync(cancellationToken);
+
+    // Sections and marks go with their exam (ON DELETE CASCADE).
+    public Task DeleteForUser(Guid userId, CancellationToken cancellationToken) =>
+        db.MockExams.Where(e => e.UserId == userId).ExecuteDeleteAsync(cancellationToken);
+}
+
 internal sealed class TrackingUnitOfWork(TrackingDbContext db) : ITrackingUnitOfWork
 {
     public void Enqueue(IIntegrationEvent integrationEvent) => db.Enqueue(integrationEvent);
@@ -47,7 +71,7 @@ internal sealed class TrackingUnitOfWork(TrackingDbContext db) : ITrackingUnitOf
     {
         try
         {
-            var changed = db.ChangeTracker.Entries<TopicTest>()
+            var changed = db.ChangeTracker.Entries<ISyncRecord>()
                 .Where(e => e.State is EntityState.Added or EntityState.Modified)
                 .Select(e => e.Entity)
                 .ToList();
@@ -65,9 +89,9 @@ internal sealed class TrackingUnitOfWork(TrackingDbContext db) : ITrackingUnitOf
                     cancellationToken);
             }
 
-            foreach (var test in changed)
+            foreach (var record in changed)
             {
-                test.AssignChangeSeq(await db.Database
+                record.AssignChangeSeq(await db.Database
                     .SqlQueryRaw<long>($"SELECT nextval('{TrackingDbContext.SchemaName}.{TrackingDbContext.ChangeSequenceName}') AS \"Value\"")
                     .SingleAsync(cancellationToken));
             }

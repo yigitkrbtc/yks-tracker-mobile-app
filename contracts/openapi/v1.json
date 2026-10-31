@@ -825,6 +825,160 @@
         }
       }
     },
+    "/v1/mock-exams/{id}": {
+      "put": {
+        "tags": [
+          "Tracking"
+        ],
+        "summary": "Create or replace a mock exam, topic marks included, by its client id (idempotent).",
+        "operationId": "SaveMockExam",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveMockExamRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MockExamResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tracking"
+        ],
+        "summary": "Delete a mock exam (idempotent; a tombstone stays for sync). A newer stored edit wins: 200 with it.",
+        "operationId": "DeleteMockExam",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "modifiedAt",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MockExamResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/sync": {
       "get": {
         "tags": [
@@ -980,7 +1134,8 @@
           "scoreTypes",
           "tests",
           "subjects",
-          "sources"
+          "sources",
+          "mockSections"
         ],
         "type": "object",
         "properties": {
@@ -1017,6 +1172,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SourceDto"
+            }
+          },
+          "mockSections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MockSectionDto"
             }
           }
         }
@@ -1205,6 +1366,263 @@
           "TotpSetup"
         ]
       },
+      "MockExamKind": {
+        "enum": [
+          "Tyt",
+          "Ayt",
+          "Branch"
+        ]
+      },
+      "MockExamResponse": {
+        "required": [
+          "id",
+          "kind",
+          "takenOn",
+          "sourceId",
+          "sourceName",
+          "title",
+          "durationMinutes",
+          "note",
+          "sections",
+          "marks",
+          "clientModifiedAt",
+          "updatedAt",
+          "deleted",
+          "changeSeq"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/MockExamKind"
+          },
+          "takenOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "sourceId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "sourceName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "durationMinutes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MockSectionResponse"
+            }
+          },
+          "marks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicMarkResponse"
+            }
+          },
+          "clientModifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "changeSeq": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "MockSectionDto": {
+        "required": [
+          "code",
+          "testCode",
+          "subjectCode",
+          "name",
+          "questionCount",
+          "parentCode",
+          "alternativeOf"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "testCode": {
+            "type": "string"
+          },
+          "subjectCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "questionCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "parentCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "alternativeOf": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "MockSectionInput": {
+        "required": [
+          "sectionCode",
+          "questionCount",
+          "correct",
+          "wrong"
+        ],
+        "type": "object",
+        "properties": {
+          "sectionCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "questionCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "correct": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "wrong": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "MockSectionResponse": {
+        "required": [
+          "sectionCode",
+          "questionCount",
+          "correct",
+          "wrong",
+          "blank",
+          "net",
+          "taggingStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "sectionCode": {
+            "type": "string"
+          },
+          "questionCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "correct": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "wrong": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "blank": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "net": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "taggingStatus": {
+            "$ref": "#/components/schemas/TaggingStatus"
+          }
+        }
+      },
       "ProblemDetails": {
         "type": "object",
         "properties": {
@@ -1340,6 +1758,99 @@
           },
           "password": {
             "type": "string"
+          }
+        }
+      },
+      "SaveMockExamRequest": {
+        "required": [
+          "kind",
+          "takenOn",
+          "sourceId",
+          "sourceName",
+          "title",
+          "durationMinutes",
+          "note",
+          "sections",
+          "marks",
+          "clientModifiedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MockExamKind"
+              }
+            ]
+          },
+          "takenOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "sourceId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "sourceName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "durationMinutes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sections": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MockSectionInput"
+            }
+          },
+          "marks": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TopicMarkInput"
+            }
+          },
+          "clientModifiedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -1684,6 +2195,7 @@
       "SyncResponse": {
         "required": [
           "topicTests",
+          "mockExams",
           "cursor",
           "hasMore"
         ],
@@ -1693,6 +2205,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TopicTestResponse"
+            }
+          },
+          "mockExams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MockExamResponse"
             }
           },
           "cursor": {
@@ -1707,6 +2225,13 @@
             "type": "boolean"
           }
         }
+      },
+      "TaggingStatus": {
+        "enum": [
+          "None",
+          "Partial",
+          "Full"
+        ]
       },
       "TopicDto": {
         "required": [
@@ -1763,6 +2288,142 @@
           },
           "tier": {
             "$ref": "#/components/schemas/WeightTier"
+          }
+        }
+      },
+      "TopicMarkInput": {
+        "required": [
+          "sectionCode",
+          "topicId",
+          "wrong",
+          "blank",
+          "mistakeKnowledge",
+          "mistakeAttention",
+          "mistakeTime"
+        ],
+        "type": "object",
+        "properties": {
+          "sectionCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "topicId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "wrong": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "blank": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "mistakeKnowledge": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "mistakeAttention": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "mistakeTime": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "TopicMarkResponse": {
+        "required": [
+          "sectionCode",
+          "topicId",
+          "wrong",
+          "blank",
+          "mistakeKnowledge",
+          "mistakeAttention",
+          "mistakeTime"
+        ],
+        "type": "object",
+        "properties": {
+          "sectionCode": {
+            "type": "string"
+          },
+          "topicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "wrong": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "blank": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "mistakeKnowledge": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "mistakeAttention": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "mistakeTime": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },

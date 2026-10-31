@@ -18,5 +18,7 @@ public sealed class TrackingModule : IModule
     {
         v1.MapProfileEndpoints();
         v1.MapTopicTestEndpoints();
+        v1.MapMockExamEndpoints();
+        v1.MapSyncEndpoints();
     }
 }

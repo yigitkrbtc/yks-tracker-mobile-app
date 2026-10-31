@@ -38,3 +38,18 @@ internal sealed class ScoreTypeConfiguration : IEntityTypeConfiguration<ScoreTyp
         builder.Property(s => s.Name).HasMaxLength(ScoreType.NameMaxLength);
     }
 }
+
+internal sealed class MockSectionConfiguration : IEntityTypeConfiguration<MockSection>
+{
+    public void Configure(EntityTypeBuilder<MockSection> builder)
+    {
+        builder.ToTable("mock_sections");
+        builder.HasKey(s => s.Id);
+        builder.Property(s => s.Id).HasColumnName("code").HasMaxLength(MockSection.CodeMaxLength).ValueGeneratedNever();
+        builder.Property(s => s.TestCode).HasMaxLength(ExamTest.CodeMaxLength);
+        builder.Property(s => s.SubjectCode).HasMaxLength(Subject.CodeMaxLength);
+        builder.Property(s => s.Name).HasMaxLength(MockSection.NameMaxLength);
+        builder.Property(s => s.ParentCode).HasMaxLength(MockSection.CodeMaxLength);
+        builder.Property(s => s.AlternativeOf).HasMaxLength(MockSection.CodeMaxLength);
+    }
+}

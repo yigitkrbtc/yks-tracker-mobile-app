@@ -153,6 +153,53 @@ class QuestionSource {
   );
 }
 
+/// A line of a mock exam's score sheet (e.g. TYT Sosyal → Tarih 5). Each test has one root section; a block
+/// (Sosyal, Fen, AYT TDE-SB1 and SB2) also has a child per subject and is entered either as its total or by
+/// its children. An alternative (philosophy instead of religion) replaces [alternativeOf].
+class MockSection {
+  const MockSection({
+    required this.code,
+    required this.testCode,
+    this.subjectCode,
+    required this.name,
+    required this.questionCount,
+    this.parentCode,
+    this.alternativeOf,
+  });
+
+  final String code;
+  final String testCode;
+
+  /// Null when the section spans every subject of its test (a block, or Matematik with geometry).
+  final String? subjectCode;
+  final String name;
+  final int questionCount;
+  final String? parentCode;
+  final String? alternativeOf;
+
+  bool get isRoot => parentCode == null;
+
+  Map<String, Object?> toJson() => {
+    'code': code,
+    'testCode': testCode,
+    'subjectCode': subjectCode,
+    'name': name,
+    'questionCount': questionCount,
+    'parentCode': parentCode,
+    'alternativeOf': alternativeOf,
+  };
+
+  factory MockSection.fromJson(Map<String, dynamic> json) => MockSection(
+    code: json['code'] as String,
+    testCode: json['testCode'] as String,
+    subjectCode: json['subjectCode'] as String?,
+    name: json['name'] as String,
+    questionCount: json['questionCount'] as int,
+    parentCode: json['parentCode'] as String?,
+    alternativeOf: json['alternativeOf'] as String?,
+  );
+}
+
 /// The published curriculum. The server decides which tests each score type covers; the client only filters.
 class Curriculum {
   const Curriculum({
@@ -161,6 +208,7 @@ class Curriculum {
     required this.scoreTypes,
     required this.subjects,
     this.sources = const [],
+    this.mockSections = const [],
   });
 
   /// Content hash; sent back as the ETag to skip unchanged downloads.
@@ -169,6 +217,9 @@ class Curriculum {
   final List<ScoreTypeTests> scoreTypes;
   final List<Subject> subjects;
   final List<QuestionSource> sources;
+
+  /// The mock exam score sheet template, in display order.
+  final List<MockSection> mockSections;
 
   /// Subjects a student of the given score type codes studies, in curriculum order.
   List<Subject> subjectsFor(Iterable<String> scoreTypeCodes) {
@@ -189,6 +240,19 @@ class Curriculum {
       for (final t in s.topics) t.id: t,
   };
 
+  /// Session of a test code (TYT-… or AYT-…).
+  ExamSession sessionOfTest(String testCode) =>
+      testCode.startsWith('AYT') ? ExamSession.ayt : ExamSession.tyt;
+
+  /// Subjects whose topics may be marked in [section]: its own subject, or every subject of its test.
+  List<Subject> subjectsOfSection(MockSection section) => [
+    for (final s in subjects)
+      if (section.subjectCode == null
+          ? s.testCodes.contains(section.testCode)
+          : s.code == section.subjectCode)
+        s,
+  ];
+
   Map<String, Object?> toJson() => {
     'version': version,
     'examYear': examYear,
@@ -197,6 +261,7 @@ class Curriculum {
     ],
     'subjects': [for (final s in subjects) s.toJson()],
     'sources': [for (final s in sources) s.toJson()],
+    'mockSections': [for (final s in mockSections) s.toJson()],
   };
 
   factory Curriculum.fromJson(Map<String, dynamic> json) => Curriculum(
@@ -216,6 +281,10 @@ class Curriculum {
     sources: [
       for (final s in json['sources'] as List<dynamic>? ?? const [])
         QuestionSource.fromJson(s as Map<String, dynamic>),
+    ],
+    mockSections: [
+      for (final s in json['mockSections'] as List<dynamic>? ?? const [])
+        MockSection.fromJson(s as Map<String, dynamic>),
     ],
   );
 }

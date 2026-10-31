@@ -21,13 +21,26 @@ public sealed record CurriculumResponse(
     IReadOnlyList<ScoreTypeDto> ScoreTypes,
     IReadOnlyList<ExamTestDto> Tests,
     IReadOnlyList<SubjectDto> Subjects,
-    IReadOnlyList<SourceDto> Sources);
+    IReadOnlyList<SourceDto> Sources,
+    IReadOnlyList<MockSectionDto> MockSections);
 
 /// <param name="TestCodes">Tests a student of this score type studies; TYT tests are listed for every type.</param>
 public sealed record ScoreTypeDto(string Code, string Name, IReadOnlyList<string> TestCodes);
 
 /// <summary>A question source (publisher, past papers) a student picks when recording a test.</summary>
 public sealed record SourceDto(Guid Id, string Code, string Name, SourceKind Kind);
+
+/// <summary>A line of a mock exam's score sheet. A block (no parent, has children) is entered either as its total or by
+/// its children, never both; an alternative (philosophy instead of religion) replaces <paramref name="AlternativeOf"/>.</summary>
+/// <param name="SubjectCode">Null when the section spans every subject of its test.</param>
+public sealed record MockSectionDto(
+    string Code,
+    string TestCode,
+    string? SubjectCode,
+    string Name,
+    int QuestionCount,
+    string? ParentCode,
+    string? AlternativeOf);
 
 public sealed record ExamTestDto(string Code, ExamSession Session, string Name, int QuestionCount);
 
@@ -59,6 +72,7 @@ internal sealed class GetCurriculumHandler(ICurriculumRepository curriculum) : I
         var subjects = await curriculum.GetSubjects(cancellationToken);
         var topics = await curriculum.GetActiveTopics(cancellationToken);
         var sources = await curriculum.GetActiveSources(cancellationToken);
+        var mockSections = await curriculum.GetMockSections(cancellationToken);
         var weights = (await curriculum.GetWeights(release.ExamYear, cancellationToken)).ToDictionary(w => w.TopicId);
         var topicsBySubject = topics.ToLookup(t => t.SubjectCode);
 
@@ -73,7 +87,8 @@ internal sealed class GetCurriculumHandler(ICurriculumRepository curriculum) : I
                 s.Name,
                 s.TestCodes,
                 [.. topicsBySubject[s.Id].Select(t => ToDto(t, weights.GetValueOrDefault(t.Id)))]))],
-            [.. sources.Select(s => new SourceDto(s.Id, s.Code, s.Name, s.Kind))]);
+            [.. sources.Select(s => new SourceDto(s.Id, s.Code, s.Name, s.Kind))],
+            [.. mockSections.Select(s => new MockSectionDto(s.Id, s.TestCode, s.SubjectCode, s.Name, s.QuestionCount, s.ParentCode, s.AlternativeOf))]);
     }
 
     private static TopicDto ToDto(Topic topic, TopicWeight? weight) => new(

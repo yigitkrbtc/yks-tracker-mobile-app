@@ -17,4 +17,4 @@
 
 ## Sonuçlar
 
-Analiz tarafı gereksinim dokümanındaki "Deneme kaydı ve analizi" ve M11 bölümüne birebir uyar.
+Analiz tarafı gereksinim dokümanındaki "Deneme kaydı ve analizi" ve M11 bölümüne birebir uyar. Uygulama ayrıntıları ve şablon tablosundaki sapma: ADR-0015.
