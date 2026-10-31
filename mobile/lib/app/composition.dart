@@ -14,6 +14,9 @@ import '../features/auth/data/secure_session_store.dart';
 import '../features/curriculum/application/curriculum_providers.dart';
 import '../features/curriculum/data/drift_curriculum_cache.dart';
 import '../features/curriculum/data/http_curriculum_repository.dart';
+import '../features/mock_exams/application/mock_exam_providers.dart';
+import '../features/mock_exams/data/drift_mock_exam_repository.dart';
+import '../features/mock_exams/data/mock_exam_sync_handler.dart';
 import '../features/profile/application/profile_providers.dart';
 import '../features/profile/data/drift_profile_cache.dart';
 import '../features/profile/data/http_profile_repository.dart';
@@ -56,9 +59,19 @@ final List<Override> offlineRecordOverrides = [
       ref.watch(outboxStoreProvider),
     ),
   ),
+  mockExamRepositoryProvider.overrideWith(
+    (ref) => DriftMockExamRepository(
+      ref.watch(appDatabaseProvider),
+      ref.watch(outboxStoreProvider),
+    ),
+  ),
   syncHandlersProvider.overrideWith(
     (ref) => [
       TopicTestSyncHandler(
+        ref.watch(appDatabaseProvider),
+        ref.watch(outboxStoreProvider),
+      ),
+      MockExamSyncHandler(
         ref.watch(appDatabaseProvider),
         ref.watch(outboxStoreProvider),
       ),

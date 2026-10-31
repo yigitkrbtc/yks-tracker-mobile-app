@@ -93,6 +93,18 @@ Curriculum seedCurriculum() {
           ],
         },
     ],
+    'mockSections': [
+      for (final m in structure['mockSections'] as List<dynamic>)
+        {
+          'code': (m as Map<String, dynamic>)['code'],
+          'testCode': m['test'],
+          'subjectCode': m['subject'],
+          'name': m['name'],
+          'questionCount': m['questionCount'],
+          'parentCode': m['parent'],
+          'alternativeOf': m['alternativeOf'],
+        },
+    ],
     'sources': [
       {
         'id': 'src-osym',

@@ -44,6 +44,63 @@ class TopicTestResults extends Table {
   Set<Column> get primaryKey => {testId, topicId};
 }
 
+/// Mock exams as last written on this device (S4, ADR-0015); same sync rules as topic tests.
+@DataClassName('MockExamRow')
+class MockExams extends Table {
+  TextColumn get id => text()();
+
+  /// `Tyt`, `Ayt` or `Branch` (API codes).
+  TextColumn get kind => text()();
+  TextColumn get takenOn => text()(); // yyyy-MM-dd
+  TextColumn get sourceId => text().nullable()();
+  TextColumn get sourceName => text().nullable()();
+  TextColumn get title => text().nullable()();
+  IntColumn get durationMinutes => integer().nullable()();
+  TextColumn get note => text().nullable()();
+
+  /// Microseconds since epoch, UTC; the server keeps the newest edit by this time.
+  IntColumn get clientModifiedAt => integer()();
+
+  /// Hidden from the screens, waiting for the delete to reach the server.
+  BoolColumn get deleted => boolean().withDefault(const Constant(false))();
+
+  /// Position in the server's change feed; 0 until the server has confirmed it.
+  IntColumn get changeSeq => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Solved sections only; an unsolved section has no row.
+@DataClassName('MockExamSectionRow')
+class MockExamSections extends Table {
+  TextColumn get examId =>
+      text().references(MockExams, #id, onDelete: KeyAction.cascade)();
+  TextColumn get sectionCode => text()();
+  IntColumn get questionCount => integer()();
+  IntColumn get correct => integer()();
+  IntColumn get wrong => integer()();
+
+  @override
+  Set<Column> get primaryKey => {examId, sectionCode};
+}
+
+@DataClassName('MockExamTopicMarkRow')
+class MockExamTopicMarks extends Table {
+  TextColumn get examId =>
+      text().references(MockExams, #id, onDelete: KeyAction.cascade)();
+  TextColumn get sectionCode => text()();
+  TextColumn get topicId => text()();
+  IntColumn get wrong => integer()();
+  IntColumn get blank => integer()();
+  IntColumn get mistakeKnowledge => integer().nullable()();
+  IntColumn get mistakeAttention => integer().nullable()();
+  IntColumn get mistakeTime => integer().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {examId, sectionCode, topicId};
+}
+
 /// Local writes waiting for the server, at most one per record (a newer write replaces the queued one).
 @DataClassName('OutboxRow')
 class Outbox extends Table {
@@ -89,16 +146,33 @@ class CacheEntries extends Table {
 /// The device's single SQLite database. Schema lives in core so features share one transaction for a record
 /// and its outbox entry; features reach it only from their `data` layer.
 @DriftDatabase(
-  tables: [TopicTests, TopicTestResults, Outbox, SyncCursors, CacheEntries],
+  tables: [
+    TopicTests,
+    TopicTestResults,
+    MockExams,
+    MockExamSections,
+    MockExamTopicMarks,
+    Outbox,
+    SyncCursors,
+    CacheEntries,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // S4: mock exams. Existing topic tests and queued writes stay.
+        await m.createTable(mockExams);
+        await m.createTable(mockExamSections);
+        await m.createTable(mockExamTopicMarks);
+      }
+    },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
     },

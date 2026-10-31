@@ -38,7 +38,12 @@ class FakeApi implements HttpClientAdapter {
     if (handler != null) {
       return handler(options);
     }
-    return json(200, {'topicTests': <Object>[], 'cursor': 0, 'hasMore': false});
+    return json(200, {
+      'topicTests': <Object>[],
+      'mockExams': <Object>[],
+      'cursor': 0,
+      'hasMore': false,
+    });
   }
 
   @override
@@ -60,7 +65,11 @@ class FakeApi implements HttpClientAdapter {
 
 /// Tracking endpoints in memory: stores what the client sends and serves it back as the change feed.
 class FakeTrackingServer {
+  /// Topic tests by id.
   final records = <String, Map<String, dynamic>>{};
+
+  /// Mock exams by id.
+  final exams = <String, Map<String, dynamic>>{};
   var seq = 0;
   var feed = <Map<String, dynamic>>[];
   var reject = false;
@@ -76,11 +85,17 @@ class FakeTrackingServer {
       feed = [];
       return FakeApi.json(200, {
         'topicTests': changes,
+        'mockExams': [
+          ...exams.values.where((e) => (e['changeSeq'] as int) > since),
+        ],
         'cursor': seq,
         'hasMore': false,
       });
     }
     final id = path.split('/').last;
+    if (path.startsWith('/v1/mock-exams/')) {
+      return _exam(r, id);
+    }
     if (r.method == 'PUT') {
       if (reject) {
         return FakeApi.json(400, {
@@ -116,6 +131,31 @@ class FakeTrackingServer {
       return FakeApi.json(204, null);
     }
     throw StateError('Unexpected ${r.method} $path');
+  }
+
+  ResponseBody _exam(RequestOptions r, String id) {
+    if (r.method == 'PUT') {
+      if (reject) {
+        return FakeApi.json(400, {
+          'status': 400,
+          'title': 'Doğrulama hatası',
+          'detail': 'Bölümler deneme türüne uymuyor.',
+        });
+      }
+      final body = Map<String, dynamic>.from(r.data as Map);
+      return FakeApi.json(
+        200,
+        exams[id] = {...body, 'id': id, 'deleted': false, 'changeSeq': ++seq},
+      );
+    }
+    exams[id] = {
+      'id': id,
+      'deleted': true,
+      'changeSeq': ++seq,
+      'sections': <Object>[],
+      'marks': <Object>[],
+    };
+    return FakeApi.json(204, null);
   }
 }
 
