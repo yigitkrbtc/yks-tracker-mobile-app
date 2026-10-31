@@ -10,7 +10,8 @@ enum Difficulty {
   final String label;
 
   static Difficulty? fromCode(String? code) =>
-      code == null ? null : values.firstWhere((d) => d.code == code);
+      // An unknown code (a newer server) reads as unset rather than failing the sync.
+      values.where((d) => d.code == code).firstOrNull;
 }
 
 /// Where a record stands relative to the server.

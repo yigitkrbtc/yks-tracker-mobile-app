@@ -54,12 +54,13 @@ class SyncScheduler {
 
   void _run() => _after(_service.sync());
 
+  /// Keeps a retry timer while a backoff is pending, measured on the service's clock.
   Future<SyncOutcome> _after(Future<SyncOutcome> run) async {
     final outcome = await run;
-    final retryAt = _service.retryAt;
-    if (isRunning && outcome == SyncOutcome.offline && retryAt != null) {
+    final retryIn = _service.retryIn;
+    if (isRunning && outcome != SyncOutcome.done && retryIn != null) {
       _retry?.cancel();
-      _retry = Timer(retryAt.difference(DateTime.now()), _run);
+      _retry = Timer(retryIn, _run);
     }
     return outcome;
   }

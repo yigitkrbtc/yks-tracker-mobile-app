@@ -239,4 +239,88 @@ void main() {
       'mine',
     }, reason: 'a refused write still shields the local record');
   });
+
+  test('a write the server keeps failing on is skipped, then parked', () async {
+    await queue('broken');
+    await queue('good');
+    api.route = (r) => switch (r.uri.path) {
+      '/v1/things/broken' => FakeApi.json(500, {'title': 'boom'}),
+      '/v1/things/good' => FakeApi.json(200, {}),
+      _ => feed(r, cursor: 4),
+    };
+
+    expect(await service.sync(), SyncOutcome.offline);
+    expect(handler.pushed, ['good'], reason: 'later writes still go');
+    expect(api.calls.last, 'GET /v1/sync?since=0&limit=500');
+    expect(service.retryIn, const Duration(seconds: 2));
+
+    for (var i = 1; i < SyncService.maxServerFailures; i++) {
+      await service.sync(force: true);
+    }
+    final parked = await outbox.find('thing', 'broken');
+    expect(parked!.rejected, isTrue);
+    expect(parked.lastError, contains('HTTP 500'));
+    expect(handler.rejected, ['broken']);
+    expect(await service.sync(force: true), SyncOutcome.done);
+  });
+
+  test('401 stops the run without counting against the write', () async {
+    await queue('a');
+    api.route = (r) => FakeApi.json(401, {});
+
+    expect(await service.sync(), SyncOutcome.offline);
+    expect(api.calls, ['PUT /v1/things/a']);
+    for (var i = 0; i < SyncService.maxServerFailures; i++) {
+      await service.sync(force: true);
+    }
+    expect((await outbox.find('thing', 'a'))!.rejected, isFalse);
+  });
+
+  test('a feed this version cannot read backs off instead of throwing', () async {
+    api.route = (r) => FakeApi.json(200, {'things': <Object>[], 'cursor': 'x'});
+
+    expect(await service.sync(), SyncOutcome.offline);
+    expect(service.retryAt, now.add(const Duration(seconds: 2)));
+  });
+
+  test('a sync asked for during a run runs again after it', () async {
+    var pulls = 0;
+    api.route = (r) {
+      if (r.method == 'GET') {
+        pulls++;
+      }
+      return r.method == 'PUT' ? FakeApi.json(200, {}) : feed(r);
+    };
+    handler.duringPush = null;
+    final first = service.sync();
+    await queue('late');
+    final joined = service.sync();
+
+    expect(await first, SyncOutcome.done);
+    expect(await joined, SyncOutcome.done);
+    expect(handler.pushed, ['late']);
+    expect(pulls, 2);
+  });
+
+  test('reset abandons a run: nothing more is written or sent', () async {
+    await queue('a');
+    late Future<SyncOutcome> run;
+    api.route = (r) {
+      if (r.method == 'PUT') {
+        service.reset(); // sign-out while the push is in flight
+        return FakeApi.json(200, {});
+      }
+      return feed(r, cursor: 9);
+    };
+
+    run = service.sync();
+    expect(await run, SyncOutcome.deferred);
+    expect(handler.pushed, isEmpty);
+    expect(api.calls, ['PUT /v1/things/a'], reason: 'no pull after reset');
+    expect(await db.select(db.syncCursors).get(), isEmpty);
+
+    api.route = (r) => r.method == 'PUT' ? FakeApi.json(200, {}) : feed(r);
+    expect(await service.sync(), SyncOutcome.done);
+    expect(handler.pushed, ['a']);
+  });
 }

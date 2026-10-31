@@ -51,10 +51,11 @@ internal static class TopicTestEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         tests.MapDelete("/{id:guid}", async (Guid id, DateTimeOffset modifiedAt, ICurrentUser user, IDispatcher dispatcher, CancellationToken ct) =>
-                (await dispatcher.Send(new DeleteTopicTestCommand(user.UserId, id, modifiedAt), ct)).Match(_ => Results.NoContent()))
+                (await dispatcher.Send(new DeleteTopicTestCommand(user.UserId, id, modifiedAt), ct)).Match(stored => stored is null ? Results.NoContent() : Results.Ok(stored)))
             .WithName("DeleteTopicTest")
-            .WithSummary("Delete a topic test (idempotent; a tombstone stays for sync).")
+            .WithSummary("Delete a topic test (idempotent; a tombstone stays for sync). A newer stored edit wins: 200 with it.")
             .Produces(StatusCodes.Status204NoContent)
+            .Produces<TopicTestResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);

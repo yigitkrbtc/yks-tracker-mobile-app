@@ -756,7 +756,7 @@
         "tags": [
           "Tracking"
         ],
-        "summary": "Delete a topic test (idempotent; a tombstone stays for sync).",
+        "summary": "Delete a topic test (idempotent; a tombstone stays for sync). A newer stored edit wins: 200 with it.",
         "operationId": "DeleteTopicTest",
         "parameters": [
           {
@@ -781,6 +781,16 @@
         "responses": {
           "204": {
             "description": "No Content"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicTestResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",

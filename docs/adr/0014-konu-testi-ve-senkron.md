@@ -17,7 +17,7 @@ S3'te öğrenci çözdüğü konu testini internet olmadan da kaydeder; kayıt b
 
 **Sürüm ve çakışma**
 - Son yazan kazanır, istemcinin `clientModifiedAt`'ine göre. Sunucu bu zamanı kendi saatine kırpar (ileri tarihli cihaz saati sonsuza kadar kazanamaz) ve mikro saniyeye keser (PostgreSQL hassasiyeti). Eski bir yazma hiçbir şeyi değiştirmez ve saklı durumu döner; istemci onu uygular.
-- Silme yumuşaktır (`deleted_at`, sonuçlar silinir, tombstone kalır); daha yeni bir `PUT` testi geri getirir. `DELETE` bilinmeyen kimlik için de 204 döner (idempotent); başka kullanıcının kimliği 404.
+- Silme yumuşaktır (`deleted_at`, sonuçlar silinir, tombstone kalır); daha yeni bir `PUT` testi geri getirir. `DELETE` bilinmeyen kimlik için de 204 döner (idempotent); başka kullanıcının kimliği 404. Saklı düzenlemeden eski bir `DELETE` kaybeder ve eski `PUT` gibi saklı testi 200 ile döndürür; istemci kopyasını atmak yerine onu geri yazar.
 
 **Değişim akışı**
 - Her kayıt değişikliği `tracking.change_seq` dizisinden `change_seq` alır. `TrackingUnitOfWork` kayıt öncesi kullanıcı başına `pg_advisory_xact_lock` alır, böylece aynı öğrencinin iki transaction'ı sırayı ters commit edip imleci atlatamaz.
@@ -27,7 +27,7 @@ S3'te öğrenci çözdüğü konu testini internet olmadan da kaydeder; kayıt b
 **Mobil**
 - Şema `core/database` (`AppDatabase`, Drift); özellikler yalnız `data` katmanından erişir. Üretilen `.g.dart` commit'lenir, CI güncelliğini denetler.
 - `core/sync`: `OutboxStore` (kayıt başına tek bekleyen yazma; yeni yazma eskisini `revision+1` ile değiştirir, havadaki push onu silemez), `SyncService` (önce push sonra pull, tek uçuş, 2 sn'den 5 dk'ya üstel bekleme), `SyncScheduler` (yazmadan 500 ms sonra, öne gelince, 5 dk'da bir, beklemesi dolunca). Core hiçbir özelliği bilmez; özellik `SyncHandler` uygular, `app/composition.dart` `offlineRecordOverrides` ile bağlar.
-- 400/404/422 kalıcı ret sayılır: yazma park edilir, kayıt "Sunucu kabul etmedi" rozeti ve sunucunun mesajıyla görünür; öğrenci düzeltince yeniden kuyruğa girer. Reddedilen silme her iki kopyayla birlikte atılır (gösterilecek kayıt yok). Diğer hatalar geçicidir.
+- 400/404/422 kalıcı ret sayılır: yazma park edilir, kayıt "Sunucu kabul etmedi" rozeti ve sunucunun mesajıyla görünür; öğrenci düzeltince yeniden kuyruğa girer. Reddedilen silme her iki kopyayla birlikte atılır (gösterilecek kayıt yok). Yanıt yok, 401/403/408/429/502/503/504 çalışmayı durdurur ve geri çekilir. Sunucunun tek bir yazmada verdiği diğer hatalar (500, 409…) o yazmayı atlar; kalanlar ve pull devam eder, aynı yazma 5 denemede park edilir. Beklenmeyen istemci hatası (okunamayan akış kaydı) da geri çekilmeyle sonuçlanır. Senkron sürerken gelen istek bir çalışma daha sıraya koyar. Çıkışta süren çalışma terk edilir; veritabanına ve sunucuya bir şey yazmaz.
 - Pull, kuyrukta yazması olan kayıtları ezmez; yerel yazma sunucu cevap verene kadar kazanır.
 - Hiç senkronlanmamış testin silinmesi de `DELETE` gönderir (plan metninde iki kuyruğu birlikte atmak vardı). Sebep: havadaki bir `PUT` sunucuya ulaşmış olabilir; kayıt başına tek kuyruk girdisi kuralı bozulmaz, sunucu bilinmeyen kimliğe 204 der.
 - Müfredat (kaynak listesi dahil) ve çalışma profili `cache_entries`'te saklanır; uygulama çevrimdışı açılır, müfredat sürümle yeniden doğrulanır.
@@ -37,5 +37,5 @@ S3'te öğrenci çözdüğü konu testini internet olmadan da kaydeder; kayıt b
 
 - Kayıt ekranı ağı beklemez; senkron durumu listede rozetle görünür, aşağı çekmek hemen senkronlar.
 - Deneme (S4) ve sonraki kayıt türleri aynı yolu izler: Tracking aggregate + `change_seq`, `PUT/DELETE` ucu, sync yanıtında yeni liste, mobilde tablo + `SyncHandler`.
-- Bilinen sınır: cihaz saati geride olan bir cihazın silmesi, başka cihazdaki daha yeni düzenlemeye yenilir; sunucu 204 döndüğü için silen cihaz bunu ancak o düzenleme akışta henüz çekilmemişse görür. LWW (ADR-0005) kapsamında kabul edildi.
+- Bilinen sınır: cihaz saati geride olan bir cihazın silmesi, başka cihazdaki daha yeni düzenlemeye yenilir (LWW, ADR-0005); sunucu saklı testi döndürdüğü için silen cihaz testi geri görür.
 - Schema sürümü 1; yayından sonra Drift şema değişiklikleri migration ister.

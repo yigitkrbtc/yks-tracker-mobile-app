@@ -121,10 +121,22 @@ class _TopicTestFormPageState extends ConsumerState<TopicTestFormPage> {
   TopicTest _build() {
     final other = _source == _otherSource;
     final note = _note.text.trim();
+    // A preselected source that was retired is not shown, so it is not sent either; one the stored test already
+    // has stays (the server keeps it).
+    final listed = ref
+        .read(curriculumProvider)
+        .value
+        ?.sources
+        .map((s) => s.id)
+        .toSet();
+    final hidden =
+        listed != null &&
+        !listed.contains(_source) &&
+        _source != _existing?.sourceId;
     return TopicTest(
       id: _existing?.id ?? ref.read(newTopicTestIdProvider)(),
       studiedOn: _date,
-      sourceId: other ? null : _source,
+      sourceId: other || hidden ? null : _source,
       sourceName: other ? _sourceName.text.trim() : null,
       isRepeat: _isRepeat,
       difficulty: _difficulty,

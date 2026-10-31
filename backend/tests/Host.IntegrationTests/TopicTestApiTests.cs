@@ -80,7 +80,7 @@ public sealed class TopicTestApiTests(NirengiApiFactory factory)
             "tracking.unknown_source");
     }
 
-    public static TheoryData<string> InvalidCases => ["counts", "reasons", "future", "both-sources", "no-source", "duplicate-topic", "no-results"];
+    public static TheoryData<string> InvalidCases => ["counts", "reasons", "future", "both-sources", "no-source", "duplicate-topic", "no-results", "no-date", "null-results"];
 
     [Theory]
     [MemberData(nameof(InvalidCases))]
@@ -96,6 +96,8 @@ public sealed class TopicTestApiTests(NirengiApiFactory factory)
             "both-sources" => valid with { SourceName = "Kitap" },
             "no-source" => valid with { SourceId = null },
             "duplicate-topic" => Body(DateTimeOffset.UtcNow, (TopicA, 5, 5, 0, 0), (TopicA, 5, 5, 0, 0)),
+            "no-date" => valid with { StudiedOn = null! },
+            "null-results" => valid with { Results = null! },
             _ => valid with { Results = [] },
         };
 
@@ -124,6 +126,23 @@ public sealed class TopicTestApiTests(NirengiApiFactory factory)
             .Select(m => m.Payload)
             .ToListAsync(ct);
         payloads.Count(p => p.Contains(id.ToString(), StringComparison.Ordinal)).ShouldBe(2); // recorded + deleted; the repeated delete changed nothing
+    }
+
+    [Fact]
+    public async Task Delete_older_than_the_stored_edit_gets_the_test_back()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var id = Guid.CreateVersion7();
+        var now = DateTimeOffset.UtcNow;
+        await Put(tokens, id, Body(now.AddMinutes(-1), (TopicA, 10, 9, 1, 0)));
+
+        var response = await Delete(tokens, id, now.AddMinutes(-5));
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var stored = await AuthApi.Read<TestItem>(response);
+        stored.Deleted.ShouldBeFalse();
+        stored.Results.Single().Correct.ShouldBe(9);
+        (await Sync(tokens, 0)).TopicTests.ShouldHaveSingleItem().Deleted.ShouldBeFalse();
     }
 
     [Fact]
