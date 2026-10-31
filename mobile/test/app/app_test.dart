@@ -50,7 +50,10 @@ void main() {
 
     await tester.tap(find.text('Analiz'));
     await tester.pumpAndSettle();
-    expect(find.text('Analiz yakında'), findsOneWidget);
+    expect(find.text('Analiz için henüz kayıt yok'), findsOneWidget);
+    // Drift closes the panel's query stream on a zero timer; let it run before the test ends.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(Duration.zero);
   });
 
   testWidgets('first sign-in goes through onboarding, then shows topics', (

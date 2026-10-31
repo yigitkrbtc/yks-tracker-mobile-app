@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/config/app_config.dart';
-import '../core/design/design.dart';
 import '../core/design/gallery/design_gallery_page.dart';
 import '../core/sync/sync_providers.dart';
+import '../features/analytics/presentation/analysis_format.dart';
+import '../features/analytics/presentation/analysis_view.dart';
+import '../features/analytics/presentation/topic_analysis_page.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/curriculum/presentation/topic_list_view.dart';
 import '../features/mock_exams/presentation/mock_exam_list_view.dart';
@@ -82,7 +84,6 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
-    final tab = _tabs[_index];
     final session = ref.watch(sessionControllerProvider).value;
     final firstName = session is SignedInState
         ? session.profile.firstName
@@ -127,13 +128,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         0 => TopicListView(
           onRecordTest: (topic) =>
               context.push(TopicTestFormPage.newForTopic(topic.id)),
+          statusBuilder: (topic) => TopicStatusDot(topicId: topic.id),
+          onOpenAnalysis: (topic) =>
+              context.push(TopicAnalysisPage.pathFor(topic.id)),
         ),
         1 => const TopicTestListView(),
         2 => const MockExamListView(),
-        _ => Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: NCard(title: tab.label, description: '${tab.label} yakında'),
-        ),
+        _ => const AnalysisView(),
       },
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,

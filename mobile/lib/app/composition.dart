@@ -8,6 +8,9 @@ import '../core/database/database_providers.dart';
 import '../core/network/api_client.dart';
 import '../core/network/session_tokens.dart';
 import '../core/sync/sync_providers.dart';
+import '../features/analytics/application/analysis_providers.dart';
+import '../features/analytics/data/drift_analysis_cache.dart';
+import '../features/analytics/data/http_analysis_repository.dart';
 import '../features/auth/application/auth_providers.dart';
 import '../features/auth/data/http_auth_repository.dart';
 import '../features/auth/data/secure_session_store.dart';
@@ -46,6 +49,12 @@ final List<Override> appOverrides = [
   ),
   curriculumRepositoryProvider.overrideWith(
     (ref) => HttpCurriculumRepository(ref.watch(apiClientProvider)),
+  ),
+  analysisRepositoryProvider.overrideWith(
+    (ref) => HttpAnalysisRepository(ref.watch(apiClientProvider)),
+  ),
+  analysisCacheProvider.overrideWith(
+    (ref) => DriftAnalysisCache(CacheStore(ref.watch(appDatabaseProvider))),
   ),
   ...sessionOverrides,
   ...offlineRecordOverrides,
