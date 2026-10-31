@@ -480,3 +480,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# graphify: yalnız rapor commit'lenir; grafik `graphify update .` ile yerelde yeniden üretilir
+graphify-out/*
+!graphify-out/GRAPH_REPORT.md

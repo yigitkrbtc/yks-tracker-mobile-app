@@ -1,6 +1,10 @@
 # Nirengi (çalışma adı) — kod kuralları
 
-YKS (TYT/AYT) konu testi ve deneme takibi + açıklanabilir analiz. Gereksinim ve metrik spesifikasyonu (M0–M11) proje dokümanında; mimari kararlar `docs/adr/`.
+YKS (TYT/AYT) konu testi ve deneme takibi + açıklanabilir analiz. Gereksinim ve metrik spesifikasyonu (M0–M11) proje dokümanında; mimari kararlar [`docs/adr/`](docs/adr/README.md) (her ADR tek satır özetli). Bilgisayarda + Android telefonda çalıştırma: [`docs/yerel-calistirma.md`](docs/yerel-calistirma.md).
+
+## Durum
+
+S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S4 deneme + yanlış etiketleme `main`'de (ADR-0012…0015). Sıradaki: **S5 analiz motoru** (`Analytics.Engine`, ADR-0003; golden dataset şartı aşağıda).
 
 ## Yapı
 
@@ -59,3 +63,7 @@ cd admin && npm run lint && npm run build
 - Analiz motoru değişikliği golden dataset testinden geçmeden birleşmez.
 - Ürün adı "Nirengi" geçici; `Directory.Build.props` (`Product`), `AppConfig.appName`, admin başlığı tek değişim noktaları.
 - Puan/sıralama tahmini ürün kapsamı dışı.
+
+## Kod grafiği (graphify)
+
+`graphify-out/GRAPH_REPORT.md` repodaki kodun AST grafiğinden üretilmiş rapordur (god node'lar, topluluklar, beklenmedik bağlar). `graph.json`/`graph.html` commit'lenmez; mimari soru öncesi `graphify update .` (LLM'siz) ile yerelde üret, sonra `graphify query "<soru>"`. Kurulum: `uv tool install graphifyy` (çift y).
