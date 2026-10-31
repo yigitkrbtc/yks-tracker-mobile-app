@@ -25,6 +25,15 @@ internal sealed class TopicTestRepository(TrackingDbContext db) : ITopicTestRepo
 
     public void Add(TopicTest test) => db.TopicTests.Add(test);
 
+    public async Task<IReadOnlyList<TopicTest>> GetChanges(Guid userId, long since, int limit, CancellationToken cancellationToken) =>
+        await db.TopicTests.AsNoTracking()
+            .Include(t => t.Results)
+            .Where(t => t.UserId == userId && t.ChangeSeq > since)
+            .OrderBy(t => t.ChangeSeq)
+            .Take(limit)
+            .AsSplitQuery()
+            .ToListAsync(cancellationToken);
+
     // Results go with their test (ON DELETE CASCADE).
     public Task DeleteForUser(Guid userId, CancellationToken cancellationToken) =>
         db.TopicTests.Where(t => t.UserId == userId).ExecuteDeleteAsync(cancellationToken);

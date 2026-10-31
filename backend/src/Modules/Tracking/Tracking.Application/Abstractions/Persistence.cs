@@ -21,6 +21,9 @@ public interface ITopicTestRepository
 
     void Add(TopicTest test);
 
+    /// <summary>The user's tests changed after <paramref name="since"/>, tombstones included, in change-feed order.</summary>
+    Task<IReadOnlyList<TopicTest>> GetChanges(Guid userId, long since, int limit, CancellationToken cancellationToken);
+
     /// <summary>Deletes immediately (no SaveChanges), results included; a no-op when there is nothing to delete.</summary>
     Task DeleteForUser(Guid userId, CancellationToken cancellationToken);
 }
