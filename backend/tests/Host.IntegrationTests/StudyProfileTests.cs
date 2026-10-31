@@ -4,7 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Nirengi.BuildingBlocks.Application.Messaging;
 using Nirengi.Modules.Identity.Application.Features.Deletion;
 using Nirengi.Modules.Identity.Infrastructure;
+using Nirengi.Modules.Curriculum.Domain.Topics;
 using Nirengi.Modules.Tracking.Domain.Profiles;
+using Nirengi.Modules.Tracking.Domain.TopicTests;
 using Nirengi.Modules.Tracking.Infrastructure;
 using Shouldly;
 
@@ -61,12 +63,21 @@ public sealed class StudyProfileTests(NirengiApiFactory factory)
     }
 
     [Fact]
-    public async Task Purged_account_loses_its_profile()
+    public async Task Purged_account_loses_its_profile_and_topic_tests()
     {
         var ct = TestContext.Current.CancellationToken;
         var email = AuthApi.NewEmail();
         var tokens = await _api.RegisterAndVerify(email);
         (await _api.Send(HttpMethod.Put, "/v1/profile", tokens.AccessToken, Profile("Eleventh", "EA"))).StatusCode.ShouldBe(HttpStatusCode.OK);
+        var test = new
+        {
+            studiedOn = TopicTestRules.TodayInTurkey(DateTimeOffset.UtcNow),
+            sourceName = "Kitap",
+            isRepeat = false,
+            results = new[] { new { topicId = TopicIdentity.For("TYT.BIY.01"), total = 5, correct = 5, wrong = 0, blank = 0 } },
+            clientModifiedAt = DateTimeOffset.UtcNow,
+        };
+        (await _api.Send(HttpMethod.Put, $"/v1/topic-tests/{Guid.CreateVersion7()}", tokens.AccessToken, test)).StatusCode.ShouldBe(HttpStatusCode.OK);
         (await _api.Send(HttpMethod.Post, "/v1/me/deletion", tokens.AccessToken, new { password = AuthApi.Password })).StatusCode.ShouldBe(HttpStatusCode.Accepted);
 
         await using var scope = factory.Services.CreateAsyncScope();
@@ -82,7 +93,8 @@ public sealed class StudyProfileTests(NirengiApiFactory factory)
         for (var i = 0; i < 50 && exists; i++)
         {
             await Task.Delay(100, ct);
-            exists = await tracking.StudyProfiles.AsNoTracking().AnyAsync(p => p.Id == userId, ct);
+            exists = await tracking.StudyProfiles.AsNoTracking().AnyAsync(p => p.Id == userId, ct)
+                || await tracking.TopicTests.AsNoTracking().AnyAsync(t => t.UserId == userId, ct);
         }
 
         exists.ShouldBeFalse();

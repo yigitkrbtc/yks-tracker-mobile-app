@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="../Curriculum.Application/Curriculum.Application.csproj" />
+    <ProjectReference Include="../Curriculum.Contracts/Curriculum.Contracts.csproj" />
     <ProjectReference Include="../../../BuildingBlocks/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -14,6 +15,7 @@
     <EmbeddedResource Include="../../../../../data/seed/exam_structure.json" LogicalName="Seed.exam_structure.json" />
     <EmbeddedResource Include="../../../../../data/seed/konu_taksonomisi.csv" LogicalName="Seed.konu_taksonomisi.csv" />
     <EmbeddedResource Include="../../../../../data/seed/konu_agirliklari.csv" LogicalName="Seed.konu_agirliklari.csv" />
+    <EmbeddedResource Include="../../../../../data/seed/kaynaklar.csv" LogicalName="Seed.kaynaklar.csv" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Nirengi.Curriculum.UnitTests" />

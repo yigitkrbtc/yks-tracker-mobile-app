@@ -8,6 +8,14 @@ abstract interface class ProfileRepository {
   Future<StudyProfile> save(StudyProfile profile);
 }
 
+/// The last known profile, kept on the device so the app opens offline.
+abstract interface class ProfileCache {
+  Future<StudyProfile?> read();
+
+  /// Null clears it.
+  Future<void> write(StudyProfile? profile);
+}
+
 class ProfileException implements Exception {
   const ProfileException(this.message, {this.isNetworkError = false});
 

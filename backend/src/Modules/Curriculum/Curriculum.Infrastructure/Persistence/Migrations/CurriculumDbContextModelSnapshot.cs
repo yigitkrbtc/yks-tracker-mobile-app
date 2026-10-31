@@ -186,6 +186,50 @@ namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence.Migrations
                     b.ToTable("subjects", "curriculum");
                 });
 
+            modelBuilder.Entity("Nirengi.Modules.Curriculum.Domain.Sources.Source", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("code");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sources");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_sources_code");
+
+                    b.ToTable("sources", "curriculum");
+                });
+
             modelBuilder.Entity("Nirengi.Modules.Curriculum.Domain.Topics.Topic", b =>
                 {
                     b.Property<Guid>("Id")

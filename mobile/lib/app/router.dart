@@ -7,6 +7,7 @@ import '../features/auth/application/session_controller.dart';
 import '../features/auth/presentation/auth_routes.dart';
 import '../features/profile/application/profile_providers.dart';
 import '../features/profile/presentation/profile_page.dart';
+import '../features/topic_tests/presentation/topic_test_form_page.dart';
 import 'home_shell.dart';
 
 const _splash = '/splash';
@@ -61,6 +62,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: ProfilePage.editPath,
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: TopicTestFormPage.newPath,
+        builder: (context, state) =>
+            TopicTestFormPage(topicId: state.uri.queryParameters['topic']),
+      ),
+      GoRoute(
+        path: TopicTestFormPage.editPattern,
+        builder: (context, state) =>
+            TopicTestFormPage(id: state.pathParameters['id']),
       ),
       ...AuthRoutes.routes,
       GoRoute(

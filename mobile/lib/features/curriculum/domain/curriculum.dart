@@ -44,6 +44,17 @@ class Topic {
   String get gradeLabel =>
       gradeMin == gradeMax ? '$gradeMin. sınıf' : '$gradeMin–$gradeMax. sınıf';
 
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'code': code,
+    'name': name,
+    'subtopics': subtopics,
+    'gradeMin': gradeMin,
+    'gradeMax': gradeMax,
+    'expectedQuestions': expectedQuestions,
+    'tier': tier.code,
+  };
+
   factory Topic.fromJson(Map<String, dynamic> json) => Topic(
     id: json['id'] as String,
     code: json['code'] as String,
@@ -73,6 +84,14 @@ class Subject {
   final List<String> testCodes;
   final List<Topic> topics;
 
+  Map<String, Object?> toJson() => {
+    'code': code,
+    'session': session == ExamSession.tyt ? 'TYT' : 'AYT',
+    'name': name,
+    'testCodes': testCodes,
+    'topics': [for (final t in topics) t.toJson()],
+  };
+
   factory Subject.fromJson(Map<String, dynamic> json) => Subject(
     code: json['code'] as String,
     session: _session(json['session'] as String),
@@ -92,6 +111,48 @@ class ScoreTypeTests {
   final List<String> testCodes;
 }
 
+enum SourceKind {
+  publisher('Publisher'),
+  official('Official'),
+  institution('Institution');
+
+  const SourceKind(this.code);
+
+  final String code;
+
+  static SourceKind fromCode(String code) =>
+      values.firstWhere((k) => k.code == code, orElse: () => publisher);
+}
+
+/// Where questions come from (a publisher, ÖSYM past papers); picked when recording a test.
+class QuestionSource {
+  const QuestionSource({
+    required this.id,
+    required this.code,
+    required this.name,
+    required this.kind,
+  });
+
+  final String id;
+  final String code;
+  final String name;
+  final SourceKind kind;
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'code': code,
+    'name': name,
+    'kind': kind.code,
+  };
+
+  factory QuestionSource.fromJson(Map<String, dynamic> json) => QuestionSource(
+    id: json['id'] as String,
+    code: json['code'] as String,
+    name: json['name'] as String,
+    kind: SourceKind.fromCode(json['kind'] as String),
+  );
+}
+
 /// The published curriculum. The server decides which tests each score type covers; the client only filters.
 class Curriculum {
   const Curriculum({
@@ -99,6 +160,7 @@ class Curriculum {
     required this.examYear,
     required this.scoreTypes,
     required this.subjects,
+    this.sources = const [],
   });
 
   /// Content hash; sent back as the ETag to skip unchanged downloads.
@@ -106,6 +168,7 @@ class Curriculum {
   final int examYear;
   final List<ScoreTypeTests> scoreTypes;
   final List<Subject> subjects;
+  final List<QuestionSource> sources;
 
   /// Subjects a student of the given score type codes studies, in curriculum order.
   List<Subject> subjectsFor(Iterable<String> scoreTypeCodes) {
@@ -120,6 +183,22 @@ class Curriculum {
     ];
   }
 
+  /// Every topic by id, retired ones excluded (the server lists only active topics).
+  Map<String, Topic> get topicsById => {
+    for (final s in subjects)
+      for (final t in s.topics) t.id: t,
+  };
+
+  Map<String, Object?> toJson() => {
+    'version': version,
+    'examYear': examYear,
+    'scoreTypes': [
+      for (final s in scoreTypes) {'code': s.code, 'testCodes': s.testCodes},
+    ],
+    'subjects': [for (final s in subjects) s.toJson()],
+    'sources': [for (final s in sources) s.toJson()],
+  };
+
   factory Curriculum.fromJson(Map<String, dynamic> json) => Curriculum(
     version: json['version'] as String,
     examYear: json['examYear'] as int,
@@ -133,6 +212,10 @@ class Curriculum {
     subjects: [
       for (final s in json['subjects'] as List<dynamic>)
         Subject.fromJson(s as Map<String, dynamic>),
+    ],
+    sources: [
+      for (final s in json['sources'] as List<dynamic>? ?? const [])
+        QuestionSource.fromJson(s as Map<String, dynamic>),
     ],
   );
 }

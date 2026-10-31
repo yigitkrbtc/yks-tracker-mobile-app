@@ -3,6 +3,7 @@ using Nirengi.BuildingBlocks.Domain.Results;
 using Nirengi.Modules.Curriculum.Application.Abstractions;
 using Nirengi.Modules.Curriculum.Domain;
 using Nirengi.Modules.Curriculum.Domain.Exams;
+using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
 
 namespace Nirengi.Modules.Curriculum.Application.Features;
@@ -19,10 +20,14 @@ public sealed record CurriculumResponse(
     int ExamYear,
     IReadOnlyList<ScoreTypeDto> ScoreTypes,
     IReadOnlyList<ExamTestDto> Tests,
-    IReadOnlyList<SubjectDto> Subjects);
+    IReadOnlyList<SubjectDto> Subjects,
+    IReadOnlyList<SourceDto> Sources);
 
 /// <param name="TestCodes">Tests a student of this score type studies; TYT tests are listed for every type.</param>
 public sealed record ScoreTypeDto(string Code, string Name, IReadOnlyList<string> TestCodes);
+
+/// <summary>A question source (publisher, past papers) a student picks when recording a test.</summary>
+public sealed record SourceDto(Guid Id, string Code, string Name, SourceKind Kind);
 
 public sealed record ExamTestDto(string Code, ExamSession Session, string Name, int QuestionCount);
 
@@ -53,6 +58,7 @@ internal sealed class GetCurriculumHandler(ICurriculumRepository curriculum) : I
         var tests = await curriculum.GetTests(cancellationToken);
         var subjects = await curriculum.GetSubjects(cancellationToken);
         var topics = await curriculum.GetActiveTopics(cancellationToken);
+        var sources = await curriculum.GetActiveSources(cancellationToken);
         var weights = (await curriculum.GetWeights(release.ExamYear, cancellationToken)).ToDictionary(w => w.TopicId);
         var topicsBySubject = topics.ToLookup(t => t.SubjectCode);
 
@@ -66,7 +72,8 @@ internal sealed class GetCurriculumHandler(ICurriculumRepository curriculum) : I
                 s.Session,
                 s.Name,
                 s.TestCodes,
-                [.. topicsBySubject[s.Id].Select(t => ToDto(t, weights.GetValueOrDefault(t.Id)))]))]);
+                [.. topicsBySubject[s.Id].Select(t => ToDto(t, weights.GetValueOrDefault(t.Id)))]))],
+            [.. sources.Select(s => new SourceDto(s.Id, s.Code, s.Name, s.Kind))]);
     }
 
     private static TopicDto ToDto(Topic topic, TopicWeight? weight) => new(

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Nirengi.BuildingBlocks.Application.Abstractions;
 using Nirengi.Modules.Curriculum.Domain;
 using Nirengi.Modules.Curriculum.Domain.Exams;
+using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure.Seed;
@@ -36,6 +37,7 @@ public sealed partial class CurriculumSeeder(CurriculumDbContext db, IClock cloc
         await SyncScoreTypes(seed, cancellationToken);
         var topicIds = await SyncTopics(seed, cancellationToken);
         await SyncWeights(seed, topicIds, cancellationToken);
+        await SyncSources(seed, cancellationToken);
 
         var now = clock.UtcNow;
         if (release is null)
@@ -155,6 +157,28 @@ public sealed partial class CurriculumSeeder(CurriculumDbContext db, IClock cloc
         }
 
         db.TopicWeights.RemoveRange(existing.Values);
+    }
+
+    private async Task SyncSources(CurriculumSeed seed, CancellationToken cancellationToken)
+    {
+        var existing = await db.Sources.ToDictionaryAsync(s => s.Code, cancellationToken);
+        for (var i = 0; i < seed.Sources.Count; i++)
+        {
+            var s = seed.Sources[i];
+            if (existing.Remove(s.Code, out var source))
+            {
+                source.Update(s.Name, s.Kind, i);
+            }
+            else
+            {
+                db.Sources.Add(Source.Create(s.Code, s.Name, s.Kind, i));
+            }
+        }
+
+        foreach (var dropped in existing.Values)
+        {
+            dropped.Retire();
+        }
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Curriculum {ExamYear} seeded: {TopicCount} topics, hash {Hash}")]

@@ -10,7 +10,10 @@ import '../domain/curriculum_repository.dart';
 
 /// The student's topics: TYT and AYT tabs, one expandable section per subject, search by name.
 class TopicListView extends ConsumerStatefulWidget {
-  const TopicListView({super.key});
+  const TopicListView({super.key, this.onRecordTest});
+
+  /// Opens the test form for a topic; the app shell wires it, since another feature owns the form.
+  final void Function(Topic topic)? onRecordTest;
 
   @override
   ConsumerState<TopicListView> createState() => _TopicListViewState();
@@ -91,6 +94,7 @@ class _TopicListViewState extends ConsumerState<TopicListView> {
                           .where((subject) => subject.session == s)
                           .toList(),
                       query: _query,
+                      onRecordTest: widget.onRecordTest,
                     ),
                   ),
               ],
@@ -116,10 +120,15 @@ String _normalize(String text) => text
     .trim();
 
 class _SubjectList extends StatelessWidget {
-  const _SubjectList({required this.subjects, required this.query});
+  const _SubjectList({
+    required this.subjects,
+    required this.query,
+    this.onRecordTest,
+  });
 
   final List<Subject> subjects;
   final String query;
+  final void Function(Topic topic)? onRecordTest;
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +166,10 @@ class _SubjectList extends StatelessWidget {
           initiallyExpanded: query.isNotEmpty,
           title: Text(entry.subject.name),
           subtitle: Text('${entry.topics.length} konu'),
-          children: [for (final t in entry.topics) _TopicTile(topic: t)],
+          children: [
+            for (final t in entry.topics)
+              _TopicTile(topic: t, onRecordTest: onRecordTest),
+          ],
         );
       },
     );
@@ -165,9 +177,10 @@ class _SubjectList extends StatelessWidget {
 }
 
 class _TopicTile extends StatelessWidget {
-  const _TopicTile({required this.topic});
+  const _TopicTile({required this.topic, this.onRecordTest});
 
   final Topic topic;
+  final void Function(Topic topic)? onRecordTest;
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +191,8 @@ class _TopicTile extends StatelessWidget {
       onTap: () => showModalBottomSheet<void>(
         context: context,
         showDragHandle: true,
-        builder: (context) => _TopicSheet(topic: topic),
+        builder: (context) =>
+            _TopicSheet(topic: topic, onRecordTest: onRecordTest),
       ),
     );
   }
@@ -212,9 +226,10 @@ class TierBadge extends StatelessWidget {
 }
 
 class _TopicSheet extends StatelessWidget {
-  const _TopicSheet({required this.topic});
+  const _TopicSheet({required this.topic, this.onRecordTest});
 
   final Topic topic;
+  final void Function(Topic topic)? onRecordTest;
 
   @override
   Widget build(BuildContext context) {
@@ -253,6 +268,18 @@ class _TopicSheet extends StatelessWidget {
               'tahmindir; resmî bir oran değildir.',
               style: textTheme.bodySmall,
             ),
+            if (onRecordTest case final record?) ...[
+              const SizedBox(height: AppSpacing.lg),
+              NButton(
+                label: 'Bu konuda test ekle',
+                icon: Icons.add,
+                expand: true,
+                onPressed: () {
+                  Navigator.pop(context);
+                  record(topic);
+                },
+              ),
+            ],
           ],
         ),
       ),

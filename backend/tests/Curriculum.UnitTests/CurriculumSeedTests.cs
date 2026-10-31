@@ -1,4 +1,5 @@
 using Nirengi.Modules.Curriculum.Domain.Exams;
+using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
 using Nirengi.Modules.Curriculum.Infrastructure.Seed;
 using Shouldly;
@@ -8,6 +9,8 @@ namespace Nirengi.Curriculum.UnitTests;
 /// <summary>Guards the shipped seed itself: a broken data/seed file fails here, not at deploy.</summary>
 public sealed class CurriculumSeedTests
 {
+    private const string NoSources = "source_code,name,kind\n";
+
     private static readonly CurriculumSeed Seed = CurriculumSeed.LoadEmbedded();
 
     [Fact]
@@ -68,7 +71,7 @@ public sealed class CurriculumSeedTests
         const string taxonomy = "session,unit,topic_code,topic,subtopics,grade,description\nTYT,B,TYT.B.01,X,y,9,\n";
         const string weights = "topic_code,q_i,tier,years_present\nTYT.B.01,1,az,1/8\n";
 
-        Should.Throw<FormatException>(() => CurriculumSeed.Parse(structure, taxonomy, weights)).Message.ShouldContain("TYT.B");
+        Should.Throw<FormatException>(() => CurriculumSeed.Parse(structure, taxonomy, weights, NoSources)).Message.ShouldContain("TYT.B");
     }
 
     [Fact]
@@ -85,9 +88,31 @@ public sealed class CurriculumSeedTests
         const string structure = """{"examYear":2027,"tests":[{"code":"T","session":"TYT","name":"T","questionCount":1}],"units":[{"code":"TYT.A","name":"A","tests":["T"]}],"scoreTypes":[]}""";
         const string taxonomy = "session,unit,topic_code,topic,subtopics,grade,description\nTYT,A,TYT.A.01,X,y,9,\n";
 
-        var a = CurriculumSeed.Parse(structure, taxonomy, "topic_code,q_i,tier,years_present\nTYT.A.01,1,az,1/8\n");
-        var b = CurriculumSeed.Parse(structure, taxonomy, "topic_code,q_i,tier,years_present\nTYT.A.01,2,az,1/8\n");
+        var a = CurriculumSeed.Parse(structure, taxonomy, "topic_code,q_i,tier,years_present\nTYT.A.01,1,az,1/8\n", NoSources);
+        var b = CurriculumSeed.Parse(structure, taxonomy, "topic_code,q_i,tier,years_present\nTYT.A.01,2,az,1/8\n", NoSources);
 
         a.Hash.ShouldNotBe(b.Hash);
+    }
+
+    [Fact]
+    public void Shipped_sources_are_unique_and_include_past_papers()
+    {
+        Seed.Sources.Count.ShouldBeGreaterThan(20);
+        Seed.Sources.Select(s => s.Code).Distinct().Count().ShouldBe(Seed.Sources.Count);
+        Seed.Sources.Single(s => s.Code == "OSYM").Kind.ShouldBe(SourceKind.Official);
+        Seed.Sources.ShouldAllBe(s => s.Name.Length > 0);
+    }
+
+    [Theory]
+    [InlineData("source_code,name,kind\nA,Bir,publisher\nA,İki,publisher\n", "more than once")]
+    [InlineData("source_code,name,kind\nA,Bir,magazine\n", "unknown kind")]
+    [InlineData("source_code,name,kind\n,Bir,publisher\n", "empty or too long")]
+    public void Invalid_sources_are_rejected(string sources, string message)
+    {
+        const string structure = """{"examYear":2027,"tests":[{"code":"T","session":"TYT","name":"T","questionCount":1}],"units":[{"code":"TYT.A","name":"A","tests":["T"]}],"scoreTypes":[]}""";
+        const string taxonomy = "session,unit,topic_code,topic,subtopics,grade,description\nTYT,A,TYT.A.01,X,y,9,\n";
+        const string weights = "topic_code,q_i,tier,years_present\nTYT.A.01,1,az,1/8\n";
+
+        Should.Throw<FormatException>(() => CurriculumSeed.Parse(structure, taxonomy, weights, sources)).Message.ShouldContain(message);
     }
 }

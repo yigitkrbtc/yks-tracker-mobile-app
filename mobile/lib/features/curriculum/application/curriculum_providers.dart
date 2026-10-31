@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../profile/application/profile_providers.dart';
@@ -9,29 +11,55 @@ final curriculumRepositoryProvider = Provider<CurriculumRepository>(
   (ref) => throw UnimplementedError('Overridden in app composition.'),
 );
 
+/// Bound to the on-device cache in `app/composition.dart`; defaults to no cache.
+final curriculumCacheProvider = Provider<CurriculumCache>(
+  (ref) => const NoCurriculumCache(),
+);
+
+class NoCurriculumCache implements CurriculumCache {
+  const NoCurriculumCache();
+
+  @override
+  Future<Curriculum?> read() async => null;
+
+  @override
+  Future<void> write(Curriculum curriculum) async {}
+}
+
 final curriculumProvider =
     AsyncNotifierProvider<CurriculumController, Curriculum>(
       CurriculumController.new,
     );
 
-/// The curriculum, kept in memory and revalidated by version (persistent cache arrives with Drift, S3).
+/// The curriculum: the device copy first (offline start), then revalidated against the server by version.
 class CurriculumController extends AsyncNotifier<Curriculum> {
   @override
-  Future<Curriculum> build() async =>
-      (await ref.read(curriculumRepositoryProvider).fetch())!;
+  Future<Curriculum> build() async {
+    final cached = await ref.read(curriculumCacheProvider).read();
+    if (cached != null) {
+      // After build has published the cached copy; a failure keeps it.
+      unawaited(Future(() => _revalidate(cached.version)));
+      return cached;
+    }
+    final fresh = (await ref.read(curriculumRepositoryProvider).fetch())!;
+    await ref.read(curriculumCacheProvider).write(fresh);
+    return fresh;
+  }
 
   /// Re-downloads only when the server's version differs; keeps the old copy on failure.
-  Future<void> refresh() async {
-    final current = state.value;
+  Future<void> refresh() => _revalidate(state.value?.version);
+
+  Future<void> _revalidate(String? version) async {
     try {
       final fresh = await ref
           .read(curriculumRepositoryProvider)
-          .fetch(ifNoneMatch: current?.version);
+          .fetch(ifNoneMatch: version);
       if (fresh != null) {
+        await ref.read(curriculumCacheProvider).write(fresh);
         state = AsyncData(fresh);
       }
     } on CurriculumException catch (e, stack) {
-      if (current == null) {
+      if (state.value == null) {
         state = AsyncError(e, stack);
       }
     }

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Nirengi.Modules.Curriculum.Application.Abstractions;
 using Nirengi.Modules.Curriculum.Domain;
 using Nirengi.Modules.Curriculum.Domain.Exams;
+using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence;
@@ -22,6 +23,9 @@ internal sealed class CurriculumRepository(CurriculumDbContext db) : ICurriculum
 
     public async Task<IReadOnlyList<Topic>> GetActiveTopics(CancellationToken cancellationToken) =>
         await db.Topics.AsNoTracking().Where(t => t.Status == TopicStatus.Active).OrderBy(t => t.SortOrder).ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<Source>> GetActiveSources(CancellationToken cancellationToken) =>
+        await db.Sources.AsNoTracking().Where(s => s.Status == SourceStatus.Active).OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<TopicWeight>> GetWeights(int examYear, CancellationToken cancellationToken) =>
         await db.TopicWeights.AsNoTracking().Where(w => w.ExamYear == examYear).ToListAsync(cancellationToken);
