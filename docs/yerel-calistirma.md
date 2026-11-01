@@ -24,19 +24,23 @@ Durdurmak için aynı klasörde `docker compose down` (kayıtların silinmez); t
 
 Komut penceresinde `ipconfig` yaz. "Kablosuz LAN bağdaştırıcısı Wi-Fi" altındaki **IPv4 Adresi**'ne bak (ör. `192.168.1.20`). Uygulamanın adresi: `http://192.168.1.20:8080`.
 
-## 4. APK'yı üret
+## 4. Bir kere: adresi GitHub'a gir
 
-1. GitHub'da repo → **Actions** → solda **Android APK (test)** → **Run workflow**.
-2. Adres kutusuna 3. adımdaki adresi yaz → **Run workflow**. 5–8 dakika sonra çalışma yeşil olur.
-3. Çalışmanın sayfasının altındaki **nirengi-test-apk** dosyasını indir, ZIP'ten çıkar: `app-debug.apk`.
+GitHub → repo **Settings** → **Secrets and variables** → **Actions** → **Variables** sekmesi → **New repository variable**. Name: `API_BASE_URL`, Value: 3. adımdaki adres (ör. `http://192.168.1.20:8080`) → **Add variable**.
 
-## 5. Telefona kur
+## 5. Telefona kur ve güncelle
 
-1. APK'yı telefona gönder (e-posta, Drive ya da USB kablosu).
-2. Telefonda dosyaya dokun. "Bilinmeyen kaynaklar" izni isterse ver ve kur.
-3. Uygulamayı aç, **Kayıt ol**. Doğrulama kodu e-postayla değil, bilgisayarında http://localhost:8025 (Mailpit) sayfasına düşer.
+`mobile/` dosyalarına dokunan her PR'da APK kendiliğinden üretilir (5–8 dk). PR sayfasında **📱 Mobil önizleme** yorumu çıkar.
+
+1. Telefondan yorumdaki `nirengi-pr-<numara>.apk` linkine dokun (ya da QR'ı okut). Repo gizliyse telefonda GitHub'a giriş yapılmış olmalı.
+2. İnen dosyayı aç. "Bilinmeyen kaynaklar" izni isterse ver. Uygulama zaten kuruluysa **Güncelle** de; veriler korunur.
+3. İlk kurulumda uygulamayı aç, **Kayıt ol**. Doğrulama kodu e-postayla değil, bilgisayarında http://localhost:8025 (Mailpit) sayfasına düşer.
+
+Tüm debug APK'lar repodaki ortak anahtarla (`mobile/android/app/preview-debug.keystore`) imzalanır; bu yüzden silmeden üstüne kurulur. Bu değişiklikten önce kurulmuş eski bir APK varsa **yalnız bir kere** silip yenisini kur.
+
+PR dışında APK lazımsa: **Actions** → **Android APK (preview)** → **Run workflow** (adres kutusu boşsa değişken kullanılır); dosya çalışmanın altındaki **nirengi-test-apk** ZIP'inde.
 
 ## Sorun olursa
 
 - **Telefon sunucuya bağlanamıyor:** Telefon ve bilgisayar aynı Wi-Fi'da mı? Telefonun tarayıcısında `http://192.168.1.20:8080/health` açılıyor mu? Açılmıyorsa Windows Güvenlik Duvarı'nda Docker Desktop'a özel ağ izni ver.
-- **Bilgisayarın IP adresi değişti:** Router yeniden başlayınca değişebilir; yeni adresle 4. adımı tekrarla.
+- **Bilgisayarın IP adresi değişti:** Router yeniden başlayınca değişebilir; 4. adımdaki `API_BASE_URL` değişkenini yeni adresle güncelle, sonra PR'a yeni bir commit gelince (ya da elle Run workflow) yeni APK'yı kur.

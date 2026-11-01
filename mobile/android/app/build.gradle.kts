@@ -31,6 +31,17 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        // Shared, non-secret debug key committed to the repo (see .gitignore). Every machine and CI run signs
+        // debug APKs with it, so a newer preview APK installs over the old one without uninstalling.
+        getByName("debug") {
+            storeFile = file("preview-debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
