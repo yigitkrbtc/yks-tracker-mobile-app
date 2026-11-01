@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nirengi.BuildingBlocks.Infrastructure;
 using Nirengi.Modules.Tracking.Application.Abstractions;
+using Nirengi.Modules.Tracking.Contracts;
 using Nirengi.Modules.Tracking.Infrastructure.Persistence;
 
 namespace Nirengi.Modules.Tracking.Infrastructure;
@@ -15,6 +16,7 @@ public static class TrackingInfrastructureRegistration
         services.AddScoped<ITopicTestRepository, TopicTestRepository>();
         services.AddScoped<IMockExamRepository, MockExamRepository>();
         services.AddScoped<ITrackingUnitOfWork, TrackingUnitOfWork>();
+        services.AddScoped<ITrackingAnalyticsReader, TrackingAnalyticsReader>();
         return services;
     }
 }

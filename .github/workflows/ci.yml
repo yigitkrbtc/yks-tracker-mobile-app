@@ -30,6 +30,7 @@ jobs:
       - name: Unit and architecture tests
         run: |
           dotnet test --project tests/ArchitectureTests --no-build -c Release
+          dotnet test --project tests/Analytics.GoldenTests --no-build -c Release
           dotnet test --project tests/BuildingBlocks.UnitTests --no-build -c Release
           dotnet test --project tests/Identity.UnitTests --no-build -c Release
           dotnet test --project tests/Curriculum.UnitTests --no-build -c Release

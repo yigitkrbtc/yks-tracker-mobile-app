@@ -17,5 +17,6 @@
 | 0013 | [Müfredat seed'den yüklenir; çalışma profili Tracking'de](0013-mufredat-ve-calisma-profili.md) | `topic_code` + UUID v5 kimlik, `data/seed` açılışta hash'li upsert, ağırlık sınav yılına göre; profil `tracking.study_profiles`. | Kabul |
 | 0014 | [Konu testi kaydı ve offline senkron](0014-konu-testi-ve-senkron.md) | `TopicTest` 1–20 konu satırı; `clientModifiedAt` ile LWW (sunucu saatine kırpılır), tombstone, kullanıcı başına `change_seq` akışı. | Kabul |
 | 0015 | [Deneme kaydı, bölüm şablonu ve yanlış etiketleme](0015-deneme-kaydi-ve-etiketleme.md) | Curriculum `mock_sections` şablonu; çözülen bölümler + konu işaretleri, bölüm başına `tagging_status`; senkron ADR-0014 ile aynı. | Kabul |
+| 0016 | [Analiz motoru, okuma modeli ve tazeleme](0016-analiz-motoru-ve-okuma-modeli.md) | C# saf motor (`RuleSet.V1`, scipy golden dataset); snapshot tabloları, damga + gün + kural sürümüyle olayda ve okumada tazeleme; ETag'li panel, hesap yalnız sunucuda. | Kabul |
 
 Yeni karar: sıradaki numarayla aynı şablonda (Bağlam, Karar, Sonuçlar) dosya ekle ve bu tabloya tek satırlık özetiyle ekle. Değişen karar silinmez; yeni ADR eskisini "Yerine geçti" olarak işaretler.

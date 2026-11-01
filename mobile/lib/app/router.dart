@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/design/gallery/design_gallery_page.dart';
+import '../features/analytics/presentation/topic_analysis_page.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/auth/presentation/auth_routes.dart';
 import '../features/mock_exams/presentation/mock_exam_form_page.dart';
@@ -88,6 +89,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: MockExamFormPage.editPattern,
         builder: (context, state) =>
             MockExamFormPage(id: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: TopicAnalysisPage.pattern,
+        builder: (context, state) => TopicAnalysisPage(
+          topicId: state.pathParameters['id']!,
+          onRecordTest: (id) => context.push(TopicTestFormPage.newForTopic(id)),
+        ),
       ),
       ...AuthRoutes.routes,
       GoRoute(

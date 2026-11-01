@@ -1,0 +1,389 @@
+{
+  "description": "9/10 + 20/40 havuzlanır (%58), yüzdelerin ortalaması (%70) değil.",
+  "input": {
+    "today": "2026-10-31",
+    "activeTests": [
+      "TYT-TUR",
+      "TYT-MAT",
+      "TYT-SOS"
+    ],
+    "catalog": {
+      "subjects": [
+        {
+          "code": "TUR",
+          "tests": [
+            "TYT-TUR"
+          ]
+        },
+        {
+          "code": "MAT",
+          "tests": [
+            "TYT-MAT"
+          ]
+        },
+        {
+          "code": "TAR",
+          "tests": [
+            "TYT-SOS"
+          ]
+        },
+        {
+          "code": "COG",
+          "tests": [
+            "TYT-SOS"
+          ]
+        },
+        {
+          "code": "FIZ",
+          "tests": [
+            "AYT-FEN"
+          ]
+        }
+      ],
+      "topics": [
+        {
+          "id": "paragraf",
+          "subject": "TUR",
+          "q": 24.0
+        },
+        {
+          "id": "sozcuk",
+          "subject": "TUR",
+          "q": 6.0
+        },
+        {
+          "id": "dilbilgisi",
+          "subject": "TUR",
+          "q": 10.0
+        },
+        {
+          "id": "problemler",
+          "subject": "MAT",
+          "q": 14.0
+        },
+        {
+          "id": "sayilar",
+          "subject": "MAT",
+          "q": 8.0
+        },
+        {
+          "id": "fonksiyon",
+          "subject": "MAT",
+          "q": 4.0
+        },
+        {
+          "id": "olasilik",
+          "subject": "MAT",
+          "q": 3.0
+        },
+        {
+          "id": "ucgen",
+          "subject": "MAT",
+          "q": 7.0
+        },
+        {
+          "id": "kumeler",
+          "subject": "MAT",
+          "q": 1.5
+        },
+        {
+          "id": "permutasyon",
+          "subject": "MAT",
+          "q": 2.5
+        },
+        {
+          "id": "osmanli",
+          "subject": "TAR",
+          "q": 3.0
+        },
+        {
+          "id": "inkilap",
+          "subject": "TAR",
+          "q": 2.0
+        },
+        {
+          "id": "iklim",
+          "subject": "COG",
+          "q": 3.0
+        },
+        {
+          "id": "nufus",
+          "subject": "COG",
+          "q": 2.0
+        },
+        {
+          "id": "elektrik",
+          "subject": "FIZ",
+          "q": 6.0
+        }
+      ],
+      "sections": [
+        {
+          "code": "TYT-TUR",
+          "test": "TYT-TUR",
+          "parent": null,
+          "subjects": [
+            "TUR"
+          ],
+          "questionCount": 40
+        },
+        {
+          "code": "TYT-MAT",
+          "test": "TYT-MAT",
+          "parent": null,
+          "subjects": [
+            "MAT"
+          ],
+          "questionCount": 40
+        },
+        {
+          "code": "TYT-SOS",
+          "test": "TYT-SOS",
+          "parent": null,
+          "subjects": [
+            "TAR",
+            "COG"
+          ],
+          "questionCount": 10
+        },
+        {
+          "code": "TYT-SOS.TAR",
+          "test": "TYT-SOS",
+          "parent": "TYT-SOS",
+          "subjects": [
+            "TAR"
+          ],
+          "questionCount": 5
+        },
+        {
+          "code": "TYT-SOS.COG",
+          "test": "TYT-SOS",
+          "parent": "TYT-SOS",
+          "subjects": [
+            "COG"
+          ],
+          "questionCount": 5
+        }
+      ]
+    },
+    "topicRecords": [
+      {
+        "test": "sayilar-0-9-1-0",
+        "topic": "sayilar",
+        "date": "2026-10-31",
+        "total": 10,
+        "correct": 9,
+        "wrong": 1,
+        "blank": 0,
+        "repeat": false
+      },
+      {
+        "test": "t2",
+        "topic": "sayilar",
+        "date": "2026-10-31",
+        "total": 40,
+        "correct": 20,
+        "wrong": 20,
+        "blank": 0,
+        "repeat": false
+      }
+    ],
+    "mockExams": []
+  },
+  "expected": {
+    "ruleSetVersion": "2026.1",
+    "invalidRecords": 0,
+    "topics": {
+      "paragraf": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "sozcuk": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "dilbilgisi": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "problemler": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "sayilar": {
+        "mastery": 0.5769230769230769,
+        "masteryLow": 0.46348671744882103,
+        "masteryHigh": 0.6869614684446652,
+        "markingRate": 0.9807692307692307,
+        "optimistic": false,
+        "expectedNetPerQuestion": 0.46209319526627207,
+        "effectiveQuestions": 50.0,
+        "dispersion": 3.0,
+        "confidence": 0.45454545454545453,
+        "sufficiency": "preliminary",
+        "band": "developing",
+        "trend": "insufficient",
+        "trendProbabilityUp": null,
+        "trendDifference": null,
+        "records": 2,
+        "questions": 50,
+        "correct": 29,
+        "wrong": 21,
+        "blank": 0,
+        "priority": 1.7846153846153854
+      },
+      "fonksiyon": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "olasilik": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "ucgen": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "kumeler": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "permutasyon": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "osmanli": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "inkilap": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "iklim": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "nufus": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      },
+      "elektrik": {
+        "sufficiency": "none",
+        "band": "none",
+        "trend": "none",
+        "priority": null
+      }
+    },
+    "subjects": {
+      "TUR": {
+        "mastery": 0.5,
+        "masteryLow": 0.1832499885461119,
+        "masteryHigh": 0.8167500114538881,
+        "coverage": 0.0,
+        "studiedTopics": 0,
+        "topics": 3
+      },
+      "MAT": {
+        "mastery": 0.5793846153846154,
+        "masteryLow": 0.42627587845257486,
+        "masteryHigh": 0.7324933523166559,
+        "coverage": 0.0,
+        "studiedTopics": 1,
+        "topics": 7
+      },
+      "TAR": {
+        "mastery": 0.5,
+        "masteryLow": 0.15759641306765704,
+        "masteryHigh": 0.842403586932343,
+        "coverage": 0.0,
+        "studiedTopics": 0,
+        "topics": 2
+      },
+      "COG": {
+        "mastery": 0.5,
+        "masteryLow": 0.15759641306765704,
+        "masteryHigh": 0.842403586932343,
+        "coverage": 0.0,
+        "studiedTopics": 0,
+        "topics": 2
+      },
+      "FIZ": {
+        "mastery": 0.5,
+        "masteryLow": 0.02517165785101766,
+        "masteryHigh": 0.9748283421489823,
+        "coverage": 0.0,
+        "studiedTopics": 0,
+        "topics": 1
+      }
+    },
+    "tests": {
+      "AYT-FEN": {
+        "mastery": 0.5,
+        "masteryLow": 0.02517165785101766,
+        "masteryHigh": 0.9748283421489823,
+        "coverage": 0.0,
+        "studiedTopics": 0,
+        "topics": 1
+      },
+      "TYT-MAT": {
+        "mastery": 0.5793846153846154,
+        "masteryLow": 0.42627587845257486,
+        "masteryHigh": 0.7324933523166559,
+        "coverage": 0.0,
+        "studiedTopics": 1,
+        "topics": 7
+      },
+      "TYT-SOS": {
+        "mastery": 0.5,
+        "masteryLow": 0.25788410177754273,
+        "masteryHigh": 0.7421158982224573,
+        "coverage": 0.0,
+        "studiedTopics": 0,
+        "topics": 4
+      },
+      "TYT-TUR": {
+        "mastery": 0.5,
+        "masteryLow": 0.1832499885461119,
+        "masteryHigh": 0.8167500114538881,
+        "coverage": 0.0,
+        "studiedTopics": 0,
+        "topics": 3
+      }
+    },
+    "sections": {},
+    "priorities": [
+      "sayilar"
+    ],
+    "lowDataTopics": [
+      "paragraf",
+      "problemler"
+    ]
+  }
+}

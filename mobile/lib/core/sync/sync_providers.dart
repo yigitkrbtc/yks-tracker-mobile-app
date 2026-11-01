@@ -16,14 +16,16 @@ final outboxStoreProvider = Provider<OutboxStore>((ref) {
   return store;
 });
 
-final syncServiceProvider = Provider<SyncService>(
-  (ref) => SyncService(
+final syncServiceProvider = Provider<SyncService>((ref) {
+  final service = SyncService(
     ref.watch(appDatabaseProvider),
     ref.watch(outboxStoreProvider),
     ref.watch(apiClientProvider),
     ref.watch(syncHandlersProvider),
-  ),
-);
+  );
+  ref.onDispose(service.dispose);
+  return service;
+});
 
 final syncSchedulerProvider = Provider<SyncScheduler>((ref) {
   final scheduler = SyncScheduler(

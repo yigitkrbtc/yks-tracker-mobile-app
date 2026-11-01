@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Nirengi.Modules.Curriculum.Contracts;
+using Nirengi.Modules.Curriculum.Domain;
 using Nirengi.Modules.Curriculum.Domain.Exams;
 using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
@@ -34,4 +35,42 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
             s.ParentCode,
             s.AlternativeOf))];
     }
+
+    public async Task<AnalysisCatalogData?> GetAnalysisCatalog(CancellationToken cancellationToken)
+    {
+        var release = await LatestRelease(cancellationToken);
+        if (release is null)
+        {
+            return null;
+        }
+
+        var subjects = await db.Subjects.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
+        var subjectOrder = subjects.Select((s, i) => (s.Id, i)).ToDictionary(x => x.Id, x => x.i);
+        var weights = await db.TopicWeights.AsNoTracking()
+            .Where(w => w.ExamYear == release.ExamYear)
+            .ToDictionaryAsync(w => w.TopicId, w => w.ExpectedQuestions, cancellationToken);
+        var topics = (await db.Topics.AsNoTracking().ToListAsync(cancellationToken))
+            .OrderBy(t => subjectOrder.GetValueOrDefault(t.SubjectCode, int.MaxValue))
+            .ThenBy(t => t.SortOrder)
+            .ThenBy(t => t.Code, StringComparer.Ordinal)
+            .Select(t => new CatalogWeightedTopic(t.Id, t.SubjectCode, weights.GetValueOrDefault(t.Id), t.Status == TopicStatus.Active))
+            .ToList();
+        var scoreTypes = await db.ScoreTypes.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
+
+        return new AnalysisCatalogData(
+            Version(release),
+            release.ExamYear,
+            topics,
+            [.. subjects.Select(s => new CatalogSubject(s.Id, [.. s.TestCodes]))],
+            [.. scoreTypes.Select(s => new CatalogScoreType(s.Id, [.. s.TestCodes]))],
+            await GetMockSections(cancellationToken));
+    }
+
+    public async Task<string?> GetVersion(CancellationToken cancellationToken) =>
+        await LatestRelease(cancellationToken) is { } release ? Version(release) : null;
+
+    private Task<CurriculumRelease?> LatestRelease(CancellationToken cancellationToken) =>
+        db.Releases.AsNoTracking().OrderByDescending(r => r.ExamYear).FirstOrDefaultAsync(cancellationToken);
+
+    private static string Version(CurriculumRelease release) => $"{release.ExamYear}:{release.SeedHash}";
 }

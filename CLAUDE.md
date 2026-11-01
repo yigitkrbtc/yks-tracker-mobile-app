@@ -4,7 +4,7 @@ YKS (TYT/AYT) konu testi ve deneme takibi + açıklanabilir analiz. Gereksinim v
 
 ## Durum
 
-S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S4 deneme + yanlış etiketleme `main`'de (ADR-0012…0015). Sıradaki: **S5 analiz motoru** (`Analytics.Engine`, ADR-0003; golden dataset şartı aşağıda).
+S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S4 deneme + yanlış etiketleme, S5 analiz motoru + panel + konu kartı (ADR-0012…0016). Sıradaki: **S6 öneri motoru** (kural tabanlı, ADR-0006; analiz snapshot'larını Contracts üzerinden okur).
 
 ## Yapı
 
@@ -38,6 +38,7 @@ dotnet test --project tests/BuildingBlocks.UnitTests
 dotnet test --project tests/Identity.UnitTests
 dotnet test --project tests/Curriculum.UnitTests  # data/seed doğrulaması dahil
 dotnet test --project tests/Tracking.UnitTests
+dotnet test --project tests/Analytics.GoldenTests  # motor + golden dataset (scipy referansı: tests/Analytics.GoldenTests/reference)
 dotnet test --project tests/Host.IntegrationTests   # Docker gerekir
 dotnet ef migrations add <Ad> -p src/Modules/<M>/<M>.Infrastructure -s src/Host -c <M>DbContext -o Persistence/Migrations
 
@@ -60,7 +61,7 @@ cd admin && npm run lint && npm run build
 ## Süreç
 
 - Her iş ayrı dal + PR; `main` her zaman yeşil. PR'da testler ve mimari testler zorunlu.
-- Analiz motoru değişikliği golden dataset testinden geçmeden birleşmez.
+- Analiz motoru değişikliği golden dataset testinden geçmeden birleşmez. Beklenen değerler `reference/build_scenarios.py` + `reference.py` (scipy) ile üretilir, elle yazılmaz; kural değişince `RuleSet` sürümü artar.
 - Ürün adı "Nirengi" geçici; `Directory.Build.props` (`Product`), `AppConfig.appName`, admin başlığı tek değişim noktaları.
 - Puan/sıralama tahmini ürün kapsamı dışı.
 

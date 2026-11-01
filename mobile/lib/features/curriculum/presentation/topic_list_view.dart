@@ -10,10 +10,21 @@ import '../domain/curriculum_repository.dart';
 
 /// The student's topics: TYT and AYT tabs, one expandable section per subject, search by name.
 class TopicListView extends ConsumerStatefulWidget {
-  const TopicListView({super.key, this.onRecordTest});
+  const TopicListView({
+    super.key,
+    this.onRecordTest,
+    this.statusBuilder,
+    this.onOpenAnalysis,
+  });
 
   /// Opens the test form for a topic; the app shell wires it, since another feature owns the form.
   final void Function(Topic topic)? onRecordTest;
+
+  /// The topic's analysis status (a small dot), from the analytics feature via the app shell.
+  final Widget Function(Topic topic)? statusBuilder;
+
+  /// Opens the topic's analysis card; wired by the app shell like [onRecordTest].
+  final void Function(Topic topic)? onOpenAnalysis;
 
   @override
   ConsumerState<TopicListView> createState() => _TopicListViewState();
@@ -94,7 +105,11 @@ class _TopicListViewState extends ConsumerState<TopicListView> {
                           .where((subject) => subject.session == s)
                           .toList(),
                       query: _query,
-                      onRecordTest: widget.onRecordTest,
+                      actions: _TopicActions(
+                        onRecordTest: widget.onRecordTest,
+                        statusBuilder: widget.statusBuilder,
+                        onOpenAnalysis: widget.onOpenAnalysis,
+                      ),
                     ),
                   ),
               ],
@@ -119,16 +134,29 @@ String _normalize(String text) => text
     .replaceAll('ı', 'i')
     .trim();
 
+/// Hooks the app shell passes in for other features' parts of a topic row.
+class _TopicActions {
+  const _TopicActions({
+    this.onRecordTest,
+    this.statusBuilder,
+    this.onOpenAnalysis,
+  });
+
+  final void Function(Topic topic)? onRecordTest;
+  final Widget Function(Topic topic)? statusBuilder;
+  final void Function(Topic topic)? onOpenAnalysis;
+}
+
 class _SubjectList extends StatelessWidget {
   const _SubjectList({
     required this.subjects,
     required this.query,
-    this.onRecordTest,
+    required this.actions,
   });
 
   final List<Subject> subjects;
   final String query;
-  final void Function(Topic topic)? onRecordTest;
+  final _TopicActions actions;
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +196,7 @@ class _SubjectList extends StatelessWidget {
           subtitle: Text('${entry.topics.length} konu'),
           children: [
             for (final t in entry.topics)
-              _TopicTile(topic: t, onRecordTest: onRecordTest),
+              _TopicTile(topic: t, actions: actions),
           ],
         );
       },
@@ -177,22 +205,22 @@ class _SubjectList extends StatelessWidget {
 }
 
 class _TopicTile extends StatelessWidget {
-  const _TopicTile({required this.topic, this.onRecordTest});
+  const _TopicTile({required this.topic, required this.actions});
 
   final Topic topic;
-  final void Function(Topic topic)? onRecordTest;
+  final _TopicActions actions;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      leading: actions.statusBuilder?.call(topic),
       title: Text(topic.name),
       subtitle: Text(_subtitle(topic)),
       trailing: TierBadge(topic: topic),
       onTap: () => showModalBottomSheet<void>(
         context: context,
         showDragHandle: true,
-        builder: (context) =>
-            _TopicSheet(topic: topic, onRecordTest: onRecordTest),
+        builder: (context) => _TopicSheet(topic: topic, actions: actions),
       ),
     );
   }
@@ -226,10 +254,10 @@ class TierBadge extends StatelessWidget {
 }
 
 class _TopicSheet extends StatelessWidget {
-  const _TopicSheet({required this.topic, this.onRecordTest});
+  const _TopicSheet({required this.topic, required this.actions});
 
   final Topic topic;
-  final void Function(Topic topic)? onRecordTest;
+  final _TopicActions actions;
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +296,20 @@ class _TopicSheet extends StatelessWidget {
               'tahmindir; resmî bir oran değildir.',
               style: textTheme.bodySmall,
             ),
-            if (onRecordTest case final record?) ...[
+            if (actions.onOpenAnalysis case final open?) ...[
+              const SizedBox(height: AppSpacing.lg),
+              NButton(
+                label: 'Analizi gör',
+                icon: Icons.insights_outlined,
+                variant: NButtonVariant.outline,
+                expand: true,
+                onPressed: () {
+                  Navigator.pop(context);
+                  open(topic);
+                },
+              ),
+            ],
+            if (actions.onRecordTest case final record?) ...[
               const SizedBox(height: AppSpacing.lg),
               NButton(
                 label: 'Bu konuda test ekle',

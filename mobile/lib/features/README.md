@@ -12,4 +12,4 @@ features/<özellik>/
 
 Bağımlılık yalnız içe akar: presentation → application → domain; data, domain'deki arayüzleri uygular. Bir özellik başka bir özelliğin `data` veya `presentation` klasörünü import etmez.
 
-Başka özelliğin ekranına geçiş, `app/` katmanından verilen geri çağırma ile yapılır (ör. konu kartındaki "Bu konuda test ekle" → `TopicListView(onRecordTest:)`, `home_shell.dart`'ta bağlanır). Senkronlanan kayıtların repository ve `SyncHandler` bağlaması `app/composition.dart`'taki `offlineRecordOverrides` listesindedir (ADR-0014).
+Başka özelliğin ekranına geçiş, `app/` katmanından verilen geri çağırma ile yapılır (ör. konu kartındaki "Bu konuda test ekle" → `TopicListView(onRecordTest:)`, `home_shell.dart`'ta bağlanır). Başka özelliğin parçasını göstermek de böyle: konu listesindeki analiz durum noktası `TopicListView(statusBuilder:)` ile verilir. Senkronlanan kayıtların repository ve `SyncHandler` bağlaması `app/composition.dart`'taki `offlineRecordOverrides` listesindedir (ADR-0014).

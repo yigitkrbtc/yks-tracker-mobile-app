@@ -54,6 +54,12 @@ class SyncService {
   final Map<String, int> _serverFailures =
       {}; // per queued write (id:revision), this app session
 
+  final _completed = StreamController<void>.broadcast();
+
+  /// Fires after each run that pushed every queued write and caught up with the change feed: the server now
+  /// holds everything this device knows, so read models built from it (analysis) are worth fetching again.
+  Stream<void> get completed => _completed.stream;
+
   /// When the next attempt is due after a failure; null when the last run succeeded.
   DateTime? get retryAt => _retryAt;
 
@@ -78,6 +84,8 @@ class SyncService {
     }
     return _running = _loop(force, _generation);
   }
+
+  Future<void> dispose() => _completed.close();
 
   /// Forgets backoff state and abandons a run in progress (sign-out): it writes nothing more to the database
   /// and sends nothing more to the server.
@@ -117,6 +125,9 @@ class SyncService {
       await _pull(generation);
       if (allPushed) {
         _clearBackoff();
+        if (generation == _generation) {
+          _completed.add(null);
+        }
         return SyncOutcome.done;
       }
     } on _Abandoned {

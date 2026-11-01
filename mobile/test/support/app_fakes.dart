@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:nirengi/app/composition.dart';
 import 'package:nirengi/core/database/database_providers.dart';
 import 'package:nirengi/core/network/api_client.dart';
+import 'package:nirengi/features/analytics/application/analysis_providers.dart';
 import 'package:nirengi/features/curriculum/application/curriculum_providers.dart';
 import 'package:nirengi/features/curriculum/domain/curriculum.dart';
 import 'package:nirengi/features/curriculum/domain/curriculum_repository.dart';
@@ -12,6 +13,7 @@ import 'package:nirengi/features/profile/application/profile_providers.dart';
 import 'package:nirengi/features/profile/domain/profile_repository.dart';
 import 'package:nirengi/features/profile/domain/study_profile.dart';
 
+import 'analysis_fakes.dart';
 import 'auth_fakes.dart';
 import 'sync_fakes.dart';
 
@@ -129,6 +131,7 @@ List<Override> fakeAppOverrides({
   FakeProfileRepository? profiles,
   FakeCurriculumRepository? curriculum,
   FakeApi? api,
+  FakeAnalysisRepository? analysis,
 }) => [
   ...fakeAuthOverrides(auth ?? FakeAuthRepository(), store),
   appDatabaseProvider.overrideWith((ref) {
@@ -142,6 +145,9 @@ List<Override> fakeAppOverrides({
   ),
   curriculumRepositoryProvider.overrideWithValue(
     curriculum ?? FakeCurriculumRepository(),
+  ),
+  analysisRepositoryProvider.overrideWithValue(
+    analysis ?? FakeAnalysisRepository(),
   ),
   ...offlineRecordOverrides,
 ];

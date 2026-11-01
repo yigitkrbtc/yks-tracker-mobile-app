@@ -86,6 +86,23 @@ void main() {
     'hasMore': hasMore,
   });
 
+  test('announces only runs that pushed everything and caught up', () async {
+    final completed = <void>[];
+    final sub = service.completed.listen(completed.add);
+    addTearDown(sub.cancel);
+    await queue('a');
+    api.route = (r) => FakeApi.json(503, null);
+
+    expect(await service.sync(), SyncOutcome.offline);
+    await Future<void>.delayed(Duration.zero);
+    expect(completed, isEmpty);
+
+    api.route = (r) => r.method == 'PUT' ? FakeApi.json(200, {}) : feed(r);
+    expect(await service.sync(force: true), SyncOutcome.done);
+    await Future<void>.delayed(Duration.zero);
+    expect(completed, hasLength(1));
+  });
+
   test('a newer write of the same record replaces the queued one', () async {
     await queue('a');
     await queue('a', 'delete');
