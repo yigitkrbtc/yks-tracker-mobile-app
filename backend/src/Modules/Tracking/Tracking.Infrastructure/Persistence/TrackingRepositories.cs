@@ -5,6 +5,7 @@ using Nirengi.BuildingBlocks.Application.Events;
 using Nirengi.Modules.Tracking.Domain;
 using Nirengi.Modules.Tracking.Domain.MockExams;
 using Nirengi.Modules.Tracking.Domain.Profiles;
+using Nirengi.Modules.Tracking.Domain.Progress;
 using Nirengi.Modules.Tracking.Domain.TopicTests;
 
 namespace Nirengi.Modules.Tracking.Infrastructure.Persistence;
@@ -61,6 +62,24 @@ internal sealed class MockExamRepository(TrackingDbContext db) : IMockExamReposi
     // Sections and marks go with their exam (ON DELETE CASCADE).
     public Task DeleteForUser(Guid userId, CancellationToken cancellationToken) =>
         db.MockExams.Where(e => e.UserId == userId).ExecuteDeleteAsync(cancellationToken);
+}
+
+internal sealed class TopicProgressRepository(TrackingDbContext db) : ITopicProgressRepository
+{
+    public Task<TopicProgress?> Get(Guid userId, Guid topicId, CancellationToken cancellationToken) =>
+        db.TopicProgress.SingleOrDefaultAsync(p => p.UserId == userId && p.TopicId == topicId, cancellationToken);
+
+    public void Add(TopicProgress progress) => db.TopicProgress.Add(progress);
+
+    public async Task<IReadOnlyList<TopicProgress>> GetChanges(Guid userId, long since, int limit, CancellationToken cancellationToken) =>
+        await db.TopicProgress.AsNoTracking()
+            .Where(p => p.UserId == userId && p.ChangeSeq > since)
+            .OrderBy(p => p.ChangeSeq)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+
+    public Task DeleteForUser(Guid userId, CancellationToken cancellationToken) =>
+        db.TopicProgress.Where(p => p.UserId == userId).ExecuteDeleteAsync(cancellationToken);
 }
 
 internal sealed class TrackingUnitOfWork(TrackingDbContext db) : ITrackingUnitOfWork

@@ -5,6 +5,7 @@ import 'package:nirengi/app/app.dart';
 import 'package:nirengi/core/database/database_providers.dart';
 import 'package:nirengi/core/sync/sync_providers.dart';
 
+import '../support/shell.dart';
 import '../support/app_fakes.dart';
 import '../support/auth_fakes.dart';
 
@@ -62,6 +63,7 @@ void main() {
             .get(),
       );
       expect(owner, isEmpty);
+      await disposeShell(tester);
     },
   );
 }

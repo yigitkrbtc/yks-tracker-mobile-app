@@ -66,6 +66,74 @@ namespace Nirengi.Modules.Recommendation.Infrastructure.Persistence.Migrations
 
                     b.ToTable("outbox_messages", "recommendation");
                 });
+
+            modelBuilder.Entity("Nirengi.Modules.Recommendation.Domain.Plans.ItemFeedback", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateOnly>("WeekStart")
+                        .HasColumnType("date")
+                        .HasColumnName("week_start");
+
+                    b.Property<string>("ItemKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("item_key");
+
+                    b.Property<DateTimeOffset>("At")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("at");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("reason");
+
+                    b.HasKey("UserId", "WeekStart", "ItemKey")
+                        .HasName("pk_item_feedback");
+
+                    b.ToTable("item_feedback", "recommendation");
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Recommendation.Domain.Plans.StoredPlan", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateOnly>("WeekStart")
+                        .HasColumnType("date")
+                        .HasColumnName("week_start");
+
+                    b.Property<string>("AnalysisStamp")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("analysis_stamp");
+
+                    b.Property<DateTimeOffset>("GeneratedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("generated_at");
+
+                    b.Property<string>("Items")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("items");
+
+                    b.Property<string>("RuleSetVersion")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("rule_set_version");
+
+                    b.HasKey("UserId", "WeekStart")
+                        .HasName("pk_weekly_plans");
+
+                    b.ToTable("weekly_plans", "recommendation");
+                });
 #pragma warning restore 612, 618
         }
     }

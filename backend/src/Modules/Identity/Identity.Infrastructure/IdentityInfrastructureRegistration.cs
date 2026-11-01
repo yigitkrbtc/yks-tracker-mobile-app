@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Nirengi.BuildingBlocks.Application.Export;
 using Nirengi.BuildingBlocks.Application.Security;
 using Nirengi.BuildingBlocks.Infrastructure;
 using Nirengi.Modules.Identity.Application;
@@ -35,6 +36,7 @@ public static class IdentityInfrastructureRegistration
         services.AddScoped<IRecoveryCodeRepository, RecoveryCodeRepository>();
         services.AddScoped<IConsentRepository, ConsentRepository>();
         services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
+        services.AddScoped<IPersonalDataExporter, IdentityDataExporter>();
 
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<IOneTimeSecrets, HmacOneTimeSecrets>();

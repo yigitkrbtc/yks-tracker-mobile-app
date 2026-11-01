@@ -101,6 +101,25 @@ class MockExamTopicMarks extends Table {
   Set<Column> get primaryKey => {examId, sectionCode, topicId};
 }
 
+/// The student's own mark per topic (S6, ADR-0018): not started, in progress or done. Synced like records, last
+/// edit wins; never feeds the analysis.
+@DataClassName('TopicProgressRow')
+class TopicProgressMarks extends Table {
+  TextColumn get topicId => text()();
+
+  /// `NotStarted`, `InProgress` or `Done` (API codes).
+  TextColumn get status => text()();
+
+  /// Microseconds since epoch, UTC; the server keeps the newest edit by this time.
+  IntColumn get clientModifiedAt => integer()();
+
+  /// Position in the server's change feed; 0 until the server has confirmed it.
+  IntColumn get changeSeq => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {topicId};
+}
+
 /// Local writes waiting for the server, at most one per record (a newer write replaces the queued one).
 @DataClassName('OutboxRow')
 class Outbox extends Table {
@@ -152,6 +171,7 @@ class CacheEntries extends Table {
     MockExams,
     MockExamSections,
     MockExamTopicMarks,
+    TopicProgressMarks,
     Outbox,
     SyncCursors,
     CacheEntries,
@@ -161,7 +181,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -171,6 +191,10 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(mockExams);
         await m.createTable(mockExamSections);
         await m.createTable(mockExamTopicMarks);
+      }
+      if (from < 3) {
+        // S6: topic progress marks.
+        await m.createTable(topicProgressMarks);
       }
     },
     beforeOpen: (details) async {

@@ -2861,6 +2861,334 @@ class MockExamTopicMarksCompanion
   }
 }
 
+class $TopicProgressMarksTable extends TopicProgressMarks
+    with TableInfo<$TopicProgressMarksTable, TopicProgressRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TopicProgressMarksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _topicIdMeta = const VerificationMeta(
+    'topicId',
+  );
+  @override
+  late final GeneratedColumn<String> topicId = GeneratedColumn<String>(
+    'topic_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _clientModifiedAtMeta = const VerificationMeta(
+    'clientModifiedAt',
+  );
+  @override
+  late final GeneratedColumn<int> clientModifiedAt = GeneratedColumn<int>(
+    'client_modified_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _changeSeqMeta = const VerificationMeta(
+    'changeSeq',
+  );
+  @override
+  late final GeneratedColumn<int> changeSeq = GeneratedColumn<int>(
+    'change_seq',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    topicId,
+    status,
+    clientModifiedAt,
+    changeSeq,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'topic_progress_marks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TopicProgressRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('topic_id')) {
+      context.handle(
+        _topicIdMeta,
+        topicId.isAcceptableOrUnknown(data['topic_id']!, _topicIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_topicIdMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('client_modified_at')) {
+      context.handle(
+        _clientModifiedAtMeta,
+        clientModifiedAt.isAcceptableOrUnknown(
+          data['client_modified_at']!,
+          _clientModifiedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_clientModifiedAtMeta);
+    }
+    if (data.containsKey('change_seq')) {
+      context.handle(
+        _changeSeqMeta,
+        changeSeq.isAcceptableOrUnknown(data['change_seq']!, _changeSeqMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {topicId};
+  @override
+  TopicProgressRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TopicProgressRow(
+      topicId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}topic_id'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      clientModifiedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}client_modified_at'],
+      )!,
+      changeSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}change_seq'],
+      )!,
+    );
+  }
+
+  @override
+  $TopicProgressMarksTable createAlias(String alias) {
+    return $TopicProgressMarksTable(attachedDatabase, alias);
+  }
+}
+
+class TopicProgressRow extends DataClass
+    implements Insertable<TopicProgressRow> {
+  final String topicId;
+
+  /// `NotStarted`, `InProgress` or `Done` (API codes).
+  final String status;
+
+  /// Microseconds since epoch, UTC; the server keeps the newest edit by this time.
+  final int clientModifiedAt;
+
+  /// Position in the server's change feed; 0 until the server has confirmed it.
+  final int changeSeq;
+  const TopicProgressRow({
+    required this.topicId,
+    required this.status,
+    required this.clientModifiedAt,
+    required this.changeSeq,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['topic_id'] = Variable<String>(topicId);
+    map['status'] = Variable<String>(status);
+    map['client_modified_at'] = Variable<int>(clientModifiedAt);
+    map['change_seq'] = Variable<int>(changeSeq);
+    return map;
+  }
+
+  TopicProgressMarksCompanion toCompanion(bool nullToAbsent) {
+    return TopicProgressMarksCompanion(
+      topicId: Value(topicId),
+      status: Value(status),
+      clientModifiedAt: Value(clientModifiedAt),
+      changeSeq: Value(changeSeq),
+    );
+  }
+
+  factory TopicProgressRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TopicProgressRow(
+      topicId: serializer.fromJson<String>(json['topicId']),
+      status: serializer.fromJson<String>(json['status']),
+      clientModifiedAt: serializer.fromJson<int>(json['clientModifiedAt']),
+      changeSeq: serializer.fromJson<int>(json['changeSeq']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'topicId': serializer.toJson<String>(topicId),
+      'status': serializer.toJson<String>(status),
+      'clientModifiedAt': serializer.toJson<int>(clientModifiedAt),
+      'changeSeq': serializer.toJson<int>(changeSeq),
+    };
+  }
+
+  TopicProgressRow copyWith({
+    String? topicId,
+    String? status,
+    int? clientModifiedAt,
+    int? changeSeq,
+  }) => TopicProgressRow(
+    topicId: topicId ?? this.topicId,
+    status: status ?? this.status,
+    clientModifiedAt: clientModifiedAt ?? this.clientModifiedAt,
+    changeSeq: changeSeq ?? this.changeSeq,
+  );
+  TopicProgressRow copyWithCompanion(TopicProgressMarksCompanion data) {
+    return TopicProgressRow(
+      topicId: data.topicId.present ? data.topicId.value : this.topicId,
+      status: data.status.present ? data.status.value : this.status,
+      clientModifiedAt: data.clientModifiedAt.present
+          ? data.clientModifiedAt.value
+          : this.clientModifiedAt,
+      changeSeq: data.changeSeq.present ? data.changeSeq.value : this.changeSeq,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TopicProgressRow(')
+          ..write('topicId: $topicId, ')
+          ..write('status: $status, ')
+          ..write('clientModifiedAt: $clientModifiedAt, ')
+          ..write('changeSeq: $changeSeq')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(topicId, status, clientModifiedAt, changeSeq);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TopicProgressRow &&
+          other.topicId == this.topicId &&
+          other.status == this.status &&
+          other.clientModifiedAt == this.clientModifiedAt &&
+          other.changeSeq == this.changeSeq);
+}
+
+class TopicProgressMarksCompanion extends UpdateCompanion<TopicProgressRow> {
+  final Value<String> topicId;
+  final Value<String> status;
+  final Value<int> clientModifiedAt;
+  final Value<int> changeSeq;
+  final Value<int> rowid;
+  const TopicProgressMarksCompanion({
+    this.topicId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.clientModifiedAt = const Value.absent(),
+    this.changeSeq = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TopicProgressMarksCompanion.insert({
+    required String topicId,
+    required String status,
+    required int clientModifiedAt,
+    this.changeSeq = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : topicId = Value(topicId),
+       status = Value(status),
+       clientModifiedAt = Value(clientModifiedAt);
+  static Insertable<TopicProgressRow> custom({
+    Expression<String>? topicId,
+    Expression<String>? status,
+    Expression<int>? clientModifiedAt,
+    Expression<int>? changeSeq,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (topicId != null) 'topic_id': topicId,
+      if (status != null) 'status': status,
+      if (clientModifiedAt != null) 'client_modified_at': clientModifiedAt,
+      if (changeSeq != null) 'change_seq': changeSeq,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TopicProgressMarksCompanion copyWith({
+    Value<String>? topicId,
+    Value<String>? status,
+    Value<int>? clientModifiedAt,
+    Value<int>? changeSeq,
+    Value<int>? rowid,
+  }) {
+    return TopicProgressMarksCompanion(
+      topicId: topicId ?? this.topicId,
+      status: status ?? this.status,
+      clientModifiedAt: clientModifiedAt ?? this.clientModifiedAt,
+      changeSeq: changeSeq ?? this.changeSeq,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (topicId.present) {
+      map['topic_id'] = Variable<String>(topicId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (clientModifiedAt.present) {
+      map['client_modified_at'] = Variable<int>(clientModifiedAt.value);
+    }
+    if (changeSeq.present) {
+      map['change_seq'] = Variable<int>(changeSeq.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TopicProgressMarksCompanion(')
+          ..write('topicId: $topicId, ')
+          ..write('status: $status, ')
+          ..write('clientModifiedAt: $clientModifiedAt, ')
+          ..write('changeSeq: $changeSeq, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $OutboxTable extends Outbox with TableInfo<$OutboxTable, OutboxRow> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -3806,6 +4134,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $MockExamTopicMarksTable mockExamTopicMarks =
       $MockExamTopicMarksTable(this);
+  late final $TopicProgressMarksTable topicProgressMarks =
+      $TopicProgressMarksTable(this);
   late final $OutboxTable outbox = $OutboxTable(this);
   late final $SyncCursorsTable syncCursors = $SyncCursorsTable(this);
   late final $CacheEntriesTable cacheEntries = $CacheEntriesTable(this);
@@ -3819,6 +4149,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     mockExams,
     mockExamSections,
     mockExamTopicMarks,
+    topicProgressMarks,
     outbox,
     syncCursors,
     cacheEntries,
@@ -5934,6 +6265,213 @@ typedef $$MockExamTopicMarksTableProcessedTableManager =
       MockExamTopicMarkRow,
       PrefetchHooks Function({bool examId})
     >;
+typedef $$TopicProgressMarksTableCreateCompanionBuilder =
+    TopicProgressMarksCompanion Function({
+      required String topicId,
+      required String status,
+      required int clientModifiedAt,
+      Value<int> changeSeq,
+      Value<int> rowid,
+    });
+typedef $$TopicProgressMarksTableUpdateCompanionBuilder =
+    TopicProgressMarksCompanion Function({
+      Value<String> topicId,
+      Value<String> status,
+      Value<int> clientModifiedAt,
+      Value<int> changeSeq,
+      Value<int> rowid,
+    });
+
+class $$TopicProgressMarksTableFilterComposer
+    extends Composer<_$AppDatabase, $TopicProgressMarksTable> {
+  $$TopicProgressMarksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get topicId => $composableBuilder(
+    column: $table.topicId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get clientModifiedAt => $composableBuilder(
+    column: $table.clientModifiedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changeSeq => $composableBuilder(
+    column: $table.changeSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TopicProgressMarksTableOrderingComposer
+    extends Composer<_$AppDatabase, $TopicProgressMarksTable> {
+  $$TopicProgressMarksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get topicId => $composableBuilder(
+    column: $table.topicId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get clientModifiedAt => $composableBuilder(
+    column: $table.clientModifiedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get changeSeq => $composableBuilder(
+    column: $table.changeSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TopicProgressMarksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TopicProgressMarksTable> {
+  $$TopicProgressMarksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get topicId =>
+      $composableBuilder(column: $table.topicId, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get clientModifiedAt => $composableBuilder(
+    column: $table.clientModifiedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get changeSeq =>
+      $composableBuilder(column: $table.changeSeq, builder: (column) => column);
+}
+
+class $$TopicProgressMarksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TopicProgressMarksTable,
+          TopicProgressRow,
+          $$TopicProgressMarksTableFilterComposer,
+          $$TopicProgressMarksTableOrderingComposer,
+          $$TopicProgressMarksTableAnnotationComposer,
+          $$TopicProgressMarksTableCreateCompanionBuilder,
+          $$TopicProgressMarksTableUpdateCompanionBuilder,
+          (
+            TopicProgressRow,
+            BaseReferences<
+              _$AppDatabase,
+              $TopicProgressMarksTable,
+              TopicProgressRow
+            >,
+          ),
+          TopicProgressRow,
+          PrefetchHooks Function()
+        > {
+  $$TopicProgressMarksTableTableManager(
+    _$AppDatabase db,
+    $TopicProgressMarksTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TopicProgressMarksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TopicProgressMarksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TopicProgressMarksTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> topicId = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> clientModifiedAt = const Value.absent(),
+                Value<int> changeSeq = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TopicProgressMarksCompanion(
+                topicId: topicId,
+                status: status,
+                clientModifiedAt: clientModifiedAt,
+                changeSeq: changeSeq,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String topicId,
+                required String status,
+                required int clientModifiedAt,
+                Value<int> changeSeq = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TopicProgressMarksCompanion.insert(
+                topicId: topicId,
+                status: status,
+                clientModifiedAt: clientModifiedAt,
+                changeSeq: changeSeq,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TopicProgressMarksTable, TopicProgressRow>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $TopicProgressMarksTable,
+                    TopicProgressRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TopicProgressMarksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TopicProgressMarksTable,
+      TopicProgressRow,
+      $$TopicProgressMarksTableFilterComposer,
+      $$TopicProgressMarksTableOrderingComposer,
+      $$TopicProgressMarksTableAnnotationComposer,
+      $$TopicProgressMarksTableCreateCompanionBuilder,
+      $$TopicProgressMarksTableUpdateCompanionBuilder,
+      (
+        TopicProgressRow,
+        BaseReferences<
+          _$AppDatabase,
+          $TopicProgressMarksTable,
+          TopicProgressRow
+        >,
+      ),
+      TopicProgressRow,
+      PrefetchHooks Function()
+    >;
 typedef $$OutboxTableCreateCompanionBuilder = OutboxCompanion Function({
   Value<int> id,
   required String entityType,
@@ -6501,6 +7039,8 @@ class $AppDatabaseManager {
       $$MockExamSectionsTableTableManager(_db, _db.mockExamSections);
   $$MockExamTopicMarksTableTableManager get mockExamTopicMarks =>
       $$MockExamTopicMarksTableTableManager(_db, _db.mockExamTopicMarks);
+  $$TopicProgressMarksTableTableManager get topicProgressMarks =>
+      $$TopicProgressMarksTableTableManager(_db, _db.topicProgressMarks);
   $$OutboxTableTableManager get outbox =>
       $$OutboxTableTableManager(_db, _db.outbox);
   $$SyncCursorsTableTableManager get syncCursors =>

@@ -573,6 +573,30 @@
         }
       }
     },
+    "/v1/curriculum/exam-calendar": {
+      "get": {
+        "tags": [
+          "Curriculum"
+        ],
+        "summary": "YKS dates per exam year (announced or estimated). Honours If-None-Match.",
+        "operationId": "GetExamCalendar",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamCalendarResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified"
+          }
+        }
+      }
+    },
     "/v1/profile": {
       "get": {
         "tags": [
@@ -979,6 +1003,78 @@
         }
       }
     },
+    "/v1/topic-progress/{topicId}": {
+      "put": {
+        "tags": [
+          "Tracking"
+        ],
+        "summary": "Set the caller's own mark on a topic (idempotent; the newer edit wins). Never used by the metrics.",
+        "operationId": "SaveTopicProgress",
+        "parameters": [
+          {
+            "name": "topicId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveTopicProgressRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicProgressResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/sync": {
       "get": {
         "tags": [
@@ -1123,6 +1219,153 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/recommendations/week": {
+      "get": {
+        "tags": [
+          "Recommendation"
+        ],
+        "summary": "This week's study plan with live progress; built on first read and frozen for the week. Honours If-None-Match.",
+        "operationId": "GetWeekPlan",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeekPlanResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/recommendations/items/{itemKey}/dismiss": {
+      "post": {
+        "tags": [
+          "Recommendation"
+        ],
+        "summary": "Drop an item from this week's plan; the next candidate takes its slot. Idempotent.",
+        "operationId": "DismissPlanItem",
+        "parameters": [
+          {
+            "name": "itemKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DismissPlanItemRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeekPlanResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/export": {
+      "get": {
+        "tags": [
+          "Platform"
+        ],
+        "summary": "Download everything the student entered as a ZIP of semicolon-separated UTF-8 CSVs. 3 per hour.",
+        "operationId": "ExportPersonalData",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "byte"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1319,6 +1562,12 @@
           }
         }
       },
+      "CalendarEventStatus": {
+        "enum": [
+          "Announced",
+          "Estimated"
+        ]
+      },
       "CompleteTotpSignInCommand": {
         "required": [
           "mfaToken",
@@ -1453,6 +1702,115 @@
           "Hard",
           null
         ]
+      },
+      "DismissPlanItemRequest": {
+        "required": [
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "reason": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DismissReason"
+              }
+            ]
+          }
+        }
+      },
+      "DismissReason": {
+        "enum": [
+          "NotNow",
+          "AlreadyKnow",
+          null
+        ]
+      },
+      "ExamCalendarDto": {
+        "required": [
+          "examYear",
+          "sourceUrl",
+          "note",
+          "events"
+        ],
+        "type": "object",
+        "properties": {
+          "examYear": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "sourceUrl": {
+            "type": "string"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExamCalendarEventDto"
+            }
+          }
+        }
+      },
+      "ExamCalendarEventDto": {
+        "required": [
+          "code",
+          "name",
+          "startsAt",
+          "endsAt",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CalendarEventStatus"
+          }
+        }
+      },
+      "ExamCalendarResponse": {
+        "required": [
+          "version",
+          "calendars"
+        ],
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "calendars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExamCalendarDto"
+            }
+          }
+        }
       },
       "ExamSession": {
         "enum": [
@@ -1947,6 +2305,86 @@
           }
         }
       },
+      "PlanItemKind": {
+        "enum": [
+          "TagMockExam",
+          "Focus",
+          "Decline",
+          "CollectData",
+          "Review",
+          "PracticeGap",
+          "FirstRecord"
+        ]
+      },
+      "PlanItemResponse": {
+        "required": [
+          "key",
+          "kind",
+          "topicId",
+          "sectionCode",
+          "mockExamId",
+          "targetQuestions",
+          "title",
+          "text",
+          "done",
+          "completed"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PlanItemKind"
+          },
+          "topicId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "sectionCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mockExamId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "targetQuestions": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "done": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "completed": {
+            "type": "boolean"
+          }
+        }
+      },
       "PriorityDto": {
         "required": [
           "topicId",
@@ -2355,6 +2793,41 @@
               "string"
             ],
             "format": "int32"
+          },
+          "weeklyActiveDaysGoal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "SaveTopicProgressRequest": {
+        "required": [
+          "status",
+          "clientModifiedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TopicProgressStatus"
+              }
+            ]
+          },
+          "clientModifiedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -2644,6 +3117,7 @@
           "ydtLanguage",
           "targetExamYear",
           "weeklyQuestionGoal",
+          "weeklyActiveDaysGoal",
           "updatedAt"
         ],
         "type": "object",
@@ -2683,6 +3157,15 @@
             "format": "int32"
           },
           "weeklyQuestionGoal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "weeklyActiveDaysGoal": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
@@ -2734,6 +3217,7 @@
         "required": [
           "topicTests",
           "mockExams",
+          "topicProgress",
           "cursor",
           "hasMore"
         ],
@@ -2749,6 +3233,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MockExamResponse"
+            }
+          },
+          "topicProgress": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicProgressResponse"
             }
           },
           "cursor": {
@@ -3124,6 +3614,48 @@
             "format": "int32"
           }
         }
+      },
+      "TopicProgressResponse": {
+        "required": [
+          "topicId",
+          "status",
+          "clientModifiedAt",
+          "updatedAt",
+          "changeSeq"
+        ],
+        "type": "object",
+        "properties": {
+          "topicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TopicProgressStatus"
+          },
+          "clientModifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "changeSeq": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "TopicProgressStatus": {
+        "enum": [
+          "NotStarted",
+          "InProgress",
+          "Done"
+        ]
       },
       "TopicResultInput": {
         "required": [
@@ -3636,6 +4168,38 @@
           }
         }
       },
+      "WeekPlanResponse": {
+        "required": [
+          "eTag",
+          "weekStart",
+          "generatedAt",
+          "ruleSetVersion",
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "eTag": {
+            "type": "string"
+          },
+          "weekStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ruleSetVersion": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanItemResponse"
+            }
+          }
+        }
+      },
       "WeightTier": {
         "enum": [
           "Rare",
@@ -3668,6 +4232,12 @@
     },
     {
       "name": "Analytics"
+    },
+    {
+      "name": "Recommendation"
+    },
+    {
+      "name": "Platform"
     }
   ]
 }

@@ -33,7 +33,8 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
             s.SubjectCode is { } code ? [code] : [.. subjects.Where(x => x.TestCodes.Contains(s.TestCode)).Select(x => x.Id)],
             s.QuestionCount,
             s.ParentCode,
-            s.AlternativeOf))];
+            s.AlternativeOf,
+            s.Name))];
     }
 
     public async Task<AnalysisCatalogData?> GetAnalysisCatalog(CancellationToken cancellationToken)
@@ -53,7 +54,7 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
             .OrderBy(t => subjectOrder.GetValueOrDefault(t.SubjectCode, int.MaxValue))
             .ThenBy(t => t.SortOrder)
             .ThenBy(t => t.Code, StringComparer.Ordinal)
-            .Select(t => new CatalogWeightedTopic(t.Id, t.SubjectCode, weights.GetValueOrDefault(t.Id), t.Status == TopicStatus.Active))
+            .Select(t => new CatalogWeightedTopic(t.Id, t.SubjectCode, weights.GetValueOrDefault(t.Id), t.Status == TopicStatus.Active, t.Code, t.Name))
             .ToList();
         var scoreTypes = await db.ScoreTypes.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
 

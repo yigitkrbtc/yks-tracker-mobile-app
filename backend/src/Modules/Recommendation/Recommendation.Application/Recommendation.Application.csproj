@@ -2,6 +2,10 @@
   <ItemGroup>
     <ProjectReference Include="../Recommendation.Domain/Recommendation.Domain.csproj" />
     <ProjectReference Include="../Recommendation.Contracts/Recommendation.Contracts.csproj" />
+    <ProjectReference Include="../../Analytics/Analytics.Contracts/Analytics.Contracts.csproj" />
+    <ProjectReference Include="../../Curriculum/Curriculum.Contracts/Curriculum.Contracts.csproj" />
+    <ProjectReference Include="../../Identity/Identity.Contracts/Identity.Contracts.csproj" />
+    <ProjectReference Include="../../Tracking/Tracking.Contracts/Tracking.Contracts.csproj" />
     <ProjectReference Include="../../../BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj" />
   </ItemGroup>
 </Project>

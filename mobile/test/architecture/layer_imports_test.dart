@@ -54,4 +54,15 @@ void main() {
     ];
     expect(offenders, isEmpty);
   });
+
+  test('notifications go through the core port only', () {
+    final direct = RegExp(r"import 'package:flutter_local_notifications/");
+    expect(
+      offenders(
+        dartFiles('lib').where((f) => !f.path.contains('/core/notifications/')),
+        direct,
+      ),
+      isEmpty,
+    );
+  });
 }

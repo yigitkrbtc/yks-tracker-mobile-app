@@ -25,6 +25,16 @@ public static class RateLimitPolicies
 
     /// <summary>Token refresh and logout: routine traffic, so its own looser budget, partitioned by client IP.</summary>
     public const string Session = "session";
+
+    /// <summary>Personal data export: heavy reads across every module, partitioned by user.</summary>
+    public const string Export = "export";
+}
+
+public sealed class ExportRateLimitOptions
+{
+    public int PermitLimit { get; set; } = 3;
+
+    public TimeSpan Window { get; set; } = TimeSpan.FromHours(1);
 }
 
 public sealed class AuthRateLimitOptions
@@ -88,6 +98,7 @@ public static class SecurityRegistration
 
         var auth = configuration.GetSection("RateLimiting:Auth").Get<AuthRateLimitOptions>() ?? new AuthRateLimitOptions();
         var session = configuration.GetSection("RateLimiting:Session").Get<SessionRateLimitOptions>() ?? new SessionRateLimitOptions();
+        var export = configuration.GetSection("RateLimiting:Export").Get<ExportRateLimitOptions>() ?? new ExportRateLimitOptions();
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -97,6 +108,9 @@ public static class SecurityRegistration
             options.AddPolicy(RateLimitPolicies.Session, context => RateLimitPartition.GetFixedWindowLimiter(
                 ClientIp(context),
                 _ => new FixedWindowRateLimiterOptions { PermitLimit = session.PermitLimit, Window = session.Window }));
+            options.AddPolicy(RateLimitPolicies.Export, context => RateLimitPartition.GetFixedWindowLimiter(
+                context.User.FindFirst(NirengiClaims.Subject)?.Value ?? ClientIp(context),
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = export.PermitLimit, Window = export.Window }));
         });
 
         return services;

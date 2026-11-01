@@ -11,11 +11,35 @@ import '../features/analytics/presentation/analysis_view.dart';
 import '../features/analytics/presentation/topic_analysis_page.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/curriculum/presentation/topic_list_view.dart';
+import '../features/data_export/application/data_export_providers.dart';
+import '../features/data_export/domain/data_export.dart';
+import '../features/exam_calendar/presentation/exam_calendar_widgets.dart';
+import '../features/goals/application/goal_providers.dart';
+import '../features/goals/presentation/goal_settings_page.dart';
+import '../features/mock_exams/presentation/mock_exam_form_page.dart';
+import '../features/mock_exams/presentation/mock_exam_marks_page.dart';
 import '../features/mock_exams/presentation/mock_exam_list_view.dart';
 import '../features/profile/presentation/profile_page.dart';
 import '../features/topic_tests/presentation/topic_test_form_page.dart';
+import '../features/recommendations/presentation/plan_widgets.dart';
+import '../features/study_progress/presentation/topic_progress_widgets.dart';
 import '../features/topic_tests/presentation/topic_test_list_view.dart';
 import 'local_data.dart';
+import 'today_view.dart';
+
+/// Plan item taps, shared by the Today card and the plan page.
+/// Plan item actions for the Today tab and the plan page. A practice gap opens the mock exams tab inside the
+/// shell, and the new mock exam form on the plan page (no tab to switch to there).
+PlanActions planActionsFor(
+  BuildContext context, {
+  VoidCallback? onOpenMockExams,
+}) => PlanActions(
+  onRecordTest: (topicId) =>
+      context.push(TopicTestFormPage.newForTopic(topicId)),
+  onTagMockExam: (id) => context.push(MockExamMarksPage.pathFor(id)),
+  onOpenMockExams:
+      onOpenMockExams ?? () => context.push(MockExamFormPage.newPath),
+);
 
 /// Shell with the MVP areas. It lives in `app/` because it composes several features' screens.
 class HomeShell extends ConsumerStatefulWidget {
@@ -25,12 +49,17 @@ class HomeShell extends ConsumerStatefulWidget {
   ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
-enum _AccountAction { studyProfile, logout, deleteAccount }
+enum _AccountAction { studyProfile, goals, exportData, logout, deleteAccount }
 
 class _HomeShellState extends ConsumerState<HomeShell> {
   var _index = 0;
 
+  static const _todayTab = 0;
+  static const _mockExamsTab = 3;
+  static const _analysisTab = 4;
+
   static const _tabs = [
+    (icon: Icons.today_outlined, label: 'Bugün'),
     (icon: Icons.menu_book_outlined, label: 'Konular'),
     (icon: Icons.edit_note_outlined, label: 'Testler'),
     (icon: Icons.assignment_outlined, label: 'Denemeler'),
@@ -41,10 +70,43 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     switch (action) {
       case _AccountAction.studyProfile:
         context.push(ProfilePage.editPath);
+      case _AccountAction.goals:
+        context.push(GoalSettingsPage.path);
+      case _AccountAction.exportData:
+        _exportData();
       case _AccountAction.logout:
         _logout();
       case _AccountAction.deleteAccount:
         context.push('/account/delete');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Reminders follow settings and today's progress while someone is signed in.
+    ref.listenManual(reminderSyncProvider, (_, _) {}, fireImmediately: true);
+  }
+
+  /// The export is built on the server, so writes still on this device are pushed first (K13).
+  Future<void> _exportData() async {
+    final messenger = ScaffoldMessenger.of(context);
+    if (await ref.read(outboxStoreProvider).queuedCount() > 0) {
+      await ref.read(syncServiceProvider).sync(force: true);
+      if (await ref.read(outboxStoreProvider).queuedCount() > 0) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Bazı kayıtlar henüz sunucuya gitmedi; indirilen dosyada olmayacaklar.',
+            ),
+          ),
+        );
+      }
+    }
+    try {
+      await ref.read(dataExportServiceProvider).exportAndShare();
+    } on DataExportException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -92,7 +154,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _index == 0 && firstName != null
+          _index == _todayTab && firstName != null
               ? 'Merhaba $firstName'
               : AppConfig.appName,
         ),
@@ -113,6 +175,14 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                 child: Text('Çalışma profilim'),
               ),
               PopupMenuItem(
+                value: _AccountAction.goals,
+                child: Text('Hedef ve hatırlatmalar'),
+              ),
+              PopupMenuItem(
+                value: _AccountAction.exportData,
+                child: Text('Verilerimi indir'),
+              ),
+              PopupMenuItem(
                 value: _AccountAction.logout,
                 child: Text('Çıkış yap'),
               ),
@@ -125,15 +195,32 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         ],
       ),
       body: switch (_index) {
-        0 => TopicListView(
+        _todayTab => TodayView(
+          planActions: planActionsFor(
+            context,
+            onOpenMockExams: () => setState(() => _index = _mockExamsTab),
+          ),
+          onOpenPlan: () => context.push(WeeklyPlanPage.path),
+          onOpenCalendar: () => context.push(ExamCalendarPage.path),
+          onEditGoal: () => context.push(GoalSettingsPage.path),
+          onOpenAnalysis: () => setState(() => _index = _analysisTab),
+        ),
+        1 => TopicListView(
           onRecordTest: (topic) =>
               context.push(TopicTestFormPage.newForTopic(topic.id)),
-          statusBuilder: (topic) => TopicStatusDot(topicId: topic.id),
+          statusBuilder: (topic) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TopicStatusDot(topicId: topic.id),
+              TopicProgressIcon(topicId: topic.id),
+            ],
+          ),
+          markBuilder: (topic) => TopicProgressSelector(topicId: topic.id),
           onOpenAnalysis: (topic) =>
               context.push(TopicAnalysisPage.pathFor(topic.id)),
         ),
-        1 => const TopicTestListView(),
-        2 => const MockExamListView(),
+        2 => const TopicTestListView(),
+        _mockExamsTab => const MockExamListView(),
         _ => const AnalysisView(),
       },
       bottomNavigationBar: NavigationBar(

@@ -15,6 +15,7 @@ class TopicListView extends ConsumerStatefulWidget {
     this.onRecordTest,
     this.statusBuilder,
     this.onOpenAnalysis,
+    this.markBuilder,
   });
 
   /// Opens the test form for a topic; the app shell wires it, since another feature owns the form.
@@ -25,6 +26,9 @@ class TopicListView extends ConsumerStatefulWidget {
 
   /// Opens the topic's analysis card; wired by the app shell like [onRecordTest].
   final void Function(Topic topic)? onOpenAnalysis;
+
+  /// The student's own progress mark, shown in the topic sheet; wired by the app shell like [statusBuilder].
+  final Widget Function(Topic topic)? markBuilder;
 
   @override
   ConsumerState<TopicListView> createState() => _TopicListViewState();
@@ -109,6 +113,7 @@ class _TopicListViewState extends ConsumerState<TopicListView> {
                         onRecordTest: widget.onRecordTest,
                         statusBuilder: widget.statusBuilder,
                         onOpenAnalysis: widget.onOpenAnalysis,
+                        markBuilder: widget.markBuilder,
                       ),
                     ),
                   ),
@@ -140,11 +145,13 @@ class _TopicActions {
     this.onRecordTest,
     this.statusBuilder,
     this.onOpenAnalysis,
+    this.markBuilder,
   });
 
   final void Function(Topic topic)? onRecordTest;
   final Widget Function(Topic topic)? statusBuilder;
   final void Function(Topic topic)? onOpenAnalysis;
+  final Widget Function(Topic topic)? markBuilder;
 }
 
 class _SubjectList extends StatelessWidget {
@@ -320,6 +327,10 @@ class _TopicSheet extends StatelessWidget {
                   record(topic);
                 },
               ),
+            ],
+            if (actions.markBuilder case final mark?) ...[
+              const SizedBox(height: AppSpacing.lg),
+              mark(topic),
             ],
           ],
         ),

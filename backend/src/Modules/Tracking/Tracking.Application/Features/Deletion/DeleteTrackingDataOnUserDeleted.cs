@@ -8,13 +8,15 @@ namespace Nirengi.Modules.Tracking.Application.Features.Deletion;
 internal sealed class DeleteTrackingDataOnUserDeleted(
     IStudyProfileRepository profiles,
     ITopicTestRepository topicTests,
-    IMockExamRepository mockExams)
+    IMockExamRepository mockExams,
+    ITopicProgressRepository progress)
     : IIntegrationEventHandler<UserDeleted>
 {
     public async Task Handle(UserDeleted integrationEvent, CancellationToken cancellationToken)
     {
         await topicTests.DeleteForUser(integrationEvent.UserId, cancellationToken);
         await mockExams.DeleteForUser(integrationEvent.UserId, cancellationToken);
+        await progress.DeleteForUser(integrationEvent.UserId, cancellationToken);
         await profiles.DeleteForUser(integrationEvent.UserId, cancellationToken);
     }
 }

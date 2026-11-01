@@ -3,6 +3,7 @@ using Nirengi.BuildingBlocks.Application.Messaging;
 using Nirengi.BuildingBlocks.Domain.Results;
 using Nirengi.Modules.Tracking.Application.Abstractions;
 using Nirengi.Modules.Tracking.Application.Features.MockExams;
+using Nirengi.Modules.Tracking.Application.Features.Progress;
 using Nirengi.Modules.Tracking.Application.Features.TopicTests;
 
 namespace Nirengi.Modules.Tracking.Application.Features.Sync;
@@ -19,6 +20,7 @@ public sealed record GetChangesQuery(Guid UserId, long Since, int Limit) : IQuer
 public sealed record SyncResponse(
     IReadOnlyList<TopicTestResponse> TopicTests,
     IReadOnlyList<MockExamResponse> MockExams,
+    IReadOnlyList<TopicProgressResponse> TopicProgress,
     long Cursor,
     bool HasMore);
 
@@ -31,15 +33,17 @@ internal sealed class GetChangesValidator : AbstractValidator<GetChangesQuery>
     }
 }
 
-internal sealed class GetChangesHandler(ITopicTestRepository tests, IMockExamRepository exams) : IQueryHandler<GetChangesQuery, SyncResponse>
+internal sealed class GetChangesHandler(ITopicTestRepository tests, IMockExamRepository exams, ITopicProgressRepository progress) : IQueryHandler<GetChangesQuery, SyncResponse>
 {
     public async Task<Result<SyncResponse>> Handle(GetChangesQuery query, CancellationToken cancellationToken)
     {
-        // Both kinds draw positions from one sequence: take the first `limit` positions across them.
+        // Every kind draws positions from one sequence: take the first `limit` positions across them.
         var topicTests = await tests.GetChanges(query.UserId, query.Since, query.Limit + 1, cancellationToken);
         var mockExams = await exams.GetChanges(query.UserId, query.Since, query.Limit + 1, cancellationToken);
+        var marks = await progress.GetChanges(query.UserId, query.Since, query.Limit + 1, cancellationToken);
         var page = topicTests.Select(t => t.ChangeSeq)
             .Concat(mockExams.Select(e => e.ChangeSeq))
+            .Concat(marks.Select(p => p.ChangeSeq))
             .Order()
             .ToList();
         var taken = page.Take(query.Limit).ToList();
@@ -48,6 +52,7 @@ internal sealed class GetChangesHandler(ITopicTestRepository tests, IMockExamRep
         return new SyncResponse(
             [.. topicTests.Where(t => t.ChangeSeq <= last).Select(TopicTestResponse.From)],
             [.. mockExams.Where(e => e.ChangeSeq <= last).Select(MockExamResponse.From)],
+            [.. marks.Where(p => p.ChangeSeq <= last).Select(TopicProgressResponse.From)],
             last,
             page.Count > query.Limit);
     }

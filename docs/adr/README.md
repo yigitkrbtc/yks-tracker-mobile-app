@@ -18,5 +18,7 @@
 | 0014 | [Konu testi kaydı ve offline senkron](0014-konu-testi-ve-senkron.md) | `TopicTest` 1–20 konu satırı; `clientModifiedAt` ile LWW (sunucu saatine kırpılır), tombstone, kullanıcı başına `change_seq` akışı. | Kabul |
 | 0015 | [Deneme kaydı, bölüm şablonu ve yanlış etiketleme](0015-deneme-kaydi-ve-etiketleme.md) | Curriculum `mock_sections` şablonu; çözülen bölümler + konu işaretleri, bölüm başına `tagging_status`; senkron ADR-0014 ile aynı. | Kabul |
 | 0016 | [Analiz motoru, okuma modeli ve tazeleme](0016-analiz-motoru-ve-okuma-modeli.md) | C# saf motor (`RuleSet.V1`, scipy golden dataset); snapshot tabloları, damga + gün + kural sürümüyle olayda ve okumada tazeleme; ETag'li panel, hesap yalnız sunucuda. | Kabul |
+| 0017 | [Kural tabanlı haftalık öneri motoru](0017-kural-tabanli-oneri-motoru.md) | Recommendation saf `PlanBuilder` (`R2026.1`), analiz/kayıt/müfredatı Contracts ile okur; 7 tür, ≤5 öğe, ders başına ≤2; plan hafta boyunca donar, ilerleme canlı, red yerine sıradakini getirir. | Kabul |
+| 0018 | [Öğrenci araçları ve kişisel veri dışa aktarma](0018-ogrenci-araclari-ve-disa-aktarma.md) | Seed'den sınav takvimi; Tracking'de senkronlu konu işareti; hedef profilde, seri istemcide; yalnız yerel hatırlatma; modül başına `IPersonalDataExporter`, `/v1/me/export` CSV ZIP. | Kabul |
 
 Yeni karar: sıradaki numarayla aynı şablonda (Bağlam, Karar, Sonuçlar) dosya ekle ve bu tabloya tek satırlık özetiyle ekle. Değişen karar silinmez; yeni ADR eskisini "Yerine geçti" olarak işaretler.

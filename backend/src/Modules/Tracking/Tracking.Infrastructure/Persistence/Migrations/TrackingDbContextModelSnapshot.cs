@@ -308,6 +308,10 @@ namespace Nirengi.Modules.Tracking.Infrastructure.Persistence.Migrations
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
 
+                    b.Property<int?>("WeeklyActiveDaysGoal")
+                        .HasColumnType("integer")
+                        .HasColumnName("weekly_active_days_goal");
+
                     b.Property<int?>("WeeklyQuestionGoal")
                         .HasColumnType("integer")
                         .HasColumnName("weekly_question_goal");
@@ -321,6 +325,49 @@ namespace Nirengi.Modules.Tracking.Infrastructure.Persistence.Migrations
                         .HasName("pk_study_profiles");
 
                     b.ToTable("study_profiles", "tracking");
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.Progress.TopicProgress", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("TopicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("topic_id");
+
+                    b.Property<long>("ChangeSeq")
+                        .HasColumnType("bigint")
+                        .HasColumnName("change_seq");
+
+                    b.Property<DateTimeOffset>("ClientModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("client_modified_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("UserId", "TopicId")
+                        .HasName("pk_topic_progress");
+
+                    b.HasIndex("UserId", "ChangeSeq")
+                        .HasDatabaseName("ix_topic_progress_user_id_change_seq");
+
+                    b.ToTable("topic_progress", "tracking");
                 });
 
             modelBuilder.Entity("Nirengi.Modules.Tracking.Domain.TopicTests.TopicResult", b =>

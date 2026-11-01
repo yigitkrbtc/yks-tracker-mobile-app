@@ -2,8 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/database/cache_store.dart';
 import '../core/database/database_providers.dart';
+import '../core/notifications/notification_providers.dart';
 import '../core/sync/sync_providers.dart';
 import '../features/auth/application/session_controller.dart';
+import '../features/goals/application/goal_providers.dart';
 
 /// Keeps the device database to one student and runs sync only while someone is signed in. Watched by the app
 /// root so it lives as long as the app.
@@ -33,6 +35,13 @@ class LocalData {
     _ref.read(syncSchedulerProvider).stop();
     await _ref.read(sessionControllerProvider.notifier).logout();
     await _ref.read(appDatabaseProvider).wipe();
+    await _clearReminders();
+  }
+
+  /// Reminders belong to the student who set them; settings went with the wipe.
+  Future<void> _clearReminders() async {
+    await _ref.read(localReminderSchedulerProvider).replaceAll(const []);
+    _ref.invalidate(reminderSettingsProvider);
   }
 
   Future<void> _signedIn(String userId) async {
@@ -45,6 +54,7 @@ class LocalData {
       _ref.read(syncSchedulerProvider).stop();
       await db.wipe();
       await cache.write(ownerKey, {'userId': userId});
+      await _clearReminders();
     }
     _ref.read(syncSchedulerProvider).start();
   }

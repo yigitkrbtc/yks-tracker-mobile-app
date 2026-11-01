@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nirengi/app/app.dart';
 
+import '../support/shell.dart';
 import '../support/app_fakes.dart';
 import '../support/auth_fakes.dart';
 
@@ -25,6 +26,7 @@ void main() {
     await pumpApp(tester, MemorySessionStore());
 
     expect(find.widgetWithText(FilledButton, 'Giriş yap'), findsOneWidget);
+    await disposeShell(tester);
   });
 
   testWidgets('stored session opens the topics of the student\'s score type', (
@@ -33,7 +35,8 @@ void main() {
     await pumpApp(tester, MemorySessionStore(refreshToken: 'refresh-old'));
 
     expect(find.text('Merhaba Ada'), findsOneWidget);
-    expect(find.byType(NavigationDestination), findsNWidgets(4));
+    expect(find.byType(NavigationDestination), findsNWidgets(5));
+    await openTopics(tester);
     expect(find.widgetWithText(Tab, 'AYT'), findsOneWidget);
     expect(find.text('Türkçe'), findsOneWidget);
 
@@ -78,9 +81,11 @@ void main() {
 
     expect(profiles.saved, hasLength(1));
     expect(find.text('Merhaba Ada'), findsOneWidget);
+    await openTopics(tester);
     await tester.tap(find.widgetWithText(Tab, 'AYT'));
     await tester.pumpAndSettle();
     expect(find.text('Felsefe Grubu'), findsOneWidget);
+    await disposeShell(tester);
   });
 
   testWidgets('logging in from the login screen opens home', (tester) async {
@@ -98,19 +103,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Merhaba Ada'), findsOneWidget);
+    await openTopics(tester);
     expect(find.text('Türkçe'), findsOneWidget);
+    await disposeShell(tester);
   });
 
   testWidgets('search opens the sections that hold matching topics', (
     tester,
   ) async {
     await pumpApp(tester, MemorySessionStore(refreshToken: 'refresh-old'));
+    await openTopics(tester);
     expect(find.text('Türkçe konu 1'), findsNothing);
 
     await tester.enterText(find.byType(TextField), 'türkçe konu');
     await tester.pumpAndSettle();
 
     expect(find.text('Türkçe konu 1'), findsOneWidget);
+    await disposeShell(tester);
   });
 
   testWidgets('signing in again with a profile skips onboarding', (
@@ -137,5 +146,6 @@ void main() {
 
     expect(find.text('Hoş geldin'), findsNothing);
     expect(find.text('Merhaba Ada'), findsOneWidget);
+    await disposeShell(tester);
   });
 }

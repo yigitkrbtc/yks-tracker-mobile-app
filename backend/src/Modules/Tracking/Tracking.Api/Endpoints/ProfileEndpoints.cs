@@ -9,13 +9,15 @@ using Nirengi.Modules.Tracking.Domain.Profiles;
 
 namespace Nirengi.Modules.Tracking.Api.Endpoints;
 
+/// <param name="WeeklyActiveDaysGoal">Omitted (or null) keeps the stored value, so clients older than S6 do not erase it.</param>
 public sealed record SaveStudyProfileRequest(
     Grade? Grade,
     ScoreType? PrimaryScoreType,
     ScoreType? SecondaryScoreType,
     YdtLanguage? YdtLanguage,
     int? TargetExamYear,
-    int? WeeklyQuestionGoal);
+    int? WeeklyQuestionGoal,
+    int? WeeklyActiveDaysGoal = null);
 
 internal static class ProfileEndpoints
 {
@@ -39,7 +41,8 @@ internal static class ProfileEndpoints
                         request.SecondaryScoreType,
                         request.YdtLanguage,
                         request.TargetExamYear,
-                        request.WeeklyQuestionGoal),
+                        request.WeeklyQuestionGoal,
+                        request.WeeklyActiveDaysGoal),
                     ct)).Match(Results.Ok))
             .WithName("SaveStudyProfile")
             .Produces<StudyProfileResponse>()

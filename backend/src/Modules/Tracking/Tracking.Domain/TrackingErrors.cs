@@ -19,5 +19,6 @@ public static class TrackingErrors
     public static readonly Error MockSectionCounts = Error.Validation("tracking.mock_section_counts", "Doğru + yanlış, bölümün soru sayısını aşamaz.");
     public static readonly Error MarksExceedSection = Error.Validation("tracking.marks_exceed_section", "Etiketlenen yanlış ve boşlar bölümün yanlış ve boş sayısını aşamaz.");
     public static readonly Error TopicNotInSection = Error.Validation("tracking.topic_not_in_section", "Etiketlenen konu bu bölümün derslerinden değil.");
+    public static readonly Error TopicProgressConflict = Error.Conflict("tracking.topic_progress_conflict", "Konu işareti aynı anda başka bir cihazdan güncellendi; tekrar dene.");
     public static readonly Error ProfileConflict = Error.Conflict("tracking.profile_conflict", "Profil aynı anda başka bir cihazdan güncellendi; tekrar dene.");
 }
