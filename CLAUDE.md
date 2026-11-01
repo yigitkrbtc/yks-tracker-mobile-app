@@ -4,7 +4,7 @@ YKS (TYT/AYT) konu testi ve deneme takibi + açıklanabilir analiz. Gereksinim v
 
 ## Durum
 
-S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S4 deneme + yanlış etiketleme, S5 analiz motoru + panel + konu kartı (ADR-0012…0016). Sıradaki: **S6 öneri motoru** (kural tabanlı, ADR-0006; analiz snapshot'larını Contracts üzerinden okur).
+S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S4 deneme + yanlış etiketleme, S5 analiz motoru + panel + konu kartı, S6 öneri motoru + Bugün sekmesi + konu işareti + hedef/seri + yerel hatırlatma + sınav takvimi + veri dışa aktarma (ADR-0012…0018). Sıradaki: **S7** (admin paneli: müfredat/kural yönetimi, puan türüne göre `q`).
 
 ## Yapı
 
@@ -26,6 +26,7 @@ S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S
 - Modüller arası yan etki: handler `IEventOutbox.Enqueue(event)` çağırır, olay aynı `SaveChanges` ile yazılır. Event handler'lar idempotent olmalı.
 - Endpoint'ler modülün `MapEndpoints(v1)` metodunda, `/v1` altında. Hata yanıtı `ToProblem()` ile ProblemDetails.
 - Saat için `IClock`; `DateTime.Now` kullanılmaz. Analytics Engine saati parametre olarak alır, I/O yapmaz.
+- Kişisel veri tutan her modül `IPersonalDataExporter` uygular ve kaydeder; `/v1/me/export` bunları toplar (ADR-0018).
 - Uyarılar hata sayılır (`TreatWarningsAsErrors`). Paket sürümleri yalnız `Directory.Packages.props`'ta.
 
 ## Sık komutlar
@@ -38,6 +39,7 @@ dotnet test --project tests/BuildingBlocks.UnitTests
 dotnet test --project tests/Identity.UnitTests
 dotnet test --project tests/Curriculum.UnitTests  # data/seed doğrulaması dahil
 dotnet test --project tests/Tracking.UnitTests
+dotnet test --project tests/Recommendation.UnitTests  # öneri kural seti senaryoları
 dotnet test --project tests/Analytics.GoldenTests  # motor + golden dataset (scipy referansı: tests/Analytics.GoldenTests/reference)
 dotnet test --project tests/Host.IntegrationTests   # Docker gerekir
 dotnet ef migrations add <Ad> -p src/Modules/<M>/<M>.Infrastructure -s src/Host -c <M>DbContext -o Persistence/Migrations
@@ -57,6 +59,7 @@ cd admin && npm run lint && npm run build
 - Başka özelliğin ekranına geçiş `app/`'ten verilen geri çağırmayla (mimari test).
 - UI yalnız `lib/core/design/design.dart` (token + `N*` bileşenleri) üzerinden; `shadcn_ui` doğrudan yalnız `core/design` ve `app` içinde (ADR-0011, mimari test).
 - Yapılandırma `--dart-define` ile (`AppConfig`).
+- Bildirim yalnız `core/notifications` portu (`LocalReminderScheduler`) üzerinden; özellik plugin'i doğrudan çağırmaz.
 
 ## Süreç
 
