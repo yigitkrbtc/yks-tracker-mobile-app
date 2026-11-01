@@ -12,3 +12,5 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+# Shared debug key (not secret): every CI/local debug APK has the same signature, so a new build installs as an update.
+!app/preview-debug.keystore
