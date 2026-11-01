@@ -46,11 +46,13 @@ public sealed record DigestSection(string Code, bool IsSufficient, double? Pract
 
 /// <summary>What the recommendation engine needs from a student's analysis (ADR-0017).</summary>
 /// <param name="Stamp">Changes whenever any value here may change (the analysis ETag).</param>
+/// <param name="ActiveTests">Tests of the student's score types (all tests before onboarding).</param>
 /// <param name="LowDataTopics">Heavy topics with too little data, in priority order.</param>
 public sealed record AnalysisDigest(
     string Stamp,
     DateOnly ComputedOn,
     string RuleSetVersion,
+    IReadOnlyList<string> ActiveTests,
     IReadOnlyList<DigestPriority> Priorities,
     IReadOnlyList<Guid> LowDataTopics,
     IReadOnlyList<DigestTopic> Topics,

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nirengi.BuildingBlocks.Api.Modules;
 using Nirengi.BuildingBlocks.Infrastructure;
+using Nirengi.Modules.Platform.Api.Endpoints;
 using Nirengi.Modules.Platform.Infrastructure;
 
 namespace Nirengi.Modules.Platform.Api;
@@ -19,7 +20,5 @@ public sealed class PlatformModule : IModule
             Application.AssemblyReference.Assembly);
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder v1)
-    {
-    }
+    public void MapEndpoints(IEndpointRouteBuilder v1) => v1.MapPersonalDataExport();
 }

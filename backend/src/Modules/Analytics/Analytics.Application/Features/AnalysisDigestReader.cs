@@ -28,6 +28,7 @@ internal sealed class AnalysisDigestReader(IAnalysisRefresher refresher, IAnalyt
             GetAnalysisOverviewHandler.ETag(analysis),
             analysis.ComputedOn,
             analysis.RuleSetVersion,
+            [.. summary.Tests.Where(t => t.IsActive).Select(t => t.Code)],
             [.. summary.Priorities.Select(p => new DigestPriority(p.TopicId, p.Priority, p.Mastery, p.ExpectedQuestions))],
             summary.LowDataTopics,
             [.. topics.Where(t => t.ConfidenceLevel != ConfidenceLevel.None).Select(t =>

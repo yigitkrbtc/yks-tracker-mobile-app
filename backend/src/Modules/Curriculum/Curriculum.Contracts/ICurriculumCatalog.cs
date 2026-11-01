@@ -17,10 +17,12 @@ public sealed record CatalogMockSection(
     IReadOnlyList<string> SubjectCodes,
     int QuestionCount,
     string? ParentCode,
-    string? AlternativeOf);
+    string? AlternativeOf,
+    string Name);
 
 /// <summary>A topic with its expected question count for the release's exam year (q_i).</summary>
-public sealed record CatalogWeightedTopic(Guid Id, string SubjectCode, decimal ExpectedQuestions, bool IsActive);
+/// <param name="Code">Stable topic code (e.g. <c>AYT.AMAT.26</c>); used for deterministic ordering.</param>
+public sealed record CatalogWeightedTopic(Guid Id, string SubjectCode, decimal ExpectedQuestions, bool IsActive, string Code, string Name);
 
 public sealed record CatalogSubject(string Code, IReadOnlyList<string> TestCodes);
 
