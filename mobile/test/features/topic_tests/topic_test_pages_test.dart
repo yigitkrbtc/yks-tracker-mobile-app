@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nirengi/app/app.dart';
 
+import '../../support/shell.dart';
 import '../../support/app_fakes.dart';
 import '../../support/auth_fakes.dart';
 import '../../support/sync_fakes.dart';
@@ -124,6 +125,7 @@ void main() {
     await pumpApp(tester);
 
     // From the topic sheet, the form starts with that topic.
+    await openTopics(tester);
     await tester.tap(find.text('Türkçe'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Türkçe konu 1'));

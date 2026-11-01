@@ -63,9 +63,13 @@ class StudyProfile {
     this.ydtLanguage,
     required this.targetExamYear,
     this.weeklyQuestionGoal,
+    this.weeklyActiveDaysGoal,
   });
 
   static const maxWeeklyQuestionGoal = 5000;
+
+  /// Days a week with at least one record the student aims for; null means the default (5).
+  static const defaultWeeklyActiveDaysGoal = 5;
 
   final Grade grade;
   final ScoreType primaryScoreType;
@@ -77,6 +81,20 @@ class StudyProfile {
   final YdtLanguage? ydtLanguage;
   final int targetExamYear;
   final int? weeklyQuestionGoal;
+  final int? weeklyActiveDaysGoal;
+
+  StudyProfile withGoals({
+    required int? weeklyQuestionGoal,
+    required int? weeklyActiveDaysGoal,
+  }) => StudyProfile(
+    grade: grade,
+    primaryScoreType: primaryScoreType,
+    secondaryScoreType: secondaryScoreType,
+    ydtLanguage: ydtLanguage,
+    targetExamYear: targetExamYear,
+    weeklyQuestionGoal: weeklyQuestionGoal,
+    weeklyActiveDaysGoal: weeklyActiveDaysGoal,
+  );
 
   List<ScoreType> get scoreTypes => [primaryScoreType, ?secondaryScoreType];
 
@@ -89,6 +107,7 @@ class StudyProfile {
     'ydtLanguage': ydtLanguage?.code,
     'targetExamYear': targetExamYear,
     'weeklyQuestionGoal': weeklyQuestionGoal,
+    'weeklyActiveDaysGoal': weeklyActiveDaysGoal,
   };
 
   factory StudyProfile.fromJson(Map<String, dynamic> json) {
@@ -103,6 +122,7 @@ class StudyProfile {
       ydtLanguage: language == null ? null : YdtLanguage.fromCode(language),
       targetExamYear: json['targetExamYear'] as int,
       weeklyQuestionGoal: json['weeklyQuestionGoal'] as int?,
+      weeklyActiveDaysGoal: json['weeklyActiveDaysGoal'] as int?,
     );
   }
 }

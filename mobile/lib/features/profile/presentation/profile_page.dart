@@ -125,6 +125,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               ydtLanguage: _needsLanguage ? _language : null,
               targetExamYear: _year!,
               weeklyQuestionGoal: _goalValue,
+              weeklyActiveDaysGoal: ref
+                  .read(studyProfileProvider)
+                  .value
+                  ?.weeklyActiveDaysGoal,
             ),
           );
       // Onboarding: the router moves on once the profile exists.

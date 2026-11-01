@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nirengi/app/app.dart';
 import 'package:nirengi/features/analytics/domain/analysis_repository.dart';
 
+import '../../support/shell.dart';
 import '../../support/analysis_fakes.dart';
 import '../../support/app_fakes.dart';
 import '../../support/auth_fakes.dart';
@@ -138,6 +139,7 @@ void main() {
       cards: {'TYT.TUR-1': topicCardJson('TYT.TUR-1')},
     );
     await pumpApp(tester, analysis);
+    await openTopics(tester);
     await tester.tap(find.text('Türkçe'));
     await tester.pumpAndSettle();
 

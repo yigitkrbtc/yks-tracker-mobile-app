@@ -36,6 +36,7 @@ void main() {
       'ydtLanguage': 'German',
       'targetExamYear': 2027,
       'weeklyQuestionGoal': 400,
+      'weeklyActiveDaysGoal': null,
     });
     final back = StudyProfile.fromJson(json);
     expect(back.scoreTypes, [ScoreType.dil, ScoreType.soz]);

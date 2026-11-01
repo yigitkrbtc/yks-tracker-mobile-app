@@ -7,6 +7,10 @@ import 'package:nirengi/core/database/database_providers.dart';
 import 'package:nirengi/core/network/api_client.dart';
 import 'package:nirengi/features/analytics/application/analysis_providers.dart';
 import 'package:nirengi/features/curriculum/application/curriculum_providers.dart';
+import 'package:nirengi/features/data_export/application/data_export_providers.dart';
+import 'package:nirengi/features/exam_calendar/application/exam_schedule_providers.dart';
+import 'package:nirengi/features/goals/application/goal_providers.dart';
+import 'package:nirengi/features/recommendations/application/recommendation_providers.dart';
 import 'package:nirengi/features/curriculum/domain/curriculum.dart';
 import 'package:nirengi/features/curriculum/domain/curriculum_repository.dart';
 import 'package:nirengi/features/profile/application/profile_providers.dart';
@@ -15,6 +19,7 @@ import 'package:nirengi/features/profile/domain/study_profile.dart';
 
 import 'analysis_fakes.dart';
 import 'auth_fakes.dart';
+import 'student_tools_fakes.dart';
 import 'sync_fakes.dart';
 
 const sayProfile = StudyProfile(
@@ -132,6 +137,10 @@ List<Override> fakeAppOverrides({
   FakeCurriculumRepository? curriculum,
   FakeApi? api,
   FakeAnalysisRepository? analysis,
+  FakeRecommendationRepository? recommendations,
+  FakeExamScheduleRepository? examSchedule,
+  FakeDataExportService? dataExport,
+  DateTime Function()? now,
 }) => [
   ...fakeAuthOverrides(auth ?? FakeAuthRepository(), store),
   appDatabaseProvider.overrideWith((ref) {
@@ -149,5 +158,15 @@ List<Override> fakeAppOverrides({
   analysisRepositoryProvider.overrideWithValue(
     analysis ?? FakeAnalysisRepository(),
   ),
+  recommendationRepositoryProvider.overrideWithValue(
+    recommendations ?? FakeRecommendationRepository(),
+  ),
+  examScheduleRepositoryProvider.overrideWithValue(
+    examSchedule ?? FakeExamScheduleRepository(),
+  ),
+  dataExportServiceProvider.overrideWithValue(
+    dataExport ?? FakeDataExportService(),
+  ),
+  if (now != null) clockProvider.overrideWithValue(now),
   ...offlineRecordOverrides,
 ];

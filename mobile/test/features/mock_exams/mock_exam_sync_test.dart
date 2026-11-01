@@ -257,7 +257,7 @@ void main() {
       final version = await old
           .customSelect('PRAGMA user_version', variables: <Variable>[])
           .getSingle();
-      expect(version.data.values.single, 2);
+      expect(version.data.values.single, old.schemaVersion);
     },
   );
 }
