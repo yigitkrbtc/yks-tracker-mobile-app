@@ -573,6 +573,30 @@
         }
       }
     },
+    "/v1/curriculum/exam-calendar": {
+      "get": {
+        "tags": [
+          "Curriculum"
+        ],
+        "summary": "YKS dates per exam year (announced or estimated). Honours If-None-Match.",
+        "operationId": "GetExamCalendar",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamCalendarResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified"
+          }
+        }
+      }
+    },
     "/v1/profile": {
       "get": {
         "tags": [
@@ -979,6 +1003,78 @@
         }
       }
     },
+    "/v1/topic-progress/{topicId}": {
+      "put": {
+        "tags": [
+          "Tracking"
+        ],
+        "summary": "Set the caller's own mark on a topic (idempotent; the newer edit wins). Never used by the metrics.",
+        "operationId": "SaveTopicProgress",
+        "parameters": [
+          {
+            "name": "topicId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveTopicProgressRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicProgressResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/sync": {
       "get": {
         "tags": [
@@ -1319,6 +1415,12 @@
           }
         }
       },
+      "CalendarEventStatus": {
+        "enum": [
+          "Announced",
+          "Estimated"
+        ]
+      },
       "CompleteTotpSignInCommand": {
         "required": [
           "mfaToken",
@@ -1453,6 +1555,90 @@
           "Hard",
           null
         ]
+      },
+      "ExamCalendarDto": {
+        "required": [
+          "examYear",
+          "sourceUrl",
+          "note",
+          "events"
+        ],
+        "type": "object",
+        "properties": {
+          "examYear": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "sourceUrl": {
+            "type": "string"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExamCalendarEventDto"
+            }
+          }
+        }
+      },
+      "ExamCalendarEventDto": {
+        "required": [
+          "code",
+          "name",
+          "startsAt",
+          "endsAt",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CalendarEventStatus"
+          }
+        }
+      },
+      "ExamCalendarResponse": {
+        "required": [
+          "version",
+          "calendars"
+        ],
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "calendars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExamCalendarDto"
+            }
+          }
+        }
       },
       "ExamSession": {
         "enum": [
@@ -2355,6 +2541,41 @@
               "string"
             ],
             "format": "int32"
+          },
+          "weeklyActiveDaysGoal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "SaveTopicProgressRequest": {
+        "required": [
+          "status",
+          "clientModifiedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TopicProgressStatus"
+              }
+            ]
+          },
+          "clientModifiedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -2644,6 +2865,7 @@
           "ydtLanguage",
           "targetExamYear",
           "weeklyQuestionGoal",
+          "weeklyActiveDaysGoal",
           "updatedAt"
         ],
         "type": "object",
@@ -2683,6 +2905,15 @@
             "format": "int32"
           },
           "weeklyQuestionGoal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "weeklyActiveDaysGoal": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
@@ -2734,6 +2965,7 @@
         "required": [
           "topicTests",
           "mockExams",
+          "topicProgress",
           "cursor",
           "hasMore"
         ],
@@ -2749,6 +2981,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MockExamResponse"
+            }
+          },
+          "topicProgress": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicProgressResponse"
             }
           },
           "cursor": {
@@ -3124,6 +3362,48 @@
             "format": "int32"
           }
         }
+      },
+      "TopicProgressResponse": {
+        "required": [
+          "topicId",
+          "status",
+          "clientModifiedAt",
+          "updatedAt",
+          "changeSeq"
+        ],
+        "type": "object",
+        "properties": {
+          "topicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TopicProgressStatus"
+          },
+          "clientModifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "changeSeq": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "TopicProgressStatus": {
+        "enum": [
+          "NotStarted",
+          "InProgress",
+          "Done"
+        ]
       },
       "TopicResultInput": {
         "required": [

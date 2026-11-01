@@ -15,7 +15,8 @@ public sealed record SaveStudyProfileRequest(
     ScoreType? SecondaryScoreType,
     YdtLanguage? YdtLanguage,
     int? TargetExamYear,
-    int? WeeklyQuestionGoal);
+    int? WeeklyQuestionGoal,
+    int? WeeklyActiveDaysGoal = null);
 
 internal static class ProfileEndpoints
 {
@@ -39,7 +40,8 @@ internal static class ProfileEndpoints
                         request.SecondaryScoreType,
                         request.YdtLanguage,
                         request.TargetExamYear,
-                        request.WeeklyQuestionGoal),
+                        request.WeeklyQuestionGoal,
+                        request.WeeklyActiveDaysGoal),
                     ct)).Match(Results.Ok))
             .WithName("SaveStudyProfile")
             .Produces<StudyProfileResponse>()

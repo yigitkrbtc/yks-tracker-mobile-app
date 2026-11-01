@@ -16,7 +16,8 @@ public sealed record SaveStudyProfileCommand(
     ScoreType? SecondaryScoreType,
     YdtLanguage? YdtLanguage,
     int? TargetExamYear,
-    int? WeeklyQuestionGoal) : ICommand<StudyProfileResponse>;
+    int? WeeklyQuestionGoal,
+    int? WeeklyActiveDaysGoal = null) : ICommand<StudyProfileResponse>;
 
 internal sealed class SaveStudyProfileValidator : AbstractValidator<SaveStudyProfileCommand>
 {
@@ -42,6 +43,7 @@ internal sealed class SaveStudyProfileValidator : AbstractValidator<SaveStudyPro
             .WithMessage("Hedef sınav yılı önümüzdeki dört YKS'den biri olmalı.");
 
         RuleFor(c => c.WeeklyQuestionGoal).InclusiveBetween(1, StudyProfile.MaxWeeklyQuestionGoal);
+        RuleFor(c => c.WeeklyActiveDaysGoal).InclusiveBetween(1, 7);
     }
 }
 
@@ -64,6 +66,7 @@ internal sealed class SaveStudyProfileHandler(
                 command.YdtLanguage,
                 command.TargetExamYear!.Value,
                 command.WeeklyQuestionGoal,
+                command.WeeklyActiveDaysGoal,
                 now);
             profiles.Add(profile);
         }
@@ -76,6 +79,7 @@ internal sealed class SaveStudyProfileHandler(
                 command.YdtLanguage,
                 command.TargetExamYear!.Value,
                 command.WeeklyQuestionGoal,
+                command.WeeklyActiveDaysGoal,
                 now);
         }
 

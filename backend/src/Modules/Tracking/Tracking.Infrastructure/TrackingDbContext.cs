@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Nirengi.BuildingBlocks.Infrastructure.Persistence;
 using Nirengi.Modules.Tracking.Domain.MockExams;
 using Nirengi.Modules.Tracking.Domain.Profiles;
+using Nirengi.Modules.Tracking.Domain.Progress;
 using Nirengi.Modules.Tracking.Domain.TopicTests;
 
 namespace Nirengi.Modules.Tracking.Infrastructure;
@@ -18,6 +19,8 @@ public sealed class TrackingDbContext(DbContextOptions<TrackingDbContext> option
     public DbSet<TopicTest> TopicTests => Set<TopicTest>();
 
     public DbSet<MockExam> MockExams => Set<MockExam>();
+
+    public DbSet<TopicProgress> TopicProgress => Set<TopicProgress>();
 
     protected override string Schema => SchemaName;
 

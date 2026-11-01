@@ -10,6 +10,9 @@ public sealed class StudyProfile : AggregateRoot<Guid>
 {
     public const int MaxWeeklyQuestionGoal = 5000;
 
+    /// <summary>Default of <see cref="WeeklyActiveDaysGoal"/> on clients: 5 of 7 days, so one bad day never breaks a week.</summary>
+    public const int DefaultWeeklyActiveDaysGoal = 5;
+
     private StudyProfile()
     {
     }
@@ -29,6 +32,9 @@ public sealed class StudyProfile : AggregateRoot<Guid>
 
     public int? WeeklyQuestionGoal { get; private set; }
 
+    /// <summary>Days a week with at least one record that make the week count for the streak (1–7; null = default).</summary>
+    public int? WeeklyActiveDaysGoal { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -43,10 +49,11 @@ public sealed class StudyProfile : AggregateRoot<Guid>
         YdtLanguage? ydtLanguage,
         int targetExamYear,
         int? weeklyQuestionGoal,
+        int? weeklyActiveDaysGoal,
         DateTimeOffset now)
     {
         var profile = new StudyProfile { Id = userId, CreatedAt = now };
-        profile.Update(grade, primary, secondary, ydtLanguage, targetExamYear, weeklyQuestionGoal, now);
+        profile.Update(grade, primary, secondary, ydtLanguage, targetExamYear, weeklyQuestionGoal, weeklyActiveDaysGoal, now);
         return profile;
     }
 
@@ -58,6 +65,7 @@ public sealed class StudyProfile : AggregateRoot<Guid>
         YdtLanguage? ydtLanguage,
         int targetExamYear,
         int? weeklyQuestionGoal,
+        int? weeklyActiveDaysGoal,
         DateTimeOffset now)
     {
         if (secondary == primary)
@@ -76,6 +84,7 @@ public sealed class StudyProfile : AggregateRoot<Guid>
         YdtLanguage = ydtLanguage;
         TargetExamYear = targetExamYear;
         WeeklyQuestionGoal = weeklyQuestionGoal;
+        WeeklyActiveDaysGoal = weeklyActiveDaysGoal;
         UpdatedAt = now;
     }
 }

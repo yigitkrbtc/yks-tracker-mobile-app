@@ -15,7 +15,9 @@ public static class TrackingInfrastructureRegistration
         services.AddScoped<IStudyProfileRepository, StudyProfileRepository>();
         services.AddScoped<ITopicTestRepository, TopicTestRepository>();
         services.AddScoped<IMockExamRepository, MockExamRepository>();
+        services.AddScoped<ITopicProgressRepository, TopicProgressRepository>();
         services.AddScoped<ITrackingUnitOfWork, TrackingUnitOfWork>();
+        services.AddScoped<ITrackingActivityReader, TrackingActivityReader>();
         services.AddScoped<ITrackingAnalyticsReader, TrackingAnalyticsReader>();
         return services;
     }

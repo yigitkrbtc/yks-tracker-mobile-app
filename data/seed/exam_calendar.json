@@ -1,0 +1,14 @@
+{
+  "calendars": [
+    {
+      "examYear": 2027,
+      "sourceUrl": "https://www.osym.gov.tr",
+      "note": "ÖSYM 2027 takvimini henüz açıklamadı; tarihler önceki yılların düzenine göre tahmindir.",
+      "events": [
+        { "code": "tyt", "name": "TYT", "startsAt": "2027-06-19T10:15:00+03:00", "endsAt": "2027-06-19T13:00:00+03:00", "status": "estimated" },
+        { "code": "ayt", "name": "AYT", "startsAt": "2027-06-20T10:15:00+03:00", "endsAt": "2027-06-20T13:15:00+03:00", "status": "estimated" },
+        { "code": "ydt", "name": "YDT", "startsAt": "2027-06-20T15:45:00+03:00", "endsAt": "2027-06-20T17:45:00+03:00", "status": "estimated" }
+      ]
+    }
+  ]
+}

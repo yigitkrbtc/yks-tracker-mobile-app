@@ -16,6 +16,7 @@ public static class CurriculumInfrastructureRegistration
         services.AddScoped<ICurriculumRepository, CurriculumRepository>();
         services.AddScoped<ICurriculumCatalog, CurriculumCatalog>();
         services.AddScoped<CurriculumSeeder>();
+        services.AddSingleton<IExamCalendarSource>(_ => ExamCalendarSeed.LoadEmbedded());
         return services;
     }
 }

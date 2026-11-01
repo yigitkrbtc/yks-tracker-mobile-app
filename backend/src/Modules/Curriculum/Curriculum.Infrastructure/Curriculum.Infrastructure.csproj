@@ -16,6 +16,7 @@
     <EmbeddedResource Include="../../../../../data/seed/konu_taksonomisi.csv" LogicalName="Seed.konu_taksonomisi.csv" />
     <EmbeddedResource Include="../../../../../data/seed/konu_agirliklari.csv" LogicalName="Seed.konu_agirliklari.csv" />
     <EmbeddedResource Include="../../../../../data/seed/kaynaklar.csv" LogicalName="Seed.kaynaklar.csv" />
+    <EmbeddedResource Include="../../../../../data/seed/exam_calendar.json" LogicalName="Seed.exam_calendar.json" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Nirengi.Curriculum.UnitTests" />

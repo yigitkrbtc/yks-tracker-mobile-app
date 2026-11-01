@@ -18,9 +18,9 @@ public sealed class StudyProfileTests
     [Fact]
     public void Update_replaces_every_field_and_keeps_creation_time()
     {
-        var profile = StudyProfile.Create(Guid.NewGuid(), Grade.Eleventh, ScoreType.SAY, ScoreType.EA, null, 2028, 200, Now);
+        var profile = StudyProfile.Create(Guid.NewGuid(), Grade.Eleventh, ScoreType.SAY, ScoreType.EA, null, 2028, 200, 4, Now);
 
-        profile.Update(Grade.Twelfth, ScoreType.DIL, null, YdtLanguage.English, 2027, null, Now.AddDays(1));
+        profile.Update(Grade.Twelfth, ScoreType.DIL, null, YdtLanguage.English, 2027, null, null, Now.AddDays(1));
 
         profile.Grade.ShouldBe(Grade.Twelfth);
         profile.PrimaryScoreType.ShouldBe(ScoreType.DIL);
@@ -34,9 +34,9 @@ public sealed class StudyProfileTests
 
     [Fact]
     public void Same_score_type_twice_is_a_programming_error() =>
-        Should.Throw<ArgumentException>(() => StudyProfile.Create(Guid.NewGuid(), Grade.Eleventh, ScoreType.EA, ScoreType.EA, null, 2027, null, Now));
+        Should.Throw<ArgumentException>(() => StudyProfile.Create(Guid.NewGuid(), Grade.Eleventh, ScoreType.EA, ScoreType.EA, null, 2027, null, null, Now));
 
     [Fact]
     public void Language_without_dil_is_a_programming_error() =>
-        Should.Throw<ArgumentException>(() => StudyProfile.Create(Guid.NewGuid(), Grade.Eleventh, ScoreType.EA, null, YdtLanguage.French, 2027, null, Now));
+        Should.Throw<ArgumentException>(() => StudyProfile.Create(Guid.NewGuid(), Grade.Eleventh, ScoreType.EA, null, YdtLanguage.French, 2027, null, null, Now));
 }
