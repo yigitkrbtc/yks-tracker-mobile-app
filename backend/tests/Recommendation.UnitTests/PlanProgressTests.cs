@@ -25,12 +25,12 @@ public sealed class PlanProgressTests
     }
 
     [Fact]
-    public void Tagging_item_completes_when_the_section_is_tagged()
+    public void Tagging_item_completes_only_when_the_section_is_tagged()
     {
         var item = new Scenario().Pending("E1", 1, "TYT-TUR").Build().Items.Single();
         var empty = new Dictionary<Guid, int>();
 
-        PlanProgress.Of(item, empty, new HashSet<string> { item.Key }).Completed.ShouldBeFalse();
-        PlanProgress.Of(item, empty, new HashSet<string>()).Completed.ShouldBeTrue();
+        PlanProgress.Of(item, empty, new HashSet<string>()).Completed.ShouldBeFalse();
+        PlanProgress.Of(item, empty, new HashSet<string> { item.Key }).Completed.ShouldBeTrue();
     }
 }

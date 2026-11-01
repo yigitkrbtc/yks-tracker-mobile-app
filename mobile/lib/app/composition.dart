@@ -8,6 +8,7 @@ import '../core/database/database_providers.dart';
 import '../core/network/api_client.dart';
 import '../core/notifications/notification_providers.dart';
 import '../core/notifications/plugin_reminder_scheduler.dart';
+import '../core/notifications/local_reminder_scheduler.dart';
 import '../core/network/session_tokens.dart';
 import '../core/sync/sync_providers.dart';
 import '../features/analytics/application/analysis_providers.dart';
@@ -88,7 +89,7 @@ final List<Override> appOverrides = [
         DriftReminderSettingsStore(CacheStore(ref.watch(appDatabaseProvider))),
   ),
   localReminderSchedulerProvider.overrideWith(
-    (ref) => PluginReminderScheduler(),
+    (ref) => SerialReminderScheduler(PluginReminderScheduler()),
   ),
   dataExportServiceProvider.overrideWith(
     (ref) => HttpDataExportService(ref.watch(apiClientProvider)),

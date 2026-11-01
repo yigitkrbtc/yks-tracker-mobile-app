@@ -9,6 +9,7 @@ using Nirengi.Modules.Tracking.Domain.Profiles;
 namespace Nirengi.Modules.Tracking.Application.Features.Profile;
 
 /// <summary>Creates or replaces the caller's study profile (idempotent PUT, ADR-0005).</summary>
+/// <param name="WeeklyActiveDaysGoal">Null keeps the stored value: clients older than S6 never send it.</param>
 public sealed record SaveStudyProfileCommand(
     Guid UserId,
     Grade? Grade,
@@ -79,7 +80,7 @@ internal sealed class SaveStudyProfileHandler(
                 command.YdtLanguage,
                 command.TargetExamYear!.Value,
                 command.WeeklyQuestionGoal,
-                command.WeeklyActiveDaysGoal,
+                command.WeeklyActiveDaysGoal ?? profile.WeeklyActiveDaysGoal,
                 now);
         }
 

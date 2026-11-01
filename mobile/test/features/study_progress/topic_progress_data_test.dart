@@ -44,8 +44,16 @@ void main() {
       final topicId = r.uri.pathSegments.last;
       if (topicId == 'retired') {
         return FakeApi.json(400, {
+          'type': 'tracking.unknown_topic',
           'status': 400,
           'title': 'Konulardan biri müfredatta yok.',
+        });
+      }
+      if (topicId == 'invalid') {
+        return FakeApi.json(400, {
+          'type': 'validation.failed',
+          'status': 400,
+          'title': 'Doğrulama hatası',
         });
       }
       final body = Map<String, dynamic>.from(r.data as Map);
@@ -148,6 +156,13 @@ void main() {
     await sync.sync();
     expect(await repository.watchAll().first, isEmpty);
     expect(await outbox.queuedCount(), 0);
+  });
+
+  test('any other refusal keeps the mark and parks it in the outbox', () async {
+    await repository.mark('invalid', ProgressStatus.done);
+    await sync.sync();
+    expect(await repository.watchAll().first, {'invalid': ProgressStatus.done});
+    expect(await outbox.find(topicProgressEntity, 'invalid'), isNotNull);
   });
 
   test('payload carries the API status code and UTC edit time', () {

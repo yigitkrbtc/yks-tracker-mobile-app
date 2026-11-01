@@ -74,16 +74,59 @@ internal sealed class WeekPlanService(
             return RecommendationErrors.CurriculumNotLoaded;
         }
 
+        // Plan and dismissals are read and written under one per-user lock: two concurrent dismissals would
+        // otherwise each rebuild from the same snapshot and the later save would bring the other item back.
+        var loaded = await store.InUserLock(
+            userId,
+            () => LoadPlan(userId, now, today, weekStart, rules, digest, catalog, dismiss, cancellationToken),
+            cancellationToken);
+        if (loaded.IsFailure)
+        {
+            return loaded.Error;
+        }
+
+        var (stored, keep) = loaded.Value;
+        var week = (await tracking.GetTopicActivity(userId, weekStart, today, cancellationToken))
+            .GroupBy(a => a.TopicId)
+            .ToDictionary(g => g.Key, g => g.Sum(a => a.Questions));
+        var examIds = keep.Where(i => i.MockExamId.HasValue).Select(i => i.MockExamId!.Value).Distinct().ToList();
+        var tagged = examIds.Count == 0
+            ? new HashSet<string>(StringComparer.Ordinal)
+            : (await tracking.GetSectionTagging(userId, examIds, cancellationToken))
+                .Where(t => t.Tagged)
+                .Select(t => PlanProgress.TagKey(t.MockExamId, t.SectionCode))
+                .ToHashSet(StringComparer.Ordinal);
+        var items = keep.Select(i =>
+        {
+            var progress = PlanProgress.Of(i, week, tagged);
+            return new PlanItemResponse(i.Key, i.Kind, i.TopicId, i.SectionCode, i.MockExamId, i.TargetQuestions, i.Title, i.Text, progress.Done, progress.Completed);
+        }).ToList();
+
+        return new WeekPlanResponse(ETag(stored, items), weekStart, stored.GeneratedAt, stored.RuleSetVersion, items);
+    }
+
+    private async Task<Result<(StoredPlan Plan, IReadOnlyList<PlanItem> Items)>> LoadPlan(
+        Guid userId,
+        DateTimeOffset now,
+        DateOnly today,
+        DateOnly weekStart,
+        RecommendationRuleSet rules,
+        AnalysisDigest digest,
+        AnalysisCatalogData catalog,
+        (string Key, DismissReason Reason)? dismiss,
+        CancellationToken cancellationToken)
+    {
         var stored = await store.GetPlan(userId, weekStart, cancellationToken);
-        var keep = stored is not null && stored.RuleSetVersion == rules.Version
-            ? JsonSerializer.Deserialize<List<PlanItem>>(stored.Items, Json)!
-            : [];
         var dismissed = (await store.GetFeedback(userId, weekStart, cancellationToken))
             .Select(f => f.ItemKey)
             .ToHashSet(StringComparer.Ordinal);
+        List<PlanItem> keep = stored is not null && stored.RuleSetVersion == rules.Version
+            ? [.. JsonSerializer.Deserialize<List<PlanItem>>(stored.Items, Json)!.Where(i => !dismissed.Contains(i.Key))]
+            : [];
 
         ItemFeedback? feedback = null;
-        if (dismiss is { } d)
+        // A repeated dismissal of an item already dismissed this week is a no-op that returns the plan.
+        if (dismiss is { } d && !dismissed.Contains(d.Key))
         {
             if (stored is null || !keep.Any(i => i.Key == d.Key))
             {
@@ -94,39 +137,29 @@ internal sealed class WeekPlanService(
             feedback = new ItemFeedback { UserId = userId, WeekStart = weekStart, ItemKey = d.Key, Reason = d.Reason, At = now };
         }
 
-        var pending = await tracking.GetPendingTagging(userId, today.AddDays(-rules.TagWindowDays), cancellationToken);
         var rebuild = stored is null
             || stored.RuleSetVersion != rules.Version
             || feedback is not null
             || (keep.Count <= ThinPlan && stored.AnalysisStamp != digest.Stamp);
-        if (rebuild)
+        if (!rebuild)
         {
-            var input = await Input(userId, today, digest, catalog, pending, dismissed, cancellationToken);
-            var plan = PlanBuilder.Build(input, rules, keep);
-            stored = new StoredPlan
-            {
-                UserId = userId,
-                WeekStart = weekStart,
-                RuleSetVersion = rules.Version,
-                AnalysisStamp = digest.Stamp,
-                Items = JsonSerializer.Serialize(plan.Items, Json),
-                GeneratedAt = stored?.GeneratedAt ?? now,
-            };
-            keep = [.. plan.Items];
-            await store.SavePlan(stored, feedback, cancellationToken);
+            return (stored!, keep);
         }
 
-        var week = (await tracking.GetTopicActivity(userId, weekStart, today, cancellationToken))
-            .GroupBy(a => a.TopicId)
-            .ToDictionary(g => g.Key, g => g.Sum(a => a.Questions));
-        var open = pending.Select(p => PlanProgress.TagKey(p.MockExamId, p.SectionCode)).ToHashSet(StringComparer.Ordinal);
-        var items = keep.Select(i =>
+        var pending = await tracking.GetPendingTagging(userId, today.AddDays(-rules.TagWindowDays), cancellationToken);
+        var input = await Input(userId, today, digest, catalog, pending, dismissed, cancellationToken);
+        var plan = PlanBuilder.Build(input, rules, keep);
+        var saved = new StoredPlan
         {
-            var progress = PlanProgress.Of(i, week, open);
-            return new PlanItemResponse(i.Key, i.Kind, i.TopicId, i.SectionCode, i.MockExamId, i.TargetQuestions, i.Title, i.Text, progress.Done, progress.Completed);
-        }).ToList();
-
-        return new WeekPlanResponse(ETag(stored!, items), weekStart, stored!.GeneratedAt, stored.RuleSetVersion, items);
+            UserId = userId,
+            WeekStart = weekStart,
+            RuleSetVersion = rules.Version,
+            AnalysisStamp = digest.Stamp,
+            Items = JsonSerializer.Serialize(plan.Items, Json),
+            GeneratedAt = stored?.GeneratedAt ?? now,
+        };
+        await store.SavePlan(saved, feedback, cancellationToken);
+        return (saved, plan.Items);
     }
 
     private async Task<RecommendationInput> Input(

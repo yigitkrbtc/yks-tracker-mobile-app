@@ -7,12 +7,15 @@ public sealed record ItemProgress(int Done, bool Completed);
 public static class PlanProgress
 {
     /// <param name="weekQuestions">Questions per topic recorded from the week's Monday to today.</param>
-    /// <param name="pendingTagKeys">Keys of tagging items that are still open (<c>tag:{exam}:{section}</c>).</param>
-    public static ItemProgress Of(PlanItem item, IReadOnlyDictionary<Guid, int> weekQuestions, IReadOnlySet<string> pendingTagKeys)
+    /// <param name="taggedKeys">
+    /// Keys (<c>tag:{exam}:{section}</c>) of sections that are fully tagged. A section that left the tagging window
+    /// or whose exam was deleted is not in it, so its item stays open.
+    /// </param>
+    public static ItemProgress Of(PlanItem item, IReadOnlyDictionary<Guid, int> weekQuestions, IReadOnlySet<string> taggedKeys)
     {
         if (item.Kind == PlanItemKind.TagMockExam)
         {
-            return new ItemProgress(0, !pendingTagKeys.Contains(item.Key));
+            return new ItemProgress(0, taggedKeys.Contains(item.Key));
         }
 
         if (item.TopicId is { } topic && item.TargetQuestions is { } target)

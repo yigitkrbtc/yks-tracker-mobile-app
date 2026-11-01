@@ -9,12 +9,30 @@ internal sealed class RecommendationStore(RecommendationDbContext db) : IRecomme
     public Task<StoredPlan?> GetPlan(Guid userId, DateOnly weekStart, CancellationToken cancellationToken) =>
         db.Plans.AsNoTracking().SingleOrDefaultAsync(p => p.UserId == userId && p.WeekStart == weekStart, cancellationToken);
 
-    public async Task SavePlan(StoredPlan plan, ItemFeedback? dismissal, CancellationToken cancellationToken)
+    public async Task<T> InUserLock<T>(Guid userId, Func<Task<T>> work, CancellationToken cancellationToken)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         await db.Database.ExecuteSqlAsync(
-            $"SELECT pg_advisory_xact_lock(hashtextextended('recommendation.user:' || {plan.UserId.ToString()}, 0))",
+            $"SELECT pg_advisory_xact_lock(hashtextextended('recommendation.user:' || {userId.ToString()}, 0))",
             cancellationToken);
+        try
+        {
+            var result = await work();
+            await transaction.CommitAsync(cancellationToken);
+            return result;
+        }
+        finally
+        {
+            db.ChangeTracker.Clear();
+        }
+    }
+
+    public async Task SavePlan(StoredPlan plan, ItemFeedback? dismissal, CancellationToken cancellationToken)
+    {
+        if (db.Database.CurrentTransaction is null)
+        {
+            throw new InvalidOperationException("SavePlan must run inside InUserLock.");
+        }
 
         await db.Plans.Where(p => p.UserId == plan.UserId && p.WeekStart == plan.WeekStart).ExecuteDeleteAsync(cancellationToken);
         db.Plans.Add(plan);
@@ -27,7 +45,6 @@ internal sealed class RecommendationStore(RecommendationDbContext db) : IRecomme
         }
 
         await db.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
         db.ChangeTracker.Clear();
     }
 

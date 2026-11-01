@@ -38,9 +38,16 @@ class TopicProgressSyncHandler implements SyncHandler {
     }
   }
 
-  /// A topic the server does not know (retired from the curriculum): drop the mark on both sides.
+  /// Server code for a topic it does not know (retired from the curriculum).
+  static const unknownTopic = 'tracking.unknown_topic';
+
+  /// Only an unknown topic drops the mark on both sides. Any other refusal (validation, repeated server
+  /// errors) keeps the student's mark and leaves the item rejected in the outbox, so nothing is lost silently.
   @override
   Future<void> onRejected(OutboxRow item, ApiProblem problem) async {
+    if (problem.type != unknownTopic) {
+      return;
+    }
     final current = await _outbox.find(entityType, item.entityId);
     if (current?.revision == item.revision) {
       await _outbox.discard(entityType, item.entityId);

@@ -113,10 +113,43 @@ public sealed class StudentToolsApiTests(NirengiApiFactory factory)
         after.Items[0].Key.ShouldBe(tag.Key);
         (await Plan(tokens)).Items.ShouldNotContain(i => i.Key == focus.Key);
 
+        // A retried dismissal (e.g. lost response) is idempotent: same plan, no 404.
+        var again = await _api.Send(HttpMethod.Post, $"/v1/recommendations/items/{Uri.EscapeDataString(focus.Key)}/dismiss", tokens.AccessToken, new { Reason = "AlreadyKnow" });
+        (await AuthApi.Read<PlanItemsResponse>(again)).Items.Select(i => i.Key).ShouldBe(after.Items.Select(i => i.Key));
+
         await AuthApi.ShouldBeProblem(
             await _api.Send(HttpMethod.Post, "/v1/recommendations/items/focus%3Anope/dismiss", tokens.AccessToken, new { Reason = "NotNow" }),
             HttpStatusCode.NotFound,
             "recommendation.item_not_found");
+    }
+
+    [Fact]
+    public async Task Concurrent_dismissals_are_both_kept()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var plan = await Plan(tokens);
+        var keys = plan.Items.Take(3).Select(i => i.Key).ToList();
+
+        var responses = await Task.WhenAll(keys.Select(k =>
+            _api.Send(HttpMethod.Post, $"/v1/recommendations/items/{Uri.EscapeDataString(k)}/dismiss", tokens.AccessToken, new { Reason = "NotNow" })));
+
+        responses.ShouldAllBe(r => r.StatusCode == HttpStatusCode.OK);
+        var after = await Plan(tokens);
+        after.Items.ShouldNotContain(i => keys.Contains(i.Key));
+    }
+
+    [Fact]
+    public async Task Tagging_item_of_a_deleted_exam_is_not_completed()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var exam = await PutMock(tokens, Today);
+        var tag = (await Plan(tokens)).Items[0];
+        tag.Kind.ShouldBe("TagMockExam");
+
+        var modifiedAt = Uri.EscapeDataString(DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+        (await _api.Send(HttpMethod.Delete, $"/v1/mock-exams/{exam}?modifiedAt={modifiedAt}", tokens.AccessToken)).IsSuccessStatusCode.ShouldBeTrue();
+
+        (await Plan(tokens)).Items.Single(i => i.Key == tag.Key).Completed.ShouldBeFalse();
     }
 
     [Fact]
@@ -206,8 +239,9 @@ public sealed class StudentToolsApiTests(NirengiApiFactory factory)
         (await _api.Send(HttpMethod.Put, $"/v1/topic-tests/{Guid.CreateVersion7()}", tokens.AccessToken, body)).StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
-    private async Task PutMock(AuthApi.Tokens tokens, DateOnly day)
+    private async Task<Guid> PutMock(AuthApi.Tokens tokens, DateOnly day)
     {
+        var id = Guid.CreateVersion7();
         var body = new
         {
             Kind = "Tyt",
@@ -216,7 +250,8 @@ public sealed class StudentToolsApiTests(NirengiApiFactory factory)
             Sections = new[] { new { SectionCode = "TYT-TUR", Correct = 30, Wrong = 8 } },
             ClientModifiedAt = DateTimeOffset.UtcNow,
         };
-        (await _api.Send(HttpMethod.Put, $"/v1/mock-exams/{Guid.CreateVersion7()}", tokens.AccessToken, body)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await _api.Send(HttpMethod.Put, $"/v1/mock-exams/{id}", tokens.AccessToken, body)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        return id;
     }
 
     private sealed record CalendarEvent(string Code, string Status);

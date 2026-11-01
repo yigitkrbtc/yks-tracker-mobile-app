@@ -77,8 +77,7 @@ internal static class PersonalDataExportEndpoints
             .Append("İçerik:\r\n");
         foreach (var file in files)
         {
-            var rows = file.Content.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Length - 1;
-            text.Append("- ").Append(file.Name).Append(" (").Append(rows).Append(" satır)\r\n");
+            text.Append("- ").Append(file.Name).Append(" (").Append(file.Rows).Append(" satır)\r\n");
         }
 
         return text.ToString();

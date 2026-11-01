@@ -29,6 +29,18 @@ internal sealed class TrackingActivityReader(TrackingDbContext db) : ITrackingAc
             .Select(r => new PendingTagging(r.Id, r.TakenOn, r.SectionCode, r.Missed))];
     }
 
+    public async Task<IReadOnlyList<SectionTagging>> GetSectionTagging(
+        Guid userId,
+        IReadOnlyCollection<Guid> mockExamIds,
+        CancellationToken cancellationToken) =>
+        await db.MockExams.AsNoTracking()
+            .Where(e => e.UserId == userId && e.DeletedAt == null && mockExamIds.Contains(e.Id))
+            .SelectMany(e => e.Sections.Select(s => new SectionTagging(
+                e.Id,
+                s.SectionCode,
+                s.TaggingStatus == TaggingStatus.Full || s.Wrong + s.Blank == 0)))
+            .ToListAsync(cancellationToken);
+
     public async Task<IReadOnlyList<DeclaredProgress>> GetProgress(Guid userId, CancellationToken cancellationToken) =>
         [.. (await db.TopicProgress.AsNoTracking().Where(p => p.UserId == userId).ToListAsync(cancellationToken))
             .Select(p => new DeclaredProgress(p.TopicId, p.Status.ToString()))];

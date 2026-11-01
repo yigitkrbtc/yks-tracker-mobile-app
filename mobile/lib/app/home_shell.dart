@@ -16,6 +16,7 @@ import '../features/data_export/domain/data_export.dart';
 import '../features/exam_calendar/presentation/exam_calendar_widgets.dart';
 import '../features/goals/application/goal_providers.dart';
 import '../features/goals/presentation/goal_settings_page.dart';
+import '../features/mock_exams/presentation/mock_exam_form_page.dart';
 import '../features/mock_exams/presentation/mock_exam_marks_page.dart';
 import '../features/mock_exams/presentation/mock_exam_list_view.dart';
 import '../features/profile/presentation/profile_page.dart';
@@ -27,10 +28,17 @@ import 'local_data.dart';
 import 'today_view.dart';
 
 /// Plan item taps, shared by the Today card and the plan page.
-PlanActions planActionsFor(BuildContext context) => PlanActions(
+/// Plan item actions for the Today tab and the plan page. A practice gap opens the mock exams tab inside the
+/// shell, and the new mock exam form on the plan page (no tab to switch to there).
+PlanActions planActionsFor(
+  BuildContext context, {
+  VoidCallback? onOpenMockExams,
+}) => PlanActions(
   onRecordTest: (topicId) =>
       context.push(TopicTestFormPage.newForTopic(topicId)),
   onTagMockExam: (id) => context.push(MockExamMarksPage.pathFor(id)),
+  onOpenMockExams:
+      onOpenMockExams ?? () => context.push(MockExamFormPage.newPath),
 );
 
 /// Shell with the MVP areas. It lives in `app/` because it composes several features' screens.
@@ -188,10 +196,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       ),
       body: switch (_index) {
         _todayTab => TodayView(
-          planActions: PlanActions(
-            onRecordTest: (topicId) =>
-                context.push(TopicTestFormPage.newForTopic(topicId)),
-            onTagMockExam: (id) => context.push(MockExamMarksPage.pathFor(id)),
+          planActions: planActionsFor(
+            context,
             onOpenMockExams: () => setState(() => _index = _mockExamsTab),
           ),
           onOpenPlan: () => context.push(WeeklyPlanPage.path),

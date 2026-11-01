@@ -23,7 +23,7 @@ class CountdownCard extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     return NCard(
       title: 'YKS ${year.examYear}',
-      description: days > 0
+      description: days >= 0
           ? 'TYT ${formatDay(tyt.startsAt.add(const Duration(hours: 3)))}'
           : 'Sınav günü geçti; hedef yılını profilinden güncelleyebilirsin.',
       trailing: tyt.estimated
@@ -38,9 +38,9 @@ class CountdownCard extends ConsumerWidget {
                 child: const Text('Takvimi gör'),
               ),
             ),
-      child: days > 0
+      child: days >= 0
           ? Text(
-              '$days gün kaldı',
+              days == 0 ? 'Sınav bugün, başarılar!' : '$days gün kaldı',
               key: const Key('countdown-days'),
               style: textTheme.headlineSmall,
             )

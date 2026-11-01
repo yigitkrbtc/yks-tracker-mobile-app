@@ -37,6 +37,20 @@ public sealed class StudyProfileTests(NirengiApiFactory factory)
         replaced.ShouldBe(new ProfileItem("Graduate", "DIL", null, "German", NextExam, 300));
     }
 
+    [Fact]
+    public async Task Omitted_active_days_goal_keeps_the_stored_one()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var withGoal = new { grade = "Twelfth", primaryScoreType = "SAY", targetExamYear = NextExam, weeklyActiveDaysGoal = 3 };
+        (await _api.Send(HttpMethod.Put, "/v1/profile", tokens.AccessToken, withGoal)).StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // A client older than S6 does not know the field.
+        (await _api.Send(HttpMethod.Put, "/v1/profile", tokens.AccessToken, Profile("Graduate", "SAY"))).StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var read = await AuthApi.Read<GoalItem>(await _api.Send(HttpMethod.Get, "/v1/profile", tokens.AccessToken));
+        read.ShouldBe(new GoalItem("Graduate", 3));
+    }
+
     [Theory]
     [InlineData("SAY", "SAY", null, 0)]
     [InlineData("DIL", null, null, 0)]
@@ -109,6 +123,8 @@ public sealed class StudyProfileTests(NirengiApiFactory factory)
         targetExamYear = year ?? NextExam,
         weeklyQuestionGoal = 300,
     };
+
+    private sealed record GoalItem(string Grade, int? WeeklyActiveDaysGoal);
 
     private sealed record ProfileItem(string Grade, string PrimaryScoreType, string? SecondaryScoreType, string? YdtLanguage, int TargetExamYear, int? WeeklyQuestionGoal);
 }

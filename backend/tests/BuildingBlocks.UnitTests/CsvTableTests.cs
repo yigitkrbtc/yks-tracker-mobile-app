@@ -23,6 +23,21 @@ public sealed class CsvTableTests
         content.ShouldBe("not\r\n\"a;b \"\"c\"\"\"\r\n'=HYPERLINK(1)\r\n-3,5\r\n");
     }
 
+    [Theory]
+    [InlineData("\t=1+1")]
+    [InlineData("\r=1+1")]
+    [InlineData("@SUM(A1)")]
+    public void Defuses_formulas_behind_tab_and_carriage_return(string value) =>
+        new CsvTable("not").Add(value).ToFile("n.csv").Content.ShouldContain("'" + value);
+
+    [Fact]
+    public void Counts_records_not_lines()
+    {
+        var file = new CsvTable("not").Add("iki\r\nsatır").Add("tek").ToFile("n.csv");
+
+        file.Rows.ShouldBe(2);
+    }
+
     [Fact]
     public void Row_width_must_match_the_header() =>
         Should.Throw<ArgumentException>(() => new CsvTable("a", "b").Add(1));

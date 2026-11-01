@@ -6,6 +6,7 @@ import 'package:nirengi/core/notifications/local_reminder_scheduler.dart';
 import 'package:nirengi/core/notifications/notification_providers.dart';
 import 'package:nirengi/core/sync/sync_providers.dart';
 import 'package:nirengi/features/data_export/domain/data_export.dart';
+import 'package:nirengi/features/mock_exams/presentation/mock_exam_form_page.dart';
 import 'package:nirengi/features/recommendations/domain/weekly_plan.dart';
 
 import '../support/app_fakes.dart';
@@ -145,6 +146,30 @@ void main() {
       await disposeShell(tester);
     },
   );
+
+  testWidgets('a practice gap on the plan page opens the new mock exam form', (
+    tester,
+  ) async {
+    recommendations.plan = WeeklyPlan(
+      etag: '"p1"',
+      weekStart: '2026-11-02',
+      items: [
+        planItem('focus:a', topicId: 'TYT.TUR-1'),
+        planItem('focus:b', topicId: 'TYT.TMAT-1'),
+        planItem('focus:c', topicId: 'TYT.FIZ-1'),
+        planItem('gap:TYT-TUR', kind: PlanItemKind.practiceGap, target: null),
+      ],
+    );
+    await pumpApp(tester);
+
+    await tester.tap(find.text('Tüm plan (4)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Başlık gap:TYT-TUR'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MockExamFormPage), findsOneWidget);
+    await disposeShell(tester);
+  });
 
   testWidgets('marking a topic shows in the list and queues a sync', (
     tester,

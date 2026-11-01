@@ -9,6 +9,7 @@ using Nirengi.Modules.Tracking.Domain.Profiles;
 
 namespace Nirengi.Modules.Tracking.Api.Endpoints;
 
+/// <param name="WeeklyActiveDaysGoal">Omitted (or null) keeps the stored value, so clients older than S6 do not erase it.</param>
 public sealed record SaveStudyProfileRequest(
     Grade? Grade,
     ScoreType? PrimaryScoreType,

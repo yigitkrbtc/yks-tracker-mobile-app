@@ -46,3 +46,23 @@ class NoReminderScheduler implements LocalReminderScheduler {
   @override
   Future<void> replaceAll(List<LocalReminder> reminders) async {}
 }
+
+/// Runs [replaceAll] calls one after another, in call order, so a cancel-then-schedule of one call never
+/// interleaves with another's and the last call always wins. Wraps the platform adapter.
+class SerialReminderScheduler implements LocalReminderScheduler {
+  SerialReminderScheduler(this._inner);
+
+  final LocalReminderScheduler _inner;
+  Future<void> _tail = Future.value();
+
+  @override
+  Future<bool> requestPermission() => _inner.requestPermission();
+
+  @override
+  Future<void> replaceAll(List<LocalReminder> reminders) {
+    final next = _tail.then((_) => _inner.replaceAll(reminders));
+    // A failed call must not block the ones after it.
+    _tail = next.catchError((Object _) {});
+    return next;
+  }
+}

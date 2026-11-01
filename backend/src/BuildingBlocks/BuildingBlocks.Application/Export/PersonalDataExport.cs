@@ -4,7 +4,8 @@ namespace Nirengi.BuildingBlocks.Application.Export;
 
 /// <summary>One file of the personal data export (KVKK data portability, ADR-0018).</summary>
 /// <param name="Name">File name inside the archive, e.g. <c>konu_testleri.csv</c>.</param>
-public sealed record ExportFile(string Name, string Content);
+/// <param name="Rows">Data records, header excluded (a quoted value may span several lines).</param>
+public sealed record ExportFile(string Name, string Content, int Rows);
 
 /// <summary>
 /// Implemented by every module that holds data the student entered or that describes them. Platform collects all
@@ -37,7 +38,7 @@ public sealed class CsvTable(params string[] headers)
         return this;
     }
 
-    public ExportFile ToFile(string name) => new(name, string.Join("\r\n", _lines) + "\r\n");
+    public ExportFile ToFile(string name) => new(name, string.Join("\r\n", _lines) + "\r\n", _lines.Count - 1);
 
     private static string Format(object? value) => value switch
     {
@@ -53,8 +54,8 @@ public sealed class CsvTable(params string[] headers)
 
     private static string Escape(string value)
     {
-        // A leading =, +, - or @ would run as a formula in a spreadsheet (CSV injection).
-        if (value.Length > 0 && "=+-@".Contains(value[0], StringComparison.Ordinal) && !double.TryParse(value.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out _))
+        // A leading =, +, -, @, tab or carriage return can start a formula in a spreadsheet (CSV injection, OWASP).
+        if (value.Length > 0 && "=+-@\t\r".Contains(value[0], StringComparison.Ordinal) && !double.TryParse(value.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out _))
         {
             value = "'" + value;
         }

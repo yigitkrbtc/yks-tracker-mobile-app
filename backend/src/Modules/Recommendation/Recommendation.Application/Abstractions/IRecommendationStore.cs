@@ -7,7 +7,13 @@ public interface IRecommendationStore
 {
     Task<StoredPlan?> GetPlan(Guid userId, DateOnly weekStart, CancellationToken cancellationToken);
 
-    /// <summary>Inserts or replaces the week's plan, plus an optional dismissal, in one transaction under a per-user lock.</summary>
+    /// <summary>
+    /// Runs <paramref name="work"/> in one transaction holding a per-user lock, so a plan's read-modify-write
+    /// (including a dismissal) never interleaves with another request of the same user.
+    /// </summary>
+    Task<T> InUserLock<T>(Guid userId, Func<Task<T>> work, CancellationToken cancellationToken);
+
+    /// <summary>Inserts or replaces the week's plan, plus an optional dismissal. Call only inside <see cref="InUserLock"/>.</summary>
     Task SavePlan(StoredPlan plan, ItemFeedback? dismissal, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<ItemFeedback>> GetFeedback(Guid userId, DateOnly weekStart, CancellationToken cancellationToken);
