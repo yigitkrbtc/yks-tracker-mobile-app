@@ -67,15 +67,15 @@ class GoalCard extends ConsumerWidget {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                Row(
+                // Wrap, not Row: seven fixed-size dots do not fit next to the ring on narrow phones.
+                Wrap(
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
                   children: [
                     for (var d = 1; d <= 7; d++)
-                      Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.xs),
-                        child: _DayDot(
-                          label: _dayLetters[d - 1],
-                          active: progress.weekDays[d] ?? false,
-                        ),
+                      _DayDot(
+                        label: _dayLetters[d - 1],
+                        active: progress.weekDays[d] ?? false,
                       ),
                   ],
                 ),
