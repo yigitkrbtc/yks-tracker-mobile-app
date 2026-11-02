@@ -62,7 +62,8 @@ internal sealed class AnalysisRefresher(
         }
 
         var history = await tracking.GetHistory(userId, cancellationToken);
-        var input = ToInput(today, catalog, history);
+        var merged = catalog.MergeTargets();
+        var input = ToInput(today, catalog, history, merged);
         var result = Analyzer.Analyze(input, rules);
 
         var analysis = new UserAnalysis
@@ -75,7 +76,7 @@ internal sealed class AnalysisRefresher(
             InvalidRecords = result.InvalidRecords,
             Summary = JsonSerializer.Serialize(Summary(result, input, catalog), Json),
         };
-        var topics = Topics(userId, result, history, rules, catalog.MergeTargets());
+        var topics = Topics(userId, result, history, rules, merged);
         var sections = result.Sections.Select(s => Section(userId, s.Key, s.Value)).ToList();
         await store.Replace(analysis, topics, sections, cancellationToken);
         return analysis;
@@ -85,7 +86,7 @@ internal sealed class AnalysisRefresher(
     private static string Stamp(TrackingStamp tracking, string curriculumVersion) =>
         string.Create(CultureInfo.InvariantCulture, $"{tracking.ChangeSeq}|{tracking.ProfileUpdatedAt?.UtcTicks ?? 0}|{curriculumVersion}");
 
-    internal static AnalysisInput ToInput(DateOnly today, AnalysisCatalogData catalog, StudentHistory history)
+    internal static AnalysisInput ToInput(DateOnly today, AnalysisCatalogData catalog, StudentHistory history, IReadOnlyDictionary<Guid, Guid> merged)
     {
         var activeTests = catalog.ScoreTypes
             .Where(s => history.ScoreTypes.Contains(s.Code, StringComparer.Ordinal))
@@ -102,7 +103,6 @@ internal sealed class AnalysisRefresher(
         var tests = activeTests.ToHashSet(StringComparer.Ordinal);
 
         // A merged topic's records count for the topic it was merged into (ADR-0019); splits move nothing.
-        var merged = catalog.MergeTargets();
         Guid Current(Guid topicId) => merged.TryGetValue(topicId, out var to) ? to : topicId;
         return new AnalysisInput(
             today,

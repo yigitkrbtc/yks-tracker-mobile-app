@@ -50,34 +50,34 @@ public sealed partial class CurriculumSeeder
             await publisher.BackfillFirstVersion(release, cancellationToken);
             if (release.SeedHash == seed.Hash)
             {
+                // A manual publish since the seed draft was made leaves it stale; rebuild it against the live state.
+                var stale = await db.Drafts.AnyAsync(
+                    d => d.ExamYear == seed.ExamYear && d.Kind == DraftKind.SeedImport && d.BasedOnNumber != release.VersionNumber, cancellationToken);
+                if (stale)
+                {
+                    await publisher.RebuildSeedDraft(seed, release, cancellationToken);
+                }
+
                 await transaction.CommitAsync(cancellationToken);
-                return false;
+                return stale;
             }
         }
 
-        var operations = ContentDiff.Between(await publisher.LoadContent(cancellationToken), seed.Content);
-        var stale = await db.Drafts.Where(d => d.ExamYear == seed.ExamYear && d.Kind == DraftKind.SeedImport).ToListAsync(cancellationToken);
-        if (stale.Any(d => d.SeedHash == seed.Hash) && release is not null && !options.AutoPublishSeed)
-        {
-            await transaction.CommitAsync(cancellationToken);
-            return false; // already waiting for an admin
-        }
-
-        db.Drafts.RemoveRange(stale);
-        var now = clock.UtcNow;
-        var draft = CurriculumDraft.Create(
-            Guid.CreateVersion7(now),
-            seed.ExamYear,
-            DraftKind.SeedImport,
-            release?.VersionNumber ?? 0,
-            $"Seed içe aktarma {seed.Hash[..8]}",
-            CurriculumJson.Serialize(operations),
-            seed.Hash,
-            null,
-            now);
-
         if (release is null || options.AutoPublishSeed)
         {
+            db.Drafts.RemoveRange(await db.Drafts.Where(d => d.ExamYear == seed.ExamYear && d.Kind == DraftKind.SeedImport).ToListAsync(cancellationToken));
+            var operations = ContentDiff.Between(await publisher.LoadContent(cancellationToken), seed.Content);
+            var now = clock.UtcNow;
+            var draft = CurriculumDraft.Create(
+                Guid.CreateVersion7(now),
+                seed.ExamYear,
+                DraftKind.SeedImport,
+                release?.VersionNumber ?? 0,
+                $"Seed içe aktarma {seed.Hash[..8]}",
+                CurriculumJson.Serialize(operations),
+                seed.Hash,
+                null,
+                now);
             var published = await publisher.PublishLocked(draft, null, $"Seed içe aktarma ({operations.Count} değişiklik)", seed, cancellationToken);
             if (published.IsFailure)
             {
@@ -89,9 +89,9 @@ public sealed partial class CurriculumSeeder
         }
         else
         {
-            db.Drafts.Add(draft);
-            await db.SaveChangesAsync(cancellationToken);
-            LogDraft(logger, seed.ExamYear, operations.Count, seed.Hash);
+            await publisher.ApplySeedStructure(seed, release, cancellationToken);
+            var changes = await publisher.RebuildSeedDraft(seed, release, cancellationToken);
+            LogDraft(logger, seed.ExamYear, changes, seed.Hash);
         }
 
         await transaction.CommitAsync(cancellationToken);

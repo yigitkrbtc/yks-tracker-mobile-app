@@ -62,6 +62,7 @@ public sealed class HostTests(NirengiApiFactory factory)
     [InlineData("/admin")]
     [InlineData("/admin/")]
     [InlineData("/admin/versions")]
+    [InlineData("/admin/index.html")]
     public async Task Admin_panel_routes_get_index_with_a_fresh_nonce(string path)
     {
         var client = factory.CreateClient();

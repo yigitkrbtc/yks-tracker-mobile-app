@@ -5,7 +5,7 @@ import { session } from '../auth/session'
 export type Schemas = components['schemas']
 
 /** Same origin: the API serves the panel at /admin, Vite proxies /v1 in development. */
-export const api = createClient<paths>({ baseUrl: '' })
+export const api = createClient<paths>({ baseUrl: globalThis.location?.origin ?? '' })
 
 let refreshing: Promise<boolean> | null = null
 
@@ -27,21 +27,25 @@ export function refreshSession(): Promise<boolean> {
   return refreshing
 }
 
+/** Untouched copies for the 401 retry: the sent request's body has already been read. */
+const pristine = new WeakMap<Request, Request>()
+
 const auth: Middleware = {
   async onRequest({ request }) {
     if (request.url.includes('/v1/auth/')) return request
     if (!session.accessToken && session.refreshToken) await refreshSession()
     const token = session.accessToken
     if (token) request.headers.set('Authorization', `Bearer ${token}`)
+    pristine.set(request, request.clone())
     return request
   },
   async onResponse({ request, response }) {
-    if (response.status !== 401 || request.url.includes('/v1/auth/') || request.headers.get('x-retried')) return response
+    const copy = pristine.get(request)
+    pristine.delete(request)
+    if (response.status !== 401 || !copy) return response
     if (!(await refreshSession())) return response
-    const retry = new Request(request, { headers: new Headers(request.headers) })
-    retry.headers.set('Authorization', `Bearer ${session.accessToken}`)
-    retry.headers.set('x-retried', '1')
-    return fetch(retry)
+    copy.headers.set('Authorization', `Bearer ${session.accessToken}`)
+    return fetch(copy)
   },
 }
 

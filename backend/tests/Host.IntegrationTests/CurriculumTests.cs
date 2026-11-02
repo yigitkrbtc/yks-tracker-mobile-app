@@ -119,6 +119,10 @@ public sealed class CurriculumTests(NirengiApiFactory factory)
             Hash = new string('1', 64),
         };
 
+        // An upgraded database: calendars never stored, weights from before per-test rows.
+        await db.Calendars.ExecuteDeleteAsync(ct);
+        await db.TopicWeights.Where(w => w.TestCode == "TYT-MAT").ExecuteDeleteAsync(ct);
+
         try
         {
             (await seeder.Apply(renamed, ct)).ShouldBeTrue();
@@ -129,13 +133,19 @@ public sealed class CurriculumTests(NirengiApiFactory factory)
             update.Name.ShouldBe("Yeniden adlandırıldı");
             var after = await db.Releases.AsNoTracking().SingleAsync(ct);
             after.VersionNumber.ShouldBe(before.VersionNumber);
-            after.SeedHash.ShouldBe(before.SeedHash);
+            after.ContentHash.ShouldNotBe(before.ContentHash);
+
+            // Seed-only parts did not wait for the admin: q and the calendar are served right away.
+            (await db.Calendars.CountAsync(ct)).ShouldBe(shipped.Calendars.Count);
+            (await db.TopicWeights.CountAsync(ct)).ShouldBe(shipped.Topics.Sum(t => t.Weights.Count));
+            (await db.Topics.AsNoTracking().SingleAsync(t => t.Code == shipped.Topics[0].Code, ct)).Name.ShouldBe(shipped.Topics[0].Name);
 
             (await seeder.Apply(renamed, ct)).ShouldBeFalse(); // already waiting
         }
         finally
         {
             await db.Drafts.Where(d => d.Kind == DraftKind.SeedImport).ExecuteDeleteAsync(ct);
+            (await services.GetRequiredService<CurriculumSeeder>().Seed(ct)).ShouldBeTrue(); // back to the shipped seed
         }
     }
 

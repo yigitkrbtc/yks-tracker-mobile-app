@@ -34,7 +34,7 @@ export function DraftPanel({ draft }: { draft: Draft }) {
             type="warning"
             showIcon
             message={`Taslak ${draft.basedOnNumber}. sürüme göre hazırlandı; güncel sürüm ${draft.currentNumber}.`}
-            description={seedImport ? 'API yeniden başlarken yeni içe aktarma taslağı oluşur.' : 'Kaydetmek taslağı güncel sürüme taşır.'}
+            description={seedImport ? 'İçe aktarma taslağı her yayından sonra yeniden hesaplanır; sayfayı yenile.' : 'Kaydetmek taslağı güncel sürüme taşır; çakışan yeni konu kodları yenilenir.'}
             action={seedImport ? undefined : <Button size="small" onClick={() => update(draft.operations)}>Taşı</Button>}
           />
         )}

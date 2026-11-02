@@ -80,19 +80,11 @@ public sealed class CurriculumPublisher(CurriculumDbContext db, IClock clock)
         await WriteContent(applied.Value.Content, cancellationToken);
         if (seed is not null)
         {
-            await SyncWeights(seed, cancellationToken);
+            await SyncWeights(seed, existingTopicsOnly: false, cancellationToken);
         }
 
         var number = current + 1;
-        foreach (var link in applied.Value.Lineage)
-        {
-            var from = TopicIdentity.For(link.FromCode);
-            var to = TopicIdentity.For(link.ToCode);
-            if (!await db.Lineage.AnyAsync(l => l.FromTopicId == from && l.ToTopicId == to, cancellationToken))
-            {
-                db.Lineage.Add(TopicLineage.Create(from, to, link.Relation, draft.ExamYear, number));
-            }
-        }
+        await WriteLineage(applied.Value, draft.ExamYear, number, cancellationToken);
 
         var seedHash = seed?.Hash ?? release!.SeedHash;
         var snapshot = CurriculumJson.Serialize(applied.Value.Content);
@@ -126,6 +118,81 @@ public sealed class CurriculumPublisher(CurriculumDbContext db, IClock clock)
 
         await db.SaveChangesAsync(cancellationToken);
         return version;
+    }
+
+    /// <summary>
+    /// Reactivated topics lose their old links; new links are added once. One pass over the stored rows, so a
+    /// draft that merges, reactivates and merges the same pair again writes one row.
+    /// </summary>
+    private async Task WriteLineage(AppliedDraft applied, int examYear, int number, CancellationToken cancellationToken)
+    {
+        var wanted = applied.Lineage
+            .Select(l => (From: TopicIdentity.For(l.FromCode), To: TopicIdentity.For(l.ToCode), l.Relation))
+            .DistinctBy(l => (l.From, l.To))
+            .ToList();
+        var unlinked = applied.Unlinked.Select(TopicIdentity.For).ToHashSet();
+        var touched = wanted.Select(l => l.From).Concat(unlinked).ToHashSet();
+        var stored = await db.Lineage.Where(l => touched.Contains(l.FromTopicId)).ToListAsync(cancellationToken);
+
+        db.Lineage.RemoveRange(stored.Where(l => unlinked.Contains(l.FromTopicId) && !wanted.Any(w => w.From == l.FromTopicId && w.To == l.ToTopicId)));
+        foreach (var link in wanted.Where(w => !stored.Any(l => l.FromTopicId == w.From && l.ToTopicId == w.To)))
+        {
+            db.Lineage.Add(TopicLineage.Create(link.From, link.To, link.Relation, examYear, number));
+        }
+    }
+
+    /// <summary>
+    /// The seed-only parts of a new seed, applied at once even when its topic changes wait for an admin: exam
+    /// structure, weights of topics that exist, and calendars of years not stored yet. Without this an upgraded
+    /// database would serve q = 0 and no calendar until the seed import draft is published.
+    /// </summary>
+    internal async Task ApplySeedStructure(CurriculumSeed seed, CurriculumRelease release, CancellationToken cancellationToken)
+    {
+        await SyncTests(seed, cancellationToken);
+        await SyncSubjects(seed, cancellationToken);
+        await SyncScoreTypes(seed, cancellationToken);
+        await SyncMockSections(seed, cancellationToken);
+        await SyncWeights(seed, existingTopicsOnly: true, cancellationToken);
+
+        var storedYears = await db.Calendars.Select(c => c.ExamYear).ToListAsync(cancellationToken);
+        foreach (var calendar in seed.Calendars.Where(c => !storedYears.Contains(c.ExamYear)))
+        {
+            db.Calendars.Add(StoredExamCalendar.Create(calendar.ExamYear, CurriculumJson.Serialize(calendar)));
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        // Weights are part of what other modules compare, so the content hash moves; the version number does not.
+        release.Reseed(seed.Hash, clock.UtcNow);
+        release.Publish(release.VersionNumber, CurriculumJson.ContentHash(seed.Hash, CurriculumJson.Serialize(await LoadContent(cancellationToken))));
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>Replaces the seed import draft with the current difference between live and seed; none when equal.</summary>
+    /// <returns>Number of operations in the new draft.</returns>
+    internal async Task<int> RebuildSeedDraft(CurriculumSeed seed, CurriculumRelease release, CancellationToken cancellationToken)
+    {
+        db.Drafts.RemoveRange(await db.Drafts.Where(d => d.ExamYear == seed.ExamYear && d.Kind == DraftKind.SeedImport).ToListAsync(cancellationToken));
+        await db.SaveChangesAsync(cancellationToken); // one draft per (year, kind): delete before insert
+
+        var operations = ContentDiff.Between(await LoadContent(cancellationToken), seed.Content);
+        if (operations.Count > 0)
+        {
+            var now = clock.UtcNow;
+            db.Drafts.Add(CurriculumDraft.Create(
+                Guid.CreateVersion7(now),
+                seed.ExamYear,
+                DraftKind.SeedImport,
+                release.VersionNumber,
+                $"Seed içe aktarma {seed.Hash[..8]}",
+                CurriculumJson.Serialize(operations),
+                seed.Hash,
+                null,
+                now));
+            await db.SaveChangesAsync(cancellationToken);
+        }
+
+        return operations.Count;
     }
 
     /// <summary>A database seeded before versions existed gets version 1 = what it holds now.</summary>
@@ -279,13 +346,19 @@ public sealed class CurriculumPublisher(CurriculumDbContext db, IClock clock)
     }
 
     /// <summary>Weights of topics the seed knows; a topic added in the admin panel has none until the seed catches up (q = 0).</summary>
-    private async Task SyncWeights(CurriculumSeed seed, CancellationToken cancellationToken)
+    private async Task SyncWeights(CurriculumSeed seed, bool existingTopicsOnly, CancellationToken cancellationToken)
     {
         var existing = await db.TopicWeights.Where(w => w.ExamYear == seed.ExamYear)
             .ToDictionaryAsync(w => (w.TopicId, w.TestCode), cancellationToken);
+        var topicIds = existingTopicsOnly ? (await db.Topics.Select(t => t.Id).ToListAsync(cancellationToken)).ToHashSet() : null;
         foreach (var s in seed.Topics)
         {
             var topicId = TopicIdentity.For(s.Code);
+            if (topicIds is not null && !topicIds.Contains(topicId))
+            {
+                continue; // added by the seed import draft; its weights come with the publish
+            }
+
             foreach (var w in s.Weights)
             {
                 if (existing.Remove((topicId, w.TestCode), out var weight))

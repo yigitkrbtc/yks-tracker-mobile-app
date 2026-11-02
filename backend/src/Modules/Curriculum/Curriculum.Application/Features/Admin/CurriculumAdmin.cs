@@ -226,26 +226,7 @@ internal sealed class SaveDraftHandler(ICurriculumAdminStore store, IClock clock
 
         // New topics get their permanent code now, so later operations (merge, split) and the admin can refer to it.
         var content = await store.LoadContent(cancellationToken);
-        var used = content.Topics.Select(t => t.Code).ToHashSet(StringComparer.Ordinal);
-        var operations = new List<CurriculumOperation>(command.Operations.Count);
-        foreach (var op in command.Operations)
-        {
-            if (op is AddTopic { Code: null or "" } add && add.SubjectCode is not null)
-            {
-                var code = DraftApplier.NextCode(add.SubjectCode, used);
-                used.Add(code);
-                operations.Add(add with { Code = code });
-            }
-            else
-            {
-                if (op is AddTopic { Code: { } given })
-                {
-                    used.Add(given);
-                }
-
-                operations.Add(op);
-            }
-        }
+        var operations = DraftCodes.Assign(command.Operations, content.Topics.Select(t => t.Code).ToHashSet(StringComparer.Ordinal));
 
         draft.Save(command.Title.Trim(), CurriculumJson.Serialize<IReadOnlyList<CurriculumOperation>>(operations), release.VersionNumber, clock.UtcNow);
         if (!await store.TrySaveChanges(cancellationToken))

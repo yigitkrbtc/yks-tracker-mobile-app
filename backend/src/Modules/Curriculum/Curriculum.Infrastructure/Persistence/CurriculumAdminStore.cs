@@ -68,10 +68,18 @@ internal sealed class CurriculumAdminStore(CurriculumDbContext db, CurriculumPub
         }
 
         var seed = draft.SeedHash is null ? null : CurriculumSeed.LoadEmbedded();
+        var examYear = draft.ExamYear;
         var result = await publisher.PublishLocked(draft, actor, summary, seed, cancellationToken);
         if (result.IsFailure)
         {
             return result.Error;
+        }
+
+        // A waiting seed import was computed against the previous version; recompute it now, not at next restart.
+        if (seed is null && await db.Drafts.AnyAsync(d => d.ExamYear == examYear && d.Kind == DraftKind.SeedImport, cancellationToken))
+        {
+            var release = await db.Releases.SingleAsync(r => r.ExamYear == examYear, cancellationToken);
+            await publisher.RebuildSeedDraft(CurriculumSeed.LoadEmbedded(), release, cancellationToken);
         }
 
         await transaction.CommitAsync(cancellationToken);

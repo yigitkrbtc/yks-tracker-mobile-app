@@ -25,4 +25,29 @@ public sealed class CatalogWeightTests
     [Fact]
     public void Numerical_student_has_no_weight() =>
         History.ExpectedFor(new HashSet<string>(StringComparer.Ordinal) { "AYT-MAT", "AYT-FEN" }).ShouldBe(0m);
+
+    [Fact]
+    public void Merge_targets_follow_chains_and_ignore_splits()
+    {
+        Guid a = Guid.NewGuid(), b = Guid.NewGuid(), c = Guid.NewGuid(), d = Guid.NewGuid();
+
+        var targets = Catalog(new(a, b, true), new(b, c, true), new(d, a, false)).MergeTargets();
+
+        targets[a].ShouldBe(c);
+        targets[b].ShouldBe(c);
+        targets.ContainsKey(d).ShouldBeFalse();
+        targets.ContainsKey(c).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Merge_targets_stop_on_a_cycle()
+    {
+        Guid a = Guid.NewGuid(), b = Guid.NewGuid();
+
+        var targets = Catalog(new(a, b, true), new(b, a, true)).MergeTargets();
+
+        targets.Count.ShouldBe(2); // terminates; publishing never writes a cycle (reactivation drops links)
+    }
+
+    private static AnalysisCatalogData Catalog(params CatalogLineage[] lineage) => new("v", 2027, [], [], [], [], lineage);
 }

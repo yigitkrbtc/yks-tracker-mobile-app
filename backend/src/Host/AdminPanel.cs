@@ -43,7 +43,7 @@ internal static class AdminPanel
                     return Results.File(file.PhysicalPath, types.TryGetContentType(file.Name, out var type) ? type : "application/octet-stream");
                 }
 
-                if (path is not null && (path.StartsWith("assets/", StringComparison.Ordinal) || Path.HasExtension(path)))
+                if (path is not null && path != "index.html" && (path.StartsWith("assets/", StringComparison.Ordinal) || Path.HasExtension(path)))
                 {
                     return Results.NotFound(); // a missing file is not a client route
                 }

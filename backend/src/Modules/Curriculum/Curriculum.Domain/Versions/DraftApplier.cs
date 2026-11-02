@@ -9,7 +9,12 @@ namespace Nirengi.Modules.Curriculum.Domain.Versions;
 
 /// <param name="Operations">The draft with every added topic's code filled in.</param>
 /// <param name="Lineage">Merge and split links the draft creates.</param>
-public sealed record AppliedDraft(CurriculumContent Content, IReadOnlyList<CurriculumOperation> Operations, IReadOnlyList<LineageLink> Lineage);
+/// <param name="Unlinked">Reactivated topics: their earlier links are dropped, so their records count for themselves again.</param>
+public sealed record AppliedDraft(
+    CurriculumContent Content,
+    IReadOnlyList<CurriculumOperation> Operations,
+    IReadOnlyList<LineageLink> Lineage,
+    IReadOnlyList<string> Unlinked);
 
 /// <summary>
 /// Applies a draft to the live content without I/O (ADR-0019). Every rule of the seed parser holds for admin
@@ -44,15 +49,19 @@ public static partial class DraftApplier
         var used = new HashSet<string>(knownTopicCodes, StringComparer.Ordinal);
         used.UnionWith(topics.Keys);
         var lineage = new List<LineageLink>();
+        var unlinked = new List<string>();
         var normalized = new List<CurriculumOperation>(operations.Count);
 
         for (var i = 0; i < operations.Count; i++)
         {
             var at = $"{i + 1}. işlem";
             var op = operations[i];
-            string? problem = null;
-            switch (op)
+            var problem = MissingField(op);
+            switch (problem is null ? op : null)
             {
+                case null:
+                    break;
+
                 case AddTopic add:
                     if (!subjectCodes.Contains(add.SubjectCode))
                     {
@@ -116,6 +125,13 @@ public static partial class DraftApplier
 
                 case ReactivateTopic reactivate:
                     problem = SetActive(topics, reactivate.Code, active: true);
+                    if (problem is null)
+                    {
+                        // A merge undone (or a rollback) gives the topic its own records back.
+                        lineage.RemoveAll(l => l.FromCode == reactivate.Code);
+                        unlinked.Add(reactivate.Code);
+                    }
+
                     break;
 
                 case MergeTopics merge:
@@ -205,8 +221,24 @@ public static partial class DraftApplier
             return Invalid($"{empty} dersinde aktif konu kalmıyor.");
         }
 
-        return new AppliedDraft(content, normalized, lineage);
+        return new AppliedDraft(content, normalized, lineage, [.. unlinked.Distinct(StringComparer.Ordinal)]);
     }
+
+    /// <summary>JSON can leave any field null; every operation checks its required ones before use.</summary>
+    private static string? MissingField(CurriculumOperation? op) => op switch
+    {
+        null => "boş işlem.",
+        AddTopic a when a.SubjectCode is null || a.Name is null || a.Subtopics is null => "ders, konu adı ve alt konular gerekli.",
+        UpdateTopic u when u.Code is null || u.Name is null || u.Subtopics is null => "konu kodu, adı ve alt konular gerekli.",
+        RetireTopic { Code: null } or ReactivateTopic { Code: null } => "konu kodu gerekli.",
+        MergeTopics m when m.FromCodes is null || m.ToCode is null || m.FromCodes.Any(c => c is null) => "kaynak ve hedef konular gerekli.",
+        SplitTopic sp when sp.FromCode is null || sp.ToCodes is null || sp.ToCodes.Any(c => c is null) => "kaynak ve hedef konular gerekli.",
+        AddSource { Code: null } or AddSource { Name: null } or UpdateSource { Code: null } or UpdateSource { Name: null } => "kaynak kodu ve adı gerekli.",
+        RetireSource { Code: null } or ReactivateSource { Code: null } => "kaynak kodu gerekli.",
+        SetCalendar c when c.Calendar is null || c.Calendar.Events is null || c.Calendar.Events.Any(e => e is null || e.Code is null || e.Name is null) =>
+            "takvim, tarihleri ve her tarihin kodu ile adı gerekli.",
+        _ => null,
+    };
 
     /// <summary><c>AYT.AMAT</c> → <c>AYT.AMAT.43</c>: one more than the highest number ever used in the subject.</summary>
     public static string NextCode(string subjectCode, IReadOnlySet<string> used)

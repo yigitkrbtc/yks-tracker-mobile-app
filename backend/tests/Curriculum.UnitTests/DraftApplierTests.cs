@@ -145,6 +145,48 @@ public sealed class DraftApplierTests
         Apply([.. Enumerable.Range(0, DraftApplier.MaxOperations + 1).Select(_ => new UpdateTopic("TYT.MAT.01", "Ad", ["Alt"], 9, 9, null))])
             .IsFailure.ShouldBeTrue();
 
+    [Fact]
+    public void Reactivating_a_merged_topic_drops_its_links()
+    {
+        var applied = Apply(
+        [
+            new MergeTopics(["TYT.MAT.01"], "TYT.MAT.02"),
+            new ReactivateTopic("TYT.MAT.01"),
+            new MergeTopics(["TYT.MAT.01"], "TYT.MAT.03"),
+        ]);
+
+        applied.IsSuccess.ShouldBeTrue();
+        applied.Value.Lineage.ShouldBe([new LineageLink("TYT.MAT.01", "TYT.MAT.03", LineageRelation.Merged)]);
+        applied.Value.Unlinked.ShouldBe(["TYT.MAT.01"]);
+    }
+
+    [Fact]
+    public void Missing_fields_are_a_draft_problem_not_an_exception()
+    {
+        Apply([new UpdateTopic(null!, "Ad", ["Alt"], 9, 9, null)]).Error.Message.ShouldContain("konu kodu");
+        Apply([new RetireTopic(null!)]).IsFailure.ShouldBeTrue();
+        Apply([new MergeTopics(null!, "TYT.MAT.02")]).IsFailure.ShouldBeTrue();
+        Apply([new SetCalendar(null!)]).IsFailure.ShouldBeTrue();
+        Apply([null!]).Error.Message.ShouldContain("boş işlem");
+    }
+
+    [Fact]
+    public void Saving_assigns_codes_and_moves_a_code_taken_meanwhile()
+    {
+        var live = new HashSet<string>(StringComparer.Ordinal) { "TYT.MAT.01", "TYT.MAT.02", "TYT.MAT.03" };
+
+        var first = DraftCodes.Assign([Add(null, "TYT.MAT"), Add(null, "TYT.MAT")], live);
+        first.Select(o => ((AddTopic)o).Code).ShouldBe(["TYT.MAT.04", "TYT.MAT.05"]);
+
+        // A seed import published TYT.MAT.04 before the draft was saved again.
+        live.Add("TYT.MAT.04");
+        var again = DraftCodes.Assign([.. first, new SplitTopic("TYT.MAT.01", ["TYT.MAT.04", "TYT.MAT.05"])], live);
+
+        ((AddTopic)again[0]).Code.ShouldBe("TYT.MAT.06");
+        ((AddTopic)again[1]).Code.ShouldBe("TYT.MAT.05");
+        ((SplitTopic)again[2]).ToCodes.ShouldBe(["TYT.MAT.06", "TYT.MAT.05"]);
+    }
+
     internal static TopicState Topic(string code, string subject, int sort, bool active = true) =>
         new(code, subject, $"Konu {code}", ["Alt konu"], 9, 10, null, sort, active);
 
