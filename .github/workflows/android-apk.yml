@@ -61,7 +61,7 @@ jobs:
       - name: Build debug APK
         # run_number keeps versionCode increasing, so Android always accepts the new APK as an update.
         run: flutter build apk --debug --build-number=${{ github.run_number }} --dart-define=API_BASE_URL="$API_BASE_URL"
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: nirengi-test-apk
           path: mobile/build/app/outputs/flutter-apk/app-debug.apk
