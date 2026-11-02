@@ -33,6 +33,8 @@ services:
       ConnectionStrings__Database: Host=postgres;Port=5432;Database=nirengi;Username=nirengi;Password=nirengi
       Database__MigrateOnStartup: "true"
       Smtp__Host: mailpit
+      # Admin paneli http://localhost:8080/admin: bu adresle kayıt ol, ilk girişte TOTP kur.
+      Identity__AdminEmails__0: ${NIRENGI_ADMIN_EMAIL:-admin@nirengi.local}
     ports:
       - "8080:8080"
     depends_on:

@@ -4,6 +4,7 @@ using Nirengi.Modules.Curriculum.Domain;
 using Nirengi.Modules.Curriculum.Domain.Exams;
 using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
+using Nirengi.Modules.Curriculum.Domain.Versions;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence;
 
@@ -47,16 +48,25 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
 
         var subjects = await db.Subjects.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
         var subjectOrder = subjects.Select((s, i) => (s.Id, i)).ToDictionary(x => x.Id, x => x.i);
-        var weights = await db.TopicWeights.AsNoTracking()
-            .Where(w => w.ExamYear == release.ExamYear)
-            .ToDictionaryAsync(w => w.TopicId, w => w.ExpectedQuestions, cancellationToken);
+        var weights = (await db.TopicWeights.AsNoTracking()
+                .Where(w => w.ExamYear == release.ExamYear)
+                .ToListAsync(cancellationToken))
+            .GroupBy(w => w.TopicId)
+            .ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyDictionary<string, decimal>)g.ToDictionary(w => w.TestCode, w => w.ExpectedQuestions, StringComparer.Ordinal));
+        IReadOnlyDictionary<string, decimal> none = new Dictionary<string, decimal>(StringComparer.Ordinal);
         var topics = (await db.Topics.AsNoTracking().ToListAsync(cancellationToken))
             .OrderBy(t => subjectOrder.GetValueOrDefault(t.SubjectCode, int.MaxValue))
             .ThenBy(t => t.SortOrder)
             .ThenBy(t => t.Code, StringComparer.Ordinal)
-            .Select(t => new CatalogWeightedTopic(t.Id, t.SubjectCode, weights.GetValueOrDefault(t.Id), t.Status == TopicStatus.Active, t.Code, t.Name))
+            .Select(t => new CatalogWeightedTopic(t.Id, t.SubjectCode, weights.GetValueOrDefault(t.Id) ?? none, t.Status == TopicStatus.Active, t.Code, t.Name))
             .ToList();
         var scoreTypes = await db.ScoreTypes.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
+        var lineage = await db.Lineage.AsNoTracking()
+            .OrderBy(l => l.VersionNumber)
+            .Select(l => new CatalogLineage(l.FromTopicId, l.ToTopicId, l.Relation == LineageRelation.Merged))
+            .ToListAsync(cancellationToken);
 
         return new AnalysisCatalogData(
             Version(release),
@@ -64,7 +74,8 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
             topics,
             [.. subjects.Select(s => new CatalogSubject(s.Id, [.. s.TestCodes]))],
             [.. scoreTypes.Select(s => new CatalogScoreType(s.Id, [.. s.TestCodes]))],
-            await GetMockSections(cancellationToken));
+            await GetMockSections(cancellationToken),
+            lineage);
     }
 
     public async Task<string?> GetVersion(CancellationToken cancellationToken) =>
@@ -73,5 +84,5 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
     private Task<CurriculumRelease?> LatestRelease(CancellationToken cancellationToken) =>
         db.Releases.AsNoTracking().OrderByDescending(r => r.ExamYear).FirstOrDefaultAsync(cancellationToken);
 
-    private static string Version(CurriculumRelease release) => $"{release.ExamYear}:{release.SeedHash}";
+    private static string Version(CurriculumRelease release) => $"{release.ExamYear}:{release.ContentHash}";
 }

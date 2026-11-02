@@ -19,8 +19,9 @@ internal sealed class AnalysisDigestReader(IAnalysisRefresher refresher, IAnalyt
         }
 
         var catalog = await curriculum.GetAnalysisCatalog(cancellationToken);
-        var weights = catalog?.Topics.ToDictionary(t => t.Id, t => (double)t.ExpectedQuestions) ?? [];
         var summary = JsonSerializer.Deserialize<AnalysisSummary>(analysis.Summary, AnalysisRefresher.Json)!;
+        var activeTests = summary.Tests.Where(t => t.IsActive).Select(t => t.Code).ToHashSet(StringComparer.Ordinal);
+        var weights = catalog?.Topics.ToDictionary(t => t.Id, t => (double)t.ExpectedFor(activeTests)) ?? [];
         var topics = await store.GetTopics(userId, cancellationToken);
         var sections = await store.GetSections(userId, cancellationToken);
 

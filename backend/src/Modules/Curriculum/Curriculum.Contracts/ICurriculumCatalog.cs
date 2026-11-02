@@ -20,24 +20,68 @@ public sealed record CatalogMockSection(
     string? AlternativeOf,
     string Name);
 
-/// <summary>A topic with its expected question count for the release's exam year (q_i).</summary>
+/// <summary>A topic with its expected question counts for the release's exam year (q_i), per test.</summary>
+/// <param name="ExpectedByTest">Test code → q_i. AYT history and geography have two tests, everything else one.</param>
 /// <param name="Code">Stable topic code (e.g. <c>AYT.AMAT.26</c>); used for deterministic ordering.</param>
-public sealed record CatalogWeightedTopic(Guid Id, string SubjectCode, decimal ExpectedQuestions, bool IsActive, string Code, string Name);
+public sealed record CatalogWeightedTopic(
+    Guid Id,
+    string SubjectCode,
+    IReadOnlyDictionary<string, decimal> ExpectedByTest,
+    bool IsActive,
+    string Code,
+    string Name)
+{
+    /// <summary>q_i for a student who takes <paramref name="tests"/>: the sum over those tests (ADR-0019).</summary>
+    public decimal ExpectedFor(IReadOnlySet<string> tests) =>
+        ExpectedByTest.Where(w => tests.Contains(w.Key)).Sum(w => w.Value);
+}
 
 public sealed record CatalogSubject(string Code, IReadOnlyList<string> TestCodes);
 
 public sealed record CatalogScoreType(string Code, IReadOnlyList<string> TestCodes);
 
+/// <summary>A merge or split between topics (ADR-0019).</summary>
+/// <param name="Merged">True: records of <paramref name="FromTopicId"/> count for <paramref name="ToTopicId"/>. False: a split, nothing moves.</param>
+public sealed record CatalogLineage(Guid FromTopicId, Guid ToTopicId, bool Merged);
+
 /// <summary>The curriculum slice the analysis engine needs.</summary>
-/// <param name="Version">Changes whenever any topic, weight or mapping changes (seed hash).</param>
+/// <param name="Version">Changes on every publish: any topic, weight or mapping change.</param>
 /// <param name="Topics">Retired topics included (old records use them), in display order.</param>
+/// <param name="Lineage">Merges and splits, oldest first.</param>
 public sealed record AnalysisCatalogData(
     string Version,
     int ExamYear,
     IReadOnlyList<CatalogWeightedTopic> Topics,
     IReadOnlyList<CatalogSubject> Subjects,
     IReadOnlyList<CatalogScoreType> ScoreTypes,
-    IReadOnlyList<CatalogMockSection> MockSections);
+    IReadOnlyList<CatalogMockSection> MockSections,
+    IReadOnlyList<CatalogLineage> Lineage)
+{
+    /// <summary>Where a topic's records count now: follows merges (A → B → C gives C); itself when never merged.</summary>
+    public IReadOnlyDictionary<Guid, Guid> MergeTargets()
+    {
+        var next = new Dictionary<Guid, Guid>();
+        foreach (var l in Lineage.Where(l => l.Merged))
+        {
+            next[l.FromTopicId] = l.ToTopicId;
+        }
+
+        var result = new Dictionary<Guid, Guid>();
+        foreach (var from in next.Keys)
+        {
+            var to = next[from];
+            var seen = new HashSet<Guid> { from };
+            while (next.TryGetValue(to, out var further) && seen.Add(to))
+            {
+                to = further;
+            }
+
+            result[from] = to;
+        }
+
+        return result;
+    }
+}
 
 /// <summary>Lets other modules check topic and source references without reading Curriculum's tables.</summary>
 public interface ICurriculumCatalog

@@ -1,3 +1,4 @@
+using Nirengi.BuildingBlocks.Application.RuleSets;
 using Microsoft.Extensions.DependencyInjection;
 using Nirengi.Modules.Analytics.Application.Features;
 using Nirengi.Modules.Analytics.Contracts;
@@ -10,5 +11,6 @@ public static class AnalyticsApplicationRegistration
     public static IServiceCollection AddAnalyticsApplication(this IServiceCollection services) =>
         services
             .AddScoped<IAnalysisRefresher, AnalysisRefresher>()
-            .AddScoped<IAnalysisDigestReader, AnalysisDigestReader>();
+            .AddScoped<IAnalysisDigestReader, AnalysisDigestReader>()
+            .AddSingleton<IRuleSetDescriptor, AnalyticsRuleSetDescriptor>();
 }

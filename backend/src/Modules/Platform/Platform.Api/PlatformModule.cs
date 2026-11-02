@@ -20,5 +20,9 @@ public sealed class PlatformModule : IModule
             Application.AssemblyReference.Assembly);
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder v1) => v1.MapPersonalDataExport();
+    public void MapEndpoints(IEndpointRouteBuilder v1)
+    {
+        v1.MapPersonalDataExport();
+        v1.MapRuleSets();
+    }
 }

@@ -178,7 +178,7 @@ internal sealed class WeekPlanService(
             .ToHashSet(StringComparer.Ordinal);
         var topics = catalog.Topics
             .Where(t => t.IsActive && activeSubjects.Contains(t.SubjectCode))
-            .ToDictionary(t => t.Id, t => new TopicInfo(t.Id, t.Code, t.Name, t.SubjectCode, (double)t.ExpectedQuestions));
+            .ToDictionary(t => t.Id, t => new TopicInfo(t.Id, t.Code, t.Name, t.SubjectCode, (double)t.ExpectedFor(activeTests)));
         var sectionNames = catalog.MockSections.ToDictionary(s => s.Code, s => s.Name, StringComparer.Ordinal);
         var declared = (await tracking.GetProgress(userId, cancellationToken))
             .Where(p => Enum.TryParse<DeclaredStatus>(p.Status, out _))

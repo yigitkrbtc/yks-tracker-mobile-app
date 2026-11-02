@@ -1,3 +1,4 @@
+using Nirengi.BuildingBlocks.Application.RuleSets;
 using Microsoft.Extensions.DependencyInjection;
 using Nirengi.Modules.Recommendation.Application.Features;
 
@@ -7,5 +8,7 @@ public static class RecommendationApplicationRegistration
 {
     /// <summary>Services beyond the handlers that <c>AddApplicationHandlers</c> finds on its own.</summary>
     public static IServiceCollection AddRecommendationApplication(this IServiceCollection services) =>
-        services.AddScoped<WeekPlanService>();
+        services
+            .AddScoped<WeekPlanService>()
+            .AddSingleton<IRuleSetDescriptor, RecommendationRuleSetDescriptor>();
 }

@@ -79,7 +79,7 @@ public sealed class StudentToolsApiTests(NirengiApiFactory factory)
         var response = await _api.Send(HttpMethod.Get, "/v1/recommendations/week", tokens.AccessToken);
         var plan = await AuthApi.Read<PlanItemsResponse>(response);
 
-        plan.RuleSetVersion.ShouldBe("R2026.1");
+        plan.RuleSetVersion.ShouldBe("R2026.2");
         DateOnly.Parse(plan.WeekStart, CultureInfo.InvariantCulture).DayOfWeek.ShouldBe(DayOfWeek.Monday);
         plan.Items.ShouldNotBeEmpty();
         // Heavy topics without data are measured first, then starter topics fill the plan.

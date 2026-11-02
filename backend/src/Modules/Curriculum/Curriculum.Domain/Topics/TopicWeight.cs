@@ -15,8 +15,9 @@ public enum WeightTier
 }
 
 /// <summary>
-/// Expected questions of a topic for one exam year (q_i): the 2022–2026 mean, normalised to the test total.
-/// Versioned by exam year so a new year's weights never rewrite an older analysis.
+/// Expected questions of a topic in one test for one exam year (q_i): the 2022–2026 mean, normalised to the test
+/// total. A topic has one row per test of its subject (AYT history and geography: two), so a student's q is the sum
+/// over the tests of their score type. Versioned by exam year so a new year's weights never rewrite an older analysis.
 /// </summary>
 public sealed class TopicWeight
 {
@@ -28,6 +29,8 @@ public sealed class TopicWeight
 
     public int ExamYear { get; private set; }
 
+    public string TestCode { get; private set; } = null!;
+
     public decimal ExpectedQuestions { get; private set; }
 
     public WeightTier Tier { get; private set; }
@@ -37,9 +40,9 @@ public sealed class TopicWeight
 
     public int YearsCounted { get; private set; }
 
-    public static TopicWeight Create(Guid topicId, int examYear, decimal expectedQuestions, WeightTier tier, int yearsAsked, int yearsCounted)
+    public static TopicWeight Create(Guid topicId, int examYear, string testCode, decimal expectedQuestions, WeightTier tier, int yearsAsked, int yearsCounted)
     {
-        var weight = new TopicWeight { TopicId = topicId, ExamYear = examYear };
+        var weight = new TopicWeight { TopicId = topicId, ExamYear = examYear, TestCode = testCode };
         weight.Update(expectedQuestions, tier, yearsAsked, yearsCounted);
         return weight;
     }

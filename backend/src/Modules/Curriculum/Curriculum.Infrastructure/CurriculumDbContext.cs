@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Nirengi.BuildingBlocks.Infrastructure.Persistence;
 using Nirengi.Modules.Curriculum.Domain;
+using Nirengi.Modules.Curriculum.Domain.Calendar;
 using Nirengi.Modules.Curriculum.Domain.Exams;
 using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
+using Nirengi.Modules.Curriculum.Domain.Versions;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure;
 
@@ -26,6 +28,14 @@ public sealed class CurriculumDbContext(DbContextOptions<CurriculumDbContext> op
     public DbSet<Source> Sources => Set<Source>();
 
     public DbSet<CurriculumRelease> Releases => Set<CurriculumRelease>();
+
+    public DbSet<CurriculumVersion> Versions => Set<CurriculumVersion>();
+
+    public DbSet<CurriculumDraft> Drafts => Set<CurriculumDraft>();
+
+    public DbSet<TopicLineage> Lineage => Set<TopicLineage>();
+
+    public DbSet<StoredExamCalendar> Calendars => Set<StoredExamCalendar>();
 
     protected override string Schema => SchemaName;
 }

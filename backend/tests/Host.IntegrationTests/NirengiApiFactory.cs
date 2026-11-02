@@ -21,12 +21,25 @@ public sealed class NirengiApiFactory : WebApplicationFactory<Program>, IAsyncLi
 
     public string ConnectionString => _postgres.GetConnectionString();
 
+    /// <summary>A stand-in admin build: the host serves whatever is at AdminPanel:Path.</summary>
+    public string AdminPanelPath { get; } = CreateAdminBuild();
+
     public async ValueTask InitializeAsync() => await _postgres.StartAsync();
 
     public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();
         await _postgres.DisposeAsync();
+        Directory.Delete(AdminPanelPath, recursive: true);
+    }
+
+    private static string CreateAdminBuild()
+    {
+        var root = Directory.CreateTempSubdirectory("nirengi-admin-").FullName;
+        Directory.CreateDirectory(Path.Combine(root, "assets"));
+        File.WriteAllText(Path.Combine(root, "index.html"), """<meta name="csp-nonce" content="__CSP_NONCE__"><script type="module" src="/admin/assets/app.js"></script>""");
+        File.WriteAllText(Path.Combine(root, "assets", "app.js"), "export {}");
+        return root;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -36,6 +49,8 @@ public sealed class NirengiApiFactory : WebApplicationFactory<Program>, IAsyncLi
         builder.UseSetting("Database:MigrateOnStartup", "true");
         builder.UseSetting("Outbox:PollInterval", "00:00:00.200");
         builder.UseSetting("Jwt:SigningKey", TestSigningKey);
+        builder.UseSetting("AdminPanel:Path", AdminPanelPath);
+        builder.UseSetting("Curriculum:AutoPublishSeed", "true");
         builder.UseSetting("RateLimiting:Auth:PermitLimit", "10000");
         builder.UseSetting("RateLimiting:Session:PermitLimit", "10000");
         builder.UseSetting("Identity:Security:HashKey", Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));

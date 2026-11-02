@@ -6,13 +6,13 @@
 | --- | --- | --- |
 | `exam_structure.json` | 8 test, 20 ders, 4 puan türü, 27 deneme bölümü | Sınav yılı, testler, ders → test ve puan türü → test eşlemesi, deneme bölüm şablonu (`mockSections`: blok, alt ders, Din yerine felsefe alternatifi). DİL'de YDT testi yok (taksonomisi henüz yok). |
 | `konu_taksonomisi.csv` | 370 konu | `session, unit, topic_code, topic, subtopics, grade, description`; `topic_code` kalıcı anahtar (ör. `AYT.AMAT.26`) |
-| `konu_agirliklari.csv` | 370 konu | Yıl başına soru sayısı (2019–2026), `q_i` (2022–2026 ortalaması, test toplamına normalize), `tier` (çok/orta/az/nadir) |
+| `konu_agirliklari.csv` | 421 satır (370 konu) | Satır = (konu, test): yıl başına soru sayısı (2019–2026), `q_i` (2022–2026 ortalaması, test toplamına normalize), `tier` (çok/orta/az/nadir). AYT tarih ve coğrafya konularının iki satırı var (TDE-SB1, SB2); öğrencinin `q`'su puan türünün testlerinin toplamıdır (ADR-0019). |
 | `kaynaklar.csv` | 28 kaynak | Konu testi kaydında seçilen kaynaklar: `source_code, name, kind` (`publisher`, `official`, `institution`). `source_code` kalıcı anahtar; kimlik UUID v5(kaynak namespace'i, kod). Listede olmayan kaynak uygulamada "Diğer" ile serbest metin girilir. |
 | `tum_etiketler.csv` | 2.328 soru | Soru bazında etiket: yıl, oturum, test, soru no, konu, alt konu, ikincil konu, güven |
 
-`tools/aggregate.py` etiketlerden ağırlıkları üreten betik (kaynak PDF'ler repoda değil). Kurallar:
+`tools/aggregate.py` etiketlerden ağırlıkları üreten betik (kaynak PDF'ler repoda değil); `python3 tools/aggregate.py --repo` repodaki `tum_etiketler.csv`'den yeniden üretir. Kurallar:
 
-- `q_i` = 2022–2026 ortalama soru sayısı, testin toplam soru sayısına normalize.
+- `q_i` = 2022–2026 ortalama soru sayısı, testin toplam soru sayısına normalize. AYT tarih ve coğrafya test başına ayrı normalize edilir (Tarih 10 + 11, Coğrafya 6 + 11).
 - 2020 ve 2023 kısıtlı müfredat yıllarında 12. sınıf konusu 0 soruysa o yıl ortalamaya girmez.
 - Kademe: yılların yarısından azında çıktıysa `nadir`; aksi halde ortalama ≥ 2 `çok`, ≥ 0,8 `orta`, değilse `az`.
 

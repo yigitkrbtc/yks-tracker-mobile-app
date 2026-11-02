@@ -62,7 +62,8 @@ internal sealed class AnalysisRefresher(
         }
 
         var history = await tracking.GetHistory(userId, cancellationToken);
-        var input = ToInput(today, catalog, history);
+        var merged = catalog.MergeTargets();
+        var input = ToInput(today, catalog, history, merged);
         var result = Analyzer.Analyze(input, rules);
 
         var analysis = new UserAnalysis
@@ -75,7 +76,7 @@ internal sealed class AnalysisRefresher(
             InvalidRecords = result.InvalidRecords,
             Summary = JsonSerializer.Serialize(Summary(result, input, catalog), Json),
         };
-        var topics = Topics(userId, result, history, rules);
+        var topics = Topics(userId, result, history, rules, merged);
         var sections = result.Sections.Select(s => Section(userId, s.Key, s.Value)).ToList();
         await store.Replace(analysis, topics, sections, cancellationToken);
         return analysis;
@@ -85,7 +86,7 @@ internal sealed class AnalysisRefresher(
     private static string Stamp(TrackingStamp tracking, string curriculumVersion) =>
         string.Create(CultureInfo.InvariantCulture, $"{tracking.ChangeSeq}|{tracking.ProfileUpdatedAt?.UtcTicks ?? 0}|{curriculumVersion}");
 
-    internal static AnalysisInput ToInput(DateOnly today, AnalysisCatalogData catalog, StudentHistory history)
+    internal static AnalysisInput ToInput(DateOnly today, AnalysisCatalogData catalog, StudentHistory history, IReadOnlyDictionary<Guid, Guid> merged)
     {
         var activeTests = catalog.ScoreTypes
             .Where(s => history.ScoreTypes.Contains(s.Code, StringComparer.Ordinal))
@@ -98,15 +99,20 @@ internal sealed class AnalysisRefresher(
             activeTests = [.. catalog.Subjects.SelectMany(s => s.TestCodes).Distinct(StringComparer.Ordinal)];
         }
 
+        // q_i is the sum over the student's tests (ADR-0019): AYT history counts 10 + 11 for SÖZ, 10 for EA.
+        var tests = activeTests.ToHashSet(StringComparer.Ordinal);
+
+        // A merged topic's records count for the topic it was merged into (ADR-0019); splits move nothing.
+        Guid Current(Guid topicId) => merged.TryGetValue(topicId, out var to) ? to : topicId;
         return new AnalysisInput(
             today,
             new AnalysisCatalog(
-                [.. catalog.Topics.Select(t => new CatalogTopicInfo(t.Id, t.SubjectCode, (double)t.ExpectedQuestions))],
+                [.. catalog.Topics.Select(t => new CatalogTopicInfo(t.Id, t.SubjectCode, (double)t.ExpectedFor(tests)))],
                 [.. catalog.Subjects.Select(s => new CatalogSubjectInfo(s.Code, s.TestCodes))],
                 [.. catalog.MockSections.Select(s => new CatalogSectionInfo(s.Code, s.TestCode, s.ParentCode, s.SubjectCodes, s.QuestionCount))]),
             activeTests,
             [.. history.TopicResults.Select(r => new TopicRecord(
-                r.TopicTestId, r.TopicId, r.StudiedOn, r.Total, r.Correct, r.Wrong, r.Blank, r.IsRepeat))],
+                r.TopicTestId, Current(r.TopicId), r.StudiedOn, r.Total, r.Correct, r.Wrong, r.Blank, r.IsRepeat))],
             [.. history.MockExams.Select(e => new MockExamRecord(
                 e.Id,
                 e.TakenOn,
@@ -116,7 +122,7 @@ internal sealed class AnalysisRefresher(
                     s.Correct,
                     s.Wrong,
                     s.IsFullyTagged,
-                    [.. s.Marks.Select(m => new TopicMark(m.TopicId, m.Wrong, m.Blank))]))]))]);
+                    [.. s.Marks.GroupBy(m => Current(m.TopicId)).Select(g => new TopicMark(g.Key, g.Sum(m => m.Wrong), g.Sum(m => m.Blank)))]))]))]);
     }
 
     private static AnalysisSummary Summary(AnalysisResult result, AnalysisInput input, AnalysisCatalogData catalog)
@@ -126,7 +132,7 @@ internal sealed class AnalysisRefresher(
             .Where(s => s.TestCodes.Any(activeTests.Contains))
             .Select(s => s.Code)
             .ToHashSet(StringComparer.Ordinal);
-        var weights = catalog.Topics.ToDictionary(t => t.Id, t => (double)t.ExpectedQuestions);
+        var weights = catalog.Topics.ToDictionary(t => t.Id, t => (double)t.ExpectedFor(activeTests));
         var rules = RuleSet.V1;
 
         return new AnalysisSummary(
@@ -148,10 +154,10 @@ internal sealed class AnalysisRefresher(
     private static AggregateDto Aggregate(string code, bool active, AggregateAnalysis a) =>
         new(code, active, a.Mastery, a.MasteryLow, a.MasteryHigh, a.Coverage, a.StudiedTopics, a.TopicCount);
 
-    private static List<TopicSnapshot> Topics(Guid userId, AnalysisResult result, StudentHistory history, RuleSet rules)
+    private static List<TopicSnapshot> Topics(Guid userId, AnalysisResult result, StudentHistory history, RuleSet rules, IReadOnlyDictionary<Guid, Guid> merged)
     {
         var recent = history.TopicResults
-            .GroupBy(r => r.TopicId)
+            .GroupBy(r => merged.TryGetValue(r.TopicId, out var to) ? to : r.TopicId)
             .ToDictionary(
                 g => g.Key,
                 g => g.OrderByDescending(r => r.StudiedOn)

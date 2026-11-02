@@ -26,7 +26,13 @@ builder.Host.UseSerilog((context, logger) => logger
     .WriteTo.Console());
 
 builder.Services.AddProblemDetails();
-builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.ConfigureHttpJsonOptions(o =>
+{
+    o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+    // Polymorphic bodies (curriculum draft operations) may carry "type" anywhere in the object.
+    o.SerializerOptions.AllowOutOfOrderMetadataProperties = true;
+});
 builder.Services.AddOpenApi("v1");
 builder.Services.AddNirengiSecurity(builder.Configuration);
 builder.Services.AddHealthChecks()
@@ -43,6 +49,7 @@ foreach (var module in ModuleCatalog.All)
 var app = builder.Build();
 
 app.UseNirengiForwardedHeaders();
+app.UseNirengiSecurityHeaders();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseSerilogRequestLogging();
@@ -57,6 +64,8 @@ foreach (var module in ModuleCatalog.All)
 {
     module.MapEndpoints(v1.MapGroup(string.Empty).WithTags(module.Name));
 }
+
+app.MapAdminPanel();
 
 if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 {

@@ -2,9 +2,11 @@ using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Nirengi.Modules.Curriculum.Domain.Calendar;
 using Nirengi.Modules.Curriculum.Domain.Exams;
 using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
+using Nirengi.Modules.Curriculum.Domain.Versions;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure.Seed;
 
@@ -14,6 +16,10 @@ internal sealed record SubjectSeed(string Code, ExamSession Session, string Name
 
 internal sealed record ScoreTypeSeed(string Code, string Name, IReadOnlyList<string> TestCodes);
 
+/// <summary>q_i of a topic in one test (AYT history and geography appear in two tests).</summary>
+internal sealed record TopicWeightSeed(string TestCode, decimal ExpectedQuestions, WeightTier Tier, int YearsAsked, int YearsCounted);
+
+/// <param name="Weights">One per test of the topic's subject.</param>
 internal sealed record TopicSeed(
     string Code,
     string SubjectCode,
@@ -22,10 +28,7 @@ internal sealed record TopicSeed(
     int GradeMin,
     int GradeMax,
     string? Description,
-    decimal ExpectedQuestions,
-    WeightTier Tier,
-    int YearsAsked,
-    int YearsCounted);
+    IReadOnlyList<TopicWeightSeed> Weights);
 
 internal sealed record SourceSeed(string Code, string Name, SourceKind Kind);
 
@@ -50,10 +53,17 @@ internal sealed record CurriculumSeed(
     IReadOnlyList<TopicSeed> Topics,
     IReadOnlyList<SourceSeed> Sources,
     IReadOnlyList<MockSectionSeed> MockSections,
+    IReadOnlyList<ExamCalendar> Calendars,
     string Hash)
 {
+    /// <summary>The admin-editable part as the seed wants it (ADR-0019); a seed import diffs this against live.</summary>
+    public CurriculumContent Content => new(
+        [.. Topics.Select((t, i) => new TopicState(t.Code, t.SubjectCode, t.Name, t.Subtopics, t.GradeMin, t.GradeMax, t.Description, i, true))],
+        [.. Sources.Select((s, i) => new SourceState(s.Code, s.Name, s.Kind, i, true))],
+        Calendars);
+
     // Bump when the mapping from files to rows changes, so already seeded databases pick it up.
-    private const string ParserVersion = "3";
+    private const string ParserVersion = "4";
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -64,10 +74,11 @@ internal sealed record CurriculumSeed(
             ReadResource(assembly, "Seed.exam_structure.json"),
             ReadResource(assembly, "Seed.konu_taksonomisi.csv"),
             ReadResource(assembly, "Seed.konu_agirliklari.csv"),
-            ReadResource(assembly, "Seed.kaynaklar.csv"));
+            ReadResource(assembly, "Seed.kaynaklar.csv"),
+            ReadResource(assembly, "Seed.exam_calendar.json"));
     }
 
-    public static CurriculumSeed Parse(string structureJson, string taxonomyCsv, string weightsCsv, string sourcesCsv)
+    public static CurriculumSeed Parse(string structureJson, string taxonomyCsv, string weightsCsv, string sourcesCsv, string? calendarJson = null)
     {
         var structure = JsonSerializer.Deserialize<StructureFile>(structureJson, Json)
             ?? throw new FormatException("exam_structure.json is empty.");
@@ -89,7 +100,8 @@ internal sealed record CurriculumSeed(
 
         var subjectCodes = subjects.Select(s => s.Code).ToHashSet(StringComparer.Ordinal);
         var mockSections = ParseMockSections(structure.MockSections ?? [], tests, subjects);
-        var weights = Csv.Read(weightsCsv).ToDictionary(r => r["topic_code"], StringComparer.Ordinal);
+        var subjectTests = subjects.ToDictionary(s => s.Code, s => s.TestCodes, StringComparer.Ordinal);
+        var weights = ParseWeights(weightsCsv, taxonomyCsv, subjectTests);
         var topics = new List<TopicSeed>();
         foreach (var row in Csv.Read(taxonomyCsv))
         {
@@ -100,13 +112,18 @@ internal sealed record CurriculumSeed(
                 throw new FormatException($"Topic {code} belongs to unknown subject {subjectCode}.");
             }
 
-            if (!weights.TryGetValue(code, out var weight))
+            if (!weights.TryGetValue(code, out var topicWeights))
             {
                 throw new FormatException($"Topic {code} has no row in konu_agirliklari.csv.");
             }
 
+            var missingTest = subjectTests[subjectCode].FirstOrDefault(t => topicWeights.All(w => w.TestCode != t));
+            if (missingTest is not null)
+            {
+                throw new FormatException($"Topic {code} has no weight for test {missingTest}.");
+            }
+
             var (gradeMin, gradeMax) = ParseGrades(row["grade"], code);
-            var (yearsAsked, yearsCounted) = ParseYears(weight["years_present"], code);
             topics.Add(new TopicSeed(
                 code,
                 subjectCode,
@@ -115,10 +132,7 @@ internal sealed record CurriculumSeed(
                 gradeMin,
                 gradeMax,
                 string.IsNullOrWhiteSpace(row["description"]) ? null : row["description"].Trim(),
-                decimal.Parse(weight["q_i"], NumberStyles.Number, CultureInfo.InvariantCulture),
-                ParseTier(weight["tier"], code),
-                yearsAsked,
-                yearsCounted));
+                [.. subjectTests[subjectCode].Select(t => topicWeights.Single(w => w.TestCode == t))]));
         }
 
         var duplicate = topics.GroupBy(t => t.Code, StringComparer.Ordinal).FirstOrDefault(g => g.Count() > 1);
@@ -142,9 +156,57 @@ internal sealed record CurriculumSeed(
             throw new FormatException($"Source {duplicateSource.Key} appears more than once.");
         }
 
+        var calendars = calendarJson is null ? [] : ExamCalendarSeed.Parse(calendarJson).Calendars;
         var hash = Convert.ToHexStringLower(SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes(string.Join('\u001f', ParserVersion, structureJson, taxonomyCsv, weightsCsv, sourcesCsv))));
-        return new CurriculumSeed(structure.ExamYear, tests, subjects, scoreTypes, topics, sources, mockSections, hash);
+            System.Text.Encoding.UTF8.GetBytes(string.Join('\u001f', ParserVersion, structureJson, taxonomyCsv, weightsCsv, sourcesCsv, calendarJson ?? ""))));
+        return new CurriculumSeed(structure.ExamYear, tests, subjects, scoreTypes, topics, sources, mockSections, calendars, hash);
+    }
+
+    /// <summary>
+    /// Rows of konu_agirliklari.csv by topic code. <c>test_code</c> may be left out for a topic whose subject is in a
+    /// single test; a test outside the subject or a repeated (topic, test) pair is an error.
+    /// </summary>
+    private static Dictionary<string, List<TopicWeightSeed>> ParseWeights(
+        string weightsCsv,
+        string taxonomyCsv,
+        Dictionary<string, IReadOnlyList<string>> subjectTests)
+    {
+        var subjectOf = Csv.Read(taxonomyCsv)
+            .GroupBy(r => r["topic_code"], StringComparer.Ordinal)
+            .ToDictionary(g => g.Key, g => $"{g.First()["session"]}.{g.First()["unit"]}", StringComparer.Ordinal);
+        var result = new Dictionary<string, List<TopicWeightSeed>>(StringComparer.Ordinal);
+        foreach (var row in Csv.Read(weightsCsv))
+        {
+            var code = row["topic_code"];
+            if (!subjectOf.TryGetValue(code, out var subjectCode) || !subjectTests.TryGetValue(subjectCode, out var tests))
+            {
+                continue; // reported as "unknown subject" or simply unused, like before
+            }
+
+            var testCode = row.TryGetValue("test_code", out var t) && t.Length > 0 ? t
+                : tests.Count == 1 ? tests[0]
+                : throw new FormatException($"Topic {code} is in several tests; its weight rows need test_code.");
+            if (!tests.Contains(testCode))
+            {
+                throw new FormatException($"Topic {code} has a weight for test {testCode}, which is not a test of {subjectCode}.");
+            }
+
+            var list = result.TryGetValue(code, out var existing) ? existing : result[code] = [];
+            if (list.Any(w => w.TestCode == testCode))
+            {
+                throw new FormatException($"Topic {code} has more than one weight for test {testCode}.");
+            }
+
+            var (yearsAsked, yearsCounted) = ParseYears(row["years_present"], code);
+            list.Add(new TopicWeightSeed(
+                testCode,
+                decimal.Parse(row["q_i"], NumberStyles.Number, CultureInfo.InvariantCulture),
+                ParseTier(row["tier"], code),
+                yearsAsked,
+                yearsCounted));
+        }
+
+        return result;
     }
 
     /// <summary>

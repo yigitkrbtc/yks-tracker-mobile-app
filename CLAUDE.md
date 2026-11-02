@@ -4,7 +4,7 @@ YKS (TYT/AYT) konu testi ve deneme takibi + açıklanabilir analiz. Gereksinim v
 
 ## Durum
 
-S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S4 deneme + yanlış etiketleme, S5 analiz motoru + panel + konu kartı, S6 öneri motoru + Bugün sekmesi + konu işareti + hedef/seri + yerel hatırlatma + sınav takvimi + veri dışa aktarma (ADR-0012…0018). Sıradaki: **S7** (admin paneli: müfredat/kural yönetimi, puan türüne göre `q`).
+S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S4 deneme + yanlış etiketleme, S5 analiz motoru + panel + konu kartı, S6 öneri motoru + Bugün sekmesi + konu işareti + hedef/seri + yerel hatırlatma + sınav takvimi + veri dışa aktarma, S7 puan türüne göre `q` + müfredat sürümleri (taslak/yayın/geri dönüş, soy bağı) + Refine admin paneli `/admin` + güvenlik başlıkları (ADR-0012…0019). Sıradaki: **yayın hazırlığı** (denetim kaydı, KVKK yeniden onay, barındırma, SMTP, Play iç test); ürünün yönü netleşince.
 
 ## Yapı
 
@@ -12,7 +12,7 @@ S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S
 | --- | --- |
 | `backend/` | .NET 10 modüler monolit (`Nirengi.slnx`) |
 | `mobile/` | Flutter uygulaması |
-| `admin/` | React + TypeScript admin paneli |
+| `admin/` | Refine + Ant Design admin paneli; API `/admin` altında sunar |
 | `contracts/openapi/v1.json` | Koddan üretilen API sözleşmesi (commit'lenir) |
 | `data/seed/` | ÖSYM 2019–2026 konu taksonomisi, ağırlıkları, sınav yapısı (Curriculum'a derlenir, API açılışında yüklenir) |
 | `docs/adr/` | Mimari karar kayıtları |
@@ -27,6 +27,8 @@ S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S
 - Endpoint'ler modülün `MapEndpoints(v1)` metodunda, `/v1` altında. Hata yanıtı `ToProblem()` ile ProblemDetails.
 - Saat için `IClock`; `DateTime.Now` kullanılmaz. Analytics Engine saati parametre olarak alır, I/O yapmaz.
 - Kişisel veri tutan her modül `IPersonalDataExporter` uygular ve kaydeder; `/v1/me/export` bunları toplar (ADR-0018).
+- Müfredat değişikliği yalnız taslak → yayın yolundan (`CurriculumPublisher`, ADR-0019); seed içe aktarma da aynı yol. Konu/kaynak silinmez, kodlar tekrar kullanılmaz. Yeni işlem türü: domain + `DraftApplier` + `ContentDiff` + panel `describe()`.
+- Versiyonlu kural seti olan modül `IRuleSetDescriptor` kaydeder (`/v1/admin/rule-sets`). Admin uçları `RequireAuthorization(Policies.Admin)` + `RateLimitPolicies.Admin`.
 - Uyarılar hata sayılır (`TreatWarningsAsErrors`). Paket sürümleri yalnız `Directory.Packages.props`'ta.
 
 ## Sık komutlar
@@ -48,7 +50,9 @@ docker compose up -d                          # kökten: PostgreSQL 17, Mailpit,
 
 cd mobile && flutter analyze && flutter test
 cd mobile && dart run build_runner build      # Drift şeması değişince; .g.dart commit'lenir
-cd admin && npm run lint && npm run build
+cd admin && npm run lint && npm test && npm run build
+cd admin && npm run gen:api                   # contracts/openapi/v1.json değişince; schema.d.ts commit'lenir
+cd admin && npm run dev                       # http://localhost:5173/admin/, /v1 → localhost:8080
 ```
 
 ## Mobil kuralları
@@ -60,6 +64,11 @@ cd admin && npm run lint && npm run build
 - UI yalnız `lib/core/design/design.dart` (token + `N*` bileşenleri) üzerinden; `shadcn_ui` doğrudan yalnız `core/design` ve `app` içinde (ADR-0011, mimari test).
 - Yapılandırma `--dart-define` ile (`AppConfig`).
 - Bildirim yalnız `core/notifications` portu (`LocalReminderScheduler`) üzerinden; özellik plugin'i doğrudan çağırmaz.
+
+## Admin kuralları
+
+- `admin/src/<alan>/` (auth, curriculum, versions, rule-sets); API tipi yalnız üretilen `src/api/schema.d.ts`'ten, çağrı `api` + `call()` ile. Elle DTO yazılmaz.
+- Jeton bellekte, yenileme `sessionStorage`'da; `localStorage`/çerez kullanılmaz. Satır içi `<script>` ve dış CDN yok (CSP `script-src 'self'`).
 
 ## Süreç
 

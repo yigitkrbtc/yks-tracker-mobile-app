@@ -28,6 +28,16 @@ public static class RateLimitPolicies
 
     /// <summary>Personal data export: heavy reads across every module, partitioned by user.</summary>
     public const string Export = "export";
+
+    /// <summary>Admin panel endpoints, partitioned by user.</summary>
+    public const string Admin = "admin";
+}
+
+public sealed class AdminRateLimitOptions
+{
+    public int PermitLimit { get; set; } = 120;
+
+    public TimeSpan Window { get; set; } = TimeSpan.FromMinutes(1);
 }
 
 public sealed class ExportRateLimitOptions
@@ -99,6 +109,7 @@ public static class SecurityRegistration
         var auth = configuration.GetSection("RateLimiting:Auth").Get<AuthRateLimitOptions>() ?? new AuthRateLimitOptions();
         var session = configuration.GetSection("RateLimiting:Session").Get<SessionRateLimitOptions>() ?? new SessionRateLimitOptions();
         var export = configuration.GetSection("RateLimiting:Export").Get<ExportRateLimitOptions>() ?? new ExportRateLimitOptions();
+        var admin = configuration.GetSection("RateLimiting:Admin").Get<AdminRateLimitOptions>() ?? new AdminRateLimitOptions();
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -111,6 +122,9 @@ public static class SecurityRegistration
             options.AddPolicy(RateLimitPolicies.Export, context => RateLimitPartition.GetFixedWindowLimiter(
                 context.User.FindFirst(NirengiClaims.Subject)?.Value ?? ClientIp(context),
                 _ => new FixedWindowRateLimiterOptions { PermitLimit = export.PermitLimit, Window = export.Window }));
+            options.AddPolicy(RateLimitPolicies.Admin, context => RateLimitPartition.GetFixedWindowLimiter(
+                context.User.FindFirst(NirengiClaims.Subject)?.Value ?? ClientIp(context),
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = admin.PermitLimit, Window = admin.Window }));
         });
 
         return services;

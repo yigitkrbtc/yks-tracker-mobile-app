@@ -83,4 +83,7 @@ jobs:
           cache-dependency-path: admin/package-lock.json
       - run: npm ci
       - run: npm run lint
+      - name: API types match the contract
+        run: npm run gen:api && git diff --exit-code src/api/schema.d.ts
+      - run: npm test
       - run: npm run build

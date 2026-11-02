@@ -40,6 +40,14 @@ Tüm debug APK'lar repodaki ortak anahtarla (`mobile/android/app/preview-debug.k
 
 PR dışında APK lazımsa: **Actions** → **Android APK (preview)** → **Run workflow** (adres kutusu boşsa değişken kullanılır); dosya çalışmanın altındaki **nirengi-test-apk** ZIP'inde.
 
+## Admin paneli (müfredat yönetimi)
+
+1. Sunucu açıkken telefondaki uygulamadan (veya `http://localhost:8080/v1/auth/register` ile) **admin@nirengi.local** adresiyle kayıt ol; kodu Mailpit'ten al. Başka adres için sunucuyu `set NIRENGI_ADMIN_EMAIL=senin@adresin` ile başlat.
+2. Bilgisayarda http://localhost:8080/admin aç, aynı e-posta ve şifreyle gir.
+3. İlk girişte ekrandaki QR'ı Google Authenticator / Microsoft Authenticator ile tara, 6 haneli kodu gir. Gösterilen 10 kurtarma kodunu sakla (telefon kaybolursa bunlarla girilir).
+4. Değişiklikler önce **taslağa** düşer; sağdaki panelde kontrol edip **Yayınla** de. Yayınlanınca uygulama bir sonraki açılışta yeni müfredatı alır. **Sürüm geçmişi**'nden eski bir sürüme dönüş taslağı açılabilir.
+5. Yaptığın değişikliklerin bir sonraki sıfır kurulumda da olması için **Seed olarak indir** ile ZIP'i al, içindekileri `data/seed/` altına koyup commit'le.
+
 ## Sorun olursa
 
 - **Telefon sunucuya bağlanamıyor:** Telefon ve bilgisayar aynı Wi-Fi'da mı? Telefonun tarayıcısında `http://192.168.1.20:8080/health` açılıyor mu? Açılmıyorsa Windows Güvenlik Duvarı'nda Docker Desktop'a özel ağ izni ver.

@@ -2,6 +2,7 @@
 
 - Durum: Kabul edildi
 - Tarih: 2026-10-28
+- Kısmen yerine geçti: [ADR-0019](0019-mufredat-surumleri-ve-admin-paneli.md) (seed değişikliği artık taslak + sürüm; ağırlık test bazında; takvim DB'de)
 
 ## Bağlam
 

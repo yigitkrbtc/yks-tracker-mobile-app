@@ -15,6 +15,31 @@ enum WeightTier {
 
 enum ExamSession { tyt, ayt }
 
+/// Expected questions of a topic in one test; AYT history and geography have two.
+class TopicWeight {
+  const TopicWeight({
+    required this.testCode,
+    required this.expectedQuestions,
+    required this.tier,
+  });
+
+  final String testCode;
+  final double expectedQuestions;
+  final WeightTier tier;
+
+  Map<String, Object?> toJson() => {
+    'testCode': testCode,
+    'expectedQuestions': expectedQuestions,
+    'tier': tier.code,
+  };
+
+  factory TopicWeight.fromJson(Map<String, dynamic> json) => TopicWeight(
+    testCode: json['testCode'] as String,
+    expectedQuestions: (json['expectedQuestions'] as num).toDouble(),
+    tier: WeightTier.fromCode(json['tier'] as String),
+  );
+}
+
 class Topic {
   const Topic({
     required this.id,
@@ -25,6 +50,7 @@ class Topic {
     required this.gradeMax,
     required this.expectedQuestions,
     required this.tier,
+    this.weights = const [],
   });
 
   final String id;
@@ -34,12 +60,41 @@ class Topic {
   final int gradeMin;
   final int gradeMax;
 
-  /// Average questions per exam over 2022–2026.
+  /// Average questions per exam over 2022–2026; summed over every test until narrowed by [forTests].
   final double expectedQuestions;
   final WeightTier tier;
 
+  /// Per test; empty in a curriculum cached before per-test weights.
+  final List<TopicWeight> weights;
+
   /// Not asked at all in the years the average covers.
   bool get notAskedRecently => expectedQuestions == 0;
+
+  /// This topic as seen by a student who takes [tests]: q summed over those tests, highest tier among them.
+  Topic forTests(Set<String> tests) {
+    final mine = [
+      for (final w in weights)
+        if (tests.contains(w.testCode)) w,
+    ];
+    if (weights.isEmpty || mine.length == weights.length) {
+      return this;
+    }
+    return Topic(
+      id: id,
+      code: code,
+      name: name,
+      subtopics: subtopics,
+      gradeMin: gradeMin,
+      gradeMax: gradeMax,
+      expectedQuestions: mine.fold(0.0, (s, w) => s + w.expectedQuestions),
+      tier: mine.isEmpty
+          ? WeightTier.rare
+          : mine
+                .map((w) => w.tier)
+                .reduce((a, b) => a.index >= b.index ? a : b),
+      weights: weights,
+    );
+  }
 
   String get gradeLabel =>
       gradeMin == gradeMax ? '$gradeMin. sınıf' : '$gradeMin–$gradeMax. sınıf';
@@ -53,6 +108,7 @@ class Topic {
     'gradeMax': gradeMax,
     'expectedQuestions': expectedQuestions,
     'tier': tier.code,
+    'weights': [for (final w in weights) w.toJson()],
   };
 
   factory Topic.fromJson(Map<String, dynamic> json) => Topic(
@@ -64,6 +120,10 @@ class Topic {
     gradeMax: json['gradeMax'] as int,
     expectedQuestions: (json['expectedQuestions'] as num).toDouble(),
     tier: WeightTier.fromCode(json['tier'] as String),
+    weights: [
+      for (final w in json['weights'] as List<dynamic>? ?? const [])
+        TopicWeight.fromJson(w as Map<String, dynamic>),
+    ],
   );
 }
 
@@ -221,16 +281,29 @@ class Curriculum {
   /// The mock exam score sheet template, in display order.
   final List<MockSection> mockSections;
 
-  /// Subjects a student of the given score type codes studies, in curriculum order.
-  List<Subject> subjectsFor(Iterable<String> scoreTypeCodes) {
+  /// Tests a student of the given score type codes takes.
+  Set<String> testsFor(Iterable<String> scoreTypeCodes) {
     final codes = scoreTypeCodes.toSet();
-    final tests = {
+    return {
       for (final s in scoreTypes)
         if (codes.contains(s.code)) ...s.testCodes,
     };
+  }
+
+  /// Subjects a student of the given score type codes studies, in curriculum order, with each topic's weight
+  /// narrowed to those tests (AYT history counts once for EA, twice for SÖZ).
+  List<Subject> subjectsFor(Iterable<String> scoreTypeCodes) {
+    final tests = testsFor(scoreTypeCodes);
     return [
       for (final subject in subjects)
-        if (subject.testCodes.any(tests.contains)) subject,
+        if (subject.testCodes.any(tests.contains))
+          Subject(
+            code: subject.code,
+            session: subject.session,
+            name: subject.name,
+            testCodes: subject.testCodes,
+            topics: [for (final t in subject.topics) t.forTests(tests)],
+          ),
     ];
   }
 

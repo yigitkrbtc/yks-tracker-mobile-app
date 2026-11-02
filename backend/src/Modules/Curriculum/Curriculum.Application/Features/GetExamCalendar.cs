@@ -15,14 +15,17 @@ public sealed record ExamCalendarDto(int ExamYear, string SourceUrl, string? Not
 
 public sealed record ExamCalendarEventDto(string Code, string Name, DateTimeOffset StartsAt, DateTimeOffset? EndsAt, CalendarEventStatus Status);
 
-internal sealed class GetExamCalendarHandler(IExamCalendarSource source) : IQueryHandler<GetExamCalendarQuery, ExamCalendarResponse>
+internal sealed class GetExamCalendarHandler(IExamCalendarSource calendars) : IQueryHandler<GetExamCalendarQuery, ExamCalendarResponse>
 {
-    public Task<Result<ExamCalendarResponse>> Handle(GetExamCalendarQuery query, CancellationToken cancellationToken) =>
-        Task.FromResult<Result<ExamCalendarResponse>>(new ExamCalendarResponse(
+    public async Task<Result<ExamCalendarResponse>> Handle(GetExamCalendarQuery query, CancellationToken cancellationToken)
+    {
+        var source = await calendars.Get(cancellationToken);
+        return new ExamCalendarResponse(
             source.Version,
             [.. source.Calendars.OrderBy(c => c.ExamYear).Select(c => new ExamCalendarDto(
                 c.ExamYear,
                 c.SourceUrl,
                 c.Note,
-                [.. c.Events.OrderBy(e => e.StartsAt).Select(e => new ExamCalendarEventDto(e.Code, e.Name, e.StartsAt, e.EndsAt, e.Status))]))]));
+                [.. c.Events.OrderBy(e => e.StartsAt).Select(e => new ExamCalendarEventDto(e.Code, e.Name, e.StartsAt, e.EndsAt, e.Status))]))]);
+    }
 }
