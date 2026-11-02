@@ -14,7 +14,7 @@ public sealed record GetCurriculumQuery : IQuery<CurriculumResponse>;
 /// <summary>Only the content version, so an unchanged curriculum can be answered with 304.</summary>
 public sealed record GetCurriculumVersionQuery : IQuery<string>;
 
-/// <param name="Version">Content hash of the loaded seed; changes whenever any topic, weight or mapping changes.</param>
+/// <param name="Version">Content hash of the published curriculum; changes on every publish (ADR-0019).</param>
 public sealed record CurriculumResponse(
     string Version,
     int ExamYear,
@@ -85,7 +85,7 @@ internal sealed class GetCurriculumHandler(ICurriculumRepository curriculum) : I
         var topicsBySubject = topics.ToLookup(t => t.SubjectCode);
 
         return new CurriculumResponse(
-            release.SeedHash,
+            release.ContentHash,
             release.ExamYear,
             [.. scoreTypes.Select(s => new ScoreTypeDto(s.Id, s.Name, s.TestCodes))],
             [.. tests.Select(t => new ExamTestDto(t.Id, t.Session, t.Name, t.QuestionCount))],
@@ -116,6 +116,6 @@ internal sealed class GetCurriculumVersionHandler(ICurriculumRepository curricul
     public async Task<Result<string>> Handle(GetCurriculumVersionQuery query, CancellationToken cancellationToken)
     {
         var release = await curriculum.GetLatestRelease(cancellationToken);
-        return release is null ? CurriculumErrors.NotSeeded : release.SeedHash;
+        return release is null ? CurriculumErrors.NotSeeded : release.ContentHash;
     }
 }

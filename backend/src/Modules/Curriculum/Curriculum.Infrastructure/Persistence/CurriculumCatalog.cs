@@ -4,6 +4,7 @@ using Nirengi.Modules.Curriculum.Domain;
 using Nirengi.Modules.Curriculum.Domain.Exams;
 using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
+using Nirengi.Modules.Curriculum.Domain.Versions;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence;
 
@@ -62,6 +63,10 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
             .Select(t => new CatalogWeightedTopic(t.Id, t.SubjectCode, weights.GetValueOrDefault(t.Id) ?? none, t.Status == TopicStatus.Active, t.Code, t.Name))
             .ToList();
         var scoreTypes = await db.ScoreTypes.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
+        var lineage = await db.Lineage.AsNoTracking()
+            .OrderBy(l => l.VersionNumber)
+            .Select(l => new CatalogLineage(l.FromTopicId, l.ToTopicId, l.Relation == LineageRelation.Merged))
+            .ToListAsync(cancellationToken);
 
         return new AnalysisCatalogData(
             Version(release),
@@ -69,7 +74,8 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
             topics,
             [.. subjects.Select(s => new CatalogSubject(s.Id, [.. s.TestCodes]))],
             [.. scoreTypes.Select(s => new CatalogScoreType(s.Id, [.. s.TestCodes]))],
-            await GetMockSections(cancellationToken));
+            await GetMockSections(cancellationToken),
+            lineage);
     }
 
     public async Task<string?> GetVersion(CancellationToken cancellationToken) =>
@@ -78,5 +84,5 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
     private Task<CurriculumRelease?> LatestRelease(CancellationToken cancellationToken) =>
         db.Releases.AsNoTracking().OrderByDescending(r => r.ExamYear).FirstOrDefaultAsync(cancellationToken);
 
-    private static string Version(CurriculumRelease release) => $"{release.ExamYear}:{release.SeedHash}";
+    private static string Version(CurriculumRelease release) => $"{release.ExamYear}:{release.ContentHash}";
 }

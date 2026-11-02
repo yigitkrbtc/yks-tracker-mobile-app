@@ -14,5 +14,9 @@ public sealed class CurriculumModule : IModule
     public void AddServices(IServiceCollection services, IConfiguration configuration) =>
         services.AddCurriculumInfrastructure(configuration);
 
-    public void MapEndpoints(IEndpointRouteBuilder v1) => v1.MapCurriculumEndpoints();
+    public void MapEndpoints(IEndpointRouteBuilder v1)
+    {
+        v1.MapCurriculumEndpoints();
+        v1.MapAdminCurriculumEndpoints();
+    }
 }

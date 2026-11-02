@@ -2,9 +2,11 @@ using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Nirengi.Modules.Curriculum.Domain.Calendar;
 using Nirengi.Modules.Curriculum.Domain.Exams;
 using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
+using Nirengi.Modules.Curriculum.Domain.Versions;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure.Seed;
 
@@ -51,8 +53,15 @@ internal sealed record CurriculumSeed(
     IReadOnlyList<TopicSeed> Topics,
     IReadOnlyList<SourceSeed> Sources,
     IReadOnlyList<MockSectionSeed> MockSections,
+    IReadOnlyList<ExamCalendar> Calendars,
     string Hash)
 {
+    /// <summary>The admin-editable part as the seed wants it (ADR-0019); a seed import diffs this against live.</summary>
+    public CurriculumContent Content => new(
+        [.. Topics.Select((t, i) => new TopicState(t.Code, t.SubjectCode, t.Name, t.Subtopics, t.GradeMin, t.GradeMax, t.Description, i, true))],
+        [.. Sources.Select((s, i) => new SourceState(s.Code, s.Name, s.Kind, i, true))],
+        Calendars);
+
     // Bump when the mapping from files to rows changes, so already seeded databases pick it up.
     private const string ParserVersion = "4";
 
@@ -65,10 +74,11 @@ internal sealed record CurriculumSeed(
             ReadResource(assembly, "Seed.exam_structure.json"),
             ReadResource(assembly, "Seed.konu_taksonomisi.csv"),
             ReadResource(assembly, "Seed.konu_agirliklari.csv"),
-            ReadResource(assembly, "Seed.kaynaklar.csv"));
+            ReadResource(assembly, "Seed.kaynaklar.csv"),
+            ReadResource(assembly, "Seed.exam_calendar.json"));
     }
 
-    public static CurriculumSeed Parse(string structureJson, string taxonomyCsv, string weightsCsv, string sourcesCsv)
+    public static CurriculumSeed Parse(string structureJson, string taxonomyCsv, string weightsCsv, string sourcesCsv, string? calendarJson = null)
     {
         var structure = JsonSerializer.Deserialize<StructureFile>(structureJson, Json)
             ?? throw new FormatException("exam_structure.json is empty.");
@@ -146,9 +156,10 @@ internal sealed record CurriculumSeed(
             throw new FormatException($"Source {duplicateSource.Key} appears more than once.");
         }
 
+        var calendars = calendarJson is null ? [] : ExamCalendarSeed.Parse(calendarJson).Calendars;
         var hash = Convert.ToHexStringLower(SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes(string.Join('\u001f', ParserVersion, structureJson, taxonomyCsv, weightsCsv, sourcesCsv))));
-        return new CurriculumSeed(structure.ExamYear, tests, subjects, scoreTypes, topics, sources, mockSections, hash);
+            System.Text.Encoding.UTF8.GetBytes(string.Join('\u001f', ParserVersion, structureJson, taxonomyCsv, weightsCsv, sourcesCsv, calendarJson ?? ""))));
+        return new CurriculumSeed(structure.ExamYear, tests, subjects, scoreTypes, topics, sources, mockSections, calendars, hash);
     }
 
     /// <summary>

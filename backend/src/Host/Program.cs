@@ -26,7 +26,13 @@ builder.Host.UseSerilog((context, logger) => logger
     .WriteTo.Console());
 
 builder.Services.AddProblemDetails();
-builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.ConfigureHttpJsonOptions(o =>
+{
+    o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+    // Polymorphic bodies (curriculum draft operations) may carry "type" anywhere in the object.
+    o.SerializerOptions.AllowOutOfOrderMetadataProperties = true;
+});
 builder.Services.AddOpenApi("v1");
 builder.Services.AddNirengiSecurity(builder.Configuration);
 builder.Services.AddHealthChecks()

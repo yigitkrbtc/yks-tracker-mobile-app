@@ -1,20 +1,39 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Nirengi.BuildingBlocks.Application.Abstractions;
-using Nirengi.Modules.Curriculum.Domain;
-using Nirengi.Modules.Curriculum.Domain.Exams;
-using Nirengi.Modules.Curriculum.Domain.Sources;
-using Nirengi.Modules.Curriculum.Domain.Topics;
+using Nirengi.Modules.Curriculum.Domain.Versions;
+using Nirengi.Modules.Curriculum.Infrastructure.Persistence;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure.Seed;
 
 /// <summary>
-/// Brings the curriculum tables in line with data/seed. Runs right after migrations; a no-op when the seed hash
-/// is already loaded. Topics are matched by code and never deleted (study records point at them): a topic
-/// missing from the seed is retired, one that comes back is reactivated.
+/// Brings data/seed into the database at startup (ADR-0013, ADR-0019). A no-op when the seed hash is already
+/// loaded. Otherwise the difference from the live curriculum becomes a "seed import" draft: published at once on an
+/// empty database or with <see cref="CurriculumOptions.AutoPublishSeed"/>, else left for an admin to review.
 /// </summary>
-public sealed partial class CurriculumSeeder(CurriculumDbContext db, IClock clock, ILogger<CurriculumSeeder> logger)
+public sealed partial class CurriculumSeeder
 {
+    private readonly CurriculumDbContext db;
+    private readonly CurriculumPublisher publisher;
+    private readonly IClock clock;
+    private readonly CurriculumOptions options;
+    private readonly ILogger<CurriculumSeeder> logger;
+
+    public CurriculumSeeder(
+        CurriculumDbContext db,
+        CurriculumPublisher publisher,
+        IClock clock,
+        IOptions<CurriculumOptions> options,
+        ILogger<CurriculumSeeder> logger)
+    {
+        this.db = db;
+        this.publisher = publisher;
+        this.clock = clock;
+        this.options = options.Value;
+        this.logger = logger;
+    }
+
     /// <returns>True when anything was written.</returns>
     public Task<bool> Seed(CancellationToken cancellationToken) => Apply(CurriculumSeed.LoadEmbedded(), cancellationToken);
 
@@ -23,189 +42,65 @@ public sealed partial class CurriculumSeeder(CurriculumDbContext db, IClock cloc
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
 
         // Several API instances may start together; only one imports, the rest then see the hash and skip.
-        await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(hashtext('curriculum.seed'))", cancellationToken);
+        await publisher.Lock(cancellationToken);
 
         var release = await db.Releases.SingleOrDefaultAsync(r => r.ExamYear == seed.ExamYear, cancellationToken);
-        if (release?.SeedHash == seed.Hash)
+        if (release is not null)
         {
-            await transaction.CommitAsync(cancellationToken);
-            return false;
+            await publisher.BackfillFirstVersion(release, cancellationToken);
+            if (release.SeedHash == seed.Hash)
+            {
+                await transaction.CommitAsync(cancellationToken);
+                return false;
+            }
         }
 
-        await SyncTests(seed, cancellationToken);
-        await SyncSubjects(seed, cancellationToken);
-        await SyncScoreTypes(seed, cancellationToken);
-        await SyncMockSections(seed, cancellationToken);
-        var topicIds = await SyncTopics(seed, cancellationToken);
-        await SyncWeights(seed, topicIds, cancellationToken);
-        await SyncSources(seed, cancellationToken);
-
-        var now = clock.UtcNow;
-        if (release is null)
+        var operations = ContentDiff.Between(await publisher.LoadContent(cancellationToken), seed.Content);
+        var stale = await db.Drafts.Where(d => d.ExamYear == seed.ExamYear && d.Kind == DraftKind.SeedImport).ToListAsync(cancellationToken);
+        if (stale.Any(d => d.SeedHash == seed.Hash) && release is not null && !options.AutoPublishSeed)
         {
-            db.Releases.Add(CurriculumRelease.Create(seed.ExamYear, seed.Hash, now));
+            await transaction.CommitAsync(cancellationToken);
+            return false; // already waiting for an admin
+        }
+
+        db.Drafts.RemoveRange(stale);
+        var now = clock.UtcNow;
+        var draft = CurriculumDraft.Create(
+            Guid.CreateVersion7(now),
+            seed.ExamYear,
+            DraftKind.SeedImport,
+            release?.VersionNumber ?? 0,
+            $"Seed içe aktarma {seed.Hash[..8]}",
+            CurriculumJson.Serialize(operations),
+            seed.Hash,
+            null,
+            now);
+
+        if (release is null || options.AutoPublishSeed)
+        {
+            var published = await publisher.PublishLocked(draft, null, $"Seed içe aktarma ({operations.Count} değişiklik)", seed, cancellationToken);
+            if (published.IsFailure)
+            {
+                // A seed that cannot be applied must stop the deploy, as a broken seed file always did.
+                throw new InvalidOperationException($"Seed import failed: {published.Error.Message}");
+            }
+
+            LogSeeded(logger, seed.ExamYear, published.Value.Number, operations.Count, seed.Hash);
         }
         else
         {
-            release.Reseed(seed.Hash, now);
+            db.Drafts.Add(draft);
+            await db.SaveChangesAsync(cancellationToken);
+            LogDraft(logger, seed.ExamYear, operations.Count, seed.Hash);
         }
 
-        await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        LogSeeded(logger, seed.ExamYear, seed.Topics.Count, seed.Hash);
         return true;
     }
 
-    private async Task SyncTests(CurriculumSeed seed, CancellationToken cancellationToken)
-    {
-        var existing = await db.Tests.ToDictionaryAsync(t => t.Id, cancellationToken);
-        for (var i = 0; i < seed.Tests.Count; i++)
-        {
-            var s = seed.Tests[i];
-            if (existing.Remove(s.Code, out var test))
-            {
-                test.Update(s.Session, s.Name, s.QuestionCount, i);
-            }
-            else
-            {
-                db.Tests.Add(ExamTest.Create(s.Code, s.Session, s.Name, s.QuestionCount, i));
-            }
-        }
+    [LoggerMessage(Level = LogLevel.Information, Message = "Curriculum {ExamYear} seeded as version {Version}: {Changes} changes, hash {Hash}")]
+    private static partial void LogSeeded(ILogger logger, int examYear, int version, int changes, string hash);
 
-        db.Tests.RemoveRange(existing.Values);
-    }
-
-    private async Task SyncSubjects(CurriculumSeed seed, CancellationToken cancellationToken)
-    {
-        var existing = await db.Subjects.ToDictionaryAsync(s => s.Id, cancellationToken);
-        for (var i = 0; i < seed.Subjects.Count; i++)
-        {
-            var s = seed.Subjects[i];
-            if (existing.Remove(s.Code, out var subject))
-            {
-                subject.Update(s.Session, s.Name, s.TestCodes, i);
-            }
-            else
-            {
-                db.Subjects.Add(Subject.Create(s.Code, s.Session, s.Name, s.TestCodes, i));
-            }
-        }
-
-        db.Subjects.RemoveRange(existing.Values);
-    }
-
-    private async Task SyncScoreTypes(CurriculumSeed seed, CancellationToken cancellationToken)
-    {
-        var existing = await db.ScoreTypes.ToDictionaryAsync(s => s.Id, cancellationToken);
-        for (var i = 0; i < seed.ScoreTypes.Count; i++)
-        {
-            var s = seed.ScoreTypes[i];
-            if (existing.Remove(s.Code, out var scoreType))
-            {
-                scoreType.Update(s.Name, s.TestCodes, i);
-            }
-            else
-            {
-                db.ScoreTypes.Add(ScoreType.Create(s.Code, s.Name, s.TestCodes, i));
-            }
-        }
-
-        db.ScoreTypes.RemoveRange(existing.Values);
-    }
-
-    /// <summary>Removed codes are deleted: mock exams keep their own copy of a section's question count.</summary>
-    private async Task SyncMockSections(CurriculumSeed seed, CancellationToken cancellationToken)
-    {
-        var existing = await db.MockSections.ToDictionaryAsync(s => s.Id, cancellationToken);
-        for (var i = 0; i < seed.MockSections.Count; i++)
-        {
-            var s = seed.MockSections[i];
-            if (existing.Remove(s.Code, out var section))
-            {
-                section.Update(s.TestCode, s.SubjectCode, s.Name, s.QuestionCount, s.ParentCode, s.AlternativeOf, i);
-            }
-            else
-            {
-                db.MockSections.Add(MockSection.Create(s.Code, s.TestCode, s.SubjectCode, s.Name, s.QuestionCount, s.ParentCode, s.AlternativeOf, i));
-            }
-        }
-
-        db.MockSections.RemoveRange(existing.Values);
-    }
-
-    private async Task<Dictionary<string, Guid>> SyncTopics(CurriculumSeed seed, CancellationToken cancellationToken)
-    {
-        var existing = await db.Topics.ToDictionaryAsync(t => t.Code, cancellationToken);
-        var ids = new Dictionary<string, Guid>(seed.Topics.Count, StringComparer.Ordinal);
-        for (var i = 0; i < seed.Topics.Count; i++)
-        {
-            var s = seed.Topics[i];
-            if (existing.Remove(s.Code, out var topic))
-            {
-                topic.Update(s.SubjectCode, s.Name, s.Subtopics, s.GradeMin, s.GradeMax, s.Description, i);
-            }
-            else
-            {
-                topic = Topic.Create(s.Code, s.SubjectCode, s.Name, s.Subtopics, s.GradeMin, s.GradeMax, s.Description, i);
-                db.Topics.Add(topic);
-            }
-
-            ids[s.Code] = topic.Id;
-        }
-
-        foreach (var dropped in existing.Values)
-        {
-            dropped.Retire();
-        }
-
-        return ids;
-    }
-
-    private async Task SyncWeights(CurriculumSeed seed, Dictionary<string, Guid> topicIds, CancellationToken cancellationToken)
-    {
-        var existing = await db.TopicWeights.Where(w => w.ExamYear == seed.ExamYear)
-            .ToDictionaryAsync(w => (w.TopicId, w.TestCode), cancellationToken);
-        foreach (var s in seed.Topics)
-        {
-            var topicId = topicIds[s.Code];
-            foreach (var w in s.Weights)
-            {
-                if (existing.Remove((topicId, w.TestCode), out var weight))
-                {
-                    weight.Update(w.ExpectedQuestions, w.Tier, w.YearsAsked, w.YearsCounted);
-                }
-                else
-                {
-                    db.TopicWeights.Add(TopicWeight.Create(topicId, seed.ExamYear, w.TestCode, w.ExpectedQuestions, w.Tier, w.YearsAsked, w.YearsCounted));
-                }
-            }
-        }
-
-        db.TopicWeights.RemoveRange(existing.Values);
-    }
-
-    private async Task SyncSources(CurriculumSeed seed, CancellationToken cancellationToken)
-    {
-        var existing = await db.Sources.ToDictionaryAsync(s => s.Code, cancellationToken);
-        for (var i = 0; i < seed.Sources.Count; i++)
-        {
-            var s = seed.Sources[i];
-            if (existing.Remove(s.Code, out var source))
-            {
-                source.Update(s.Name, s.Kind, i);
-            }
-            else
-            {
-                db.Sources.Add(Source.Create(s.Code, s.Name, s.Kind, i));
-            }
-        }
-
-        foreach (var dropped in existing.Values)
-        {
-            dropped.Retire();
-        }
-    }
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Curriculum {ExamYear} seeded: {TopicCount} topics, hash {Hash}")]
-    private static partial void LogSeeded(ILogger logger, int examYear, int topicCount, string hash);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Curriculum {ExamYear}: seed {Hash} differs ({Changes} changes); an admin must publish the seed import draft")]
+    private static partial void LogDraft(ILogger logger, int examYear, int changes, string hash);
 }

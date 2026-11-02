@@ -15,8 +15,11 @@ public static class CurriculumInfrastructureRegistration
         services.AddModuleInfrastructure<CurriculumDbContext>(configuration, CurriculumDbContext.SchemaName, Application.AssemblyReference.Assembly);
         services.AddScoped<ICurriculumRepository, CurriculumRepository>();
         services.AddScoped<ICurriculumCatalog, CurriculumCatalog>();
+        services.Configure<CurriculumOptions>(configuration.GetSection(CurriculumOptions.Section));
+        services.AddScoped<CurriculumPublisher>();
         services.AddScoped<CurriculumSeeder>();
-        services.AddSingleton<IExamCalendarSource>(_ => ExamCalendarSeed.LoadEmbedded());
+        services.AddScoped<ICurriculumAdminStore, CurriculumAdminStore>();
+        services.AddScoped<IExamCalendarSource, StoredExamCalendarSource>();
         return services;
     }
 }

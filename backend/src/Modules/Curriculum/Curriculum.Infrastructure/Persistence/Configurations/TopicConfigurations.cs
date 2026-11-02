@@ -45,6 +45,7 @@ internal sealed class CurriculumReleaseConfiguration : IEntityTypeConfiguration<
         builder.HasKey(r => r.ExamYear);
         builder.Property(r => r.ExamYear).ValueGeneratedNever();
         builder.Property(r => r.SeedHash).HasMaxLength(CurriculumRelease.HashLength).IsFixedLength();
+        builder.Property(r => r.ContentHash).HasMaxLength(CurriculumRelease.HashLength).IsFixedLength();
     }
 }
 

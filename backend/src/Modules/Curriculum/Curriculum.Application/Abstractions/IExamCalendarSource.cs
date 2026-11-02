@@ -2,11 +2,11 @@ using Nirengi.Modules.Curriculum.Domain.Calendar;
 
 namespace Nirengi.Modules.Curriculum.Application.Abstractions;
 
-/// <summary>The shipped exam calendars; read-only, changes only on deploy.</summary>
+/// <param name="Version">Changes whenever any calendar changes; the endpoint's ETag.</param>
+public sealed record ExamCalendarSet(string Version, IReadOnlyList<ExamCalendar> Calendars);
+
+/// <summary>The published exam calendars (seeded from data/seed/exam_calendar.json, editable from the admin panel).</summary>
 public interface IExamCalendarSource
 {
-    /// <summary>Content hash of the calendar file; doubles as the ETag.</summary>
-    string Version { get; }
-
-    IReadOnlyList<ExamCalendar> Calendars { get; }
+    Task<ExamCalendarSet> Get(CancellationToken cancellationToken);
 }

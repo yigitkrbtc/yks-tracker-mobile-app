@@ -68,11 +68,35 @@ namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence.Migrations
                     b.ToTable("outbox_messages", "curriculum");
                 });
 
+            modelBuilder.Entity("Nirengi.Modules.Curriculum.Domain.Calendar.StoredExamCalendar", b =>
+                {
+                    b.Property<int>("ExamYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("exam_year");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("data");
+
+                    b.HasKey("ExamYear")
+                        .HasName("pk_exam_calendars");
+
+                    b.ToTable("exam_calendars", "curriculum");
+                });
+
             modelBuilder.Entity("Nirengi.Modules.Curriculum.Domain.CurriculumRelease", b =>
                 {
                     b.Property<int>("ExamYear")
                         .HasColumnType("integer")
                         .HasColumnName("exam_year");
+
+                    b.Property<string>("ContentHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .HasColumnName("content_hash")
+                        .IsFixedLength();
 
                     b.Property<string>("SeedHash")
                         .IsRequired()
@@ -84,6 +108,10 @@ namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("SeededAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("seeded_at");
+
+                    b.Property<int>("VersionNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("version_number");
 
                     b.HasKey("ExamYear")
                         .HasName("pk_releases");
@@ -383,6 +411,156 @@ namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence.Migrations
                     b.ToTable("topic_weights", "curriculum");
                 });
 
+            modelBuilder.Entity("Nirengi.Modules.Curriculum.Domain.Versions.CurriculumDraft", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("BasedOnNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("based_on_number");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<int>("ExamYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("exam_year");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Operations")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("operations");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("revision");
+
+                    b.Property<string>("SeedHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .HasColumnName("seed_hash")
+                        .IsFixedLength();
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_curriculum_drafts");
+
+                    b.HasIndex("ExamYear", "Kind")
+                        .IsUnique()
+                        .HasDatabaseName("ix_curriculum_drafts_exam_year_kind");
+
+                    b.ToTable("curriculum_drafts", "curriculum");
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Curriculum.Domain.Versions.CurriculumVersion", b =>
+                {
+                    b.Property<int>("ExamYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("exam_year");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<string>("ContentHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .HasColumnName("content_hash")
+                        .IsFixedLength();
+
+                    b.Property<string>("Operations")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("operations");
+
+                    b.Property<DateTimeOffset>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<Guid?>("PublishedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("published_by");
+
+                    b.Property<string>("SeedHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .HasColumnName("seed_hash")
+                        .IsFixedLength();
+
+                    b.Property<string>("Snapshot")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("snapshot");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("summary");
+
+                    b.HasKey("ExamYear", "Number")
+                        .HasName("pk_curriculum_versions");
+
+                    b.ToTable("curriculum_versions", "curriculum");
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Curriculum.Domain.Versions.TopicLineage", b =>
+                {
+                    b.Property<Guid>("FromTopicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("from_topic_id");
+
+                    b.Property<Guid>("ToTopicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("to_topic_id");
+
+                    b.Property<int>("ExamYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("exam_year");
+
+                    b.Property<string>("Relation")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("relation");
+
+                    b.Property<int>("VersionNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("version_number");
+
+                    b.HasKey("FromTopicId", "ToTopicId")
+                        .HasName("pk_topic_lineage");
+
+                    b.HasIndex("ToTopicId")
+                        .HasDatabaseName("ix_topic_lineage_to_topic_id");
+
+                    b.ToTable("topic_lineage", "curriculum");
+                });
+
             modelBuilder.Entity("Nirengi.Modules.Curriculum.Domain.Topics.TopicWeight", b =>
                 {
                     b.HasOne("Nirengi.Modules.Curriculum.Domain.Topics.Topic", null)
@@ -391,6 +569,23 @@ namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_topic_weights_topics_topic_id");
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Curriculum.Domain.Versions.TopicLineage", b =>
+                {
+                    b.HasOne("Nirengi.Modules.Curriculum.Domain.Topics.Topic", null)
+                        .WithMany()
+                        .HasForeignKey("FromTopicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_topic_lineage_topics_from_topic_id");
+
+                    b.HasOne("Nirengi.Modules.Curriculum.Domain.Topics.Topic", null)
+                        .WithMany()
+                        .HasForeignKey("ToTopicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_topic_lineage_topics_to_topic_id");
                 });
 #pragma warning restore 612, 618
         }

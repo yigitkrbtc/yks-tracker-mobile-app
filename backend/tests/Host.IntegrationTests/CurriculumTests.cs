@@ -90,7 +90,7 @@ public sealed class CurriculumTests(NirengiApiFactory factory)
         var restored = await db.Topics.AsNoTracking().SingleAsync(t => t.Code == dropped.Code, ct);
         restored.Status.ShouldBe(TopicStatus.Active);
         (await db.Topics.CountAsync(ct)).ShouldBe(370);
-        (await db.TopicWeights.CountAsync(ct)).ShouldBe(370);
+        (await db.TopicWeights.CountAsync(ct)).ShouldBe(shipped.Topics.Sum(t => t.Weights.Count));
     }
 
     [Fact]

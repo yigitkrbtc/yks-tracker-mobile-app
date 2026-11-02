@@ -113,7 +113,9 @@ public sealed class AnalyticsApiTests(NirengiApiFactory factory)
         var overview = await Overview(tokens);
 
         overview.Tests.Single(t => t.Code == "AYT-FEN").IsActive.ShouldBeTrue();
-        overview.Tests.Single(t => t.Code == "AYT-SB2").IsActive.ShouldBeFalse();
+
+        // AYT-SB2 topics weigh nothing for SAY (q per test, ADR-0019), so the test has no aggregate at all.
+        overview.Tests.ShouldNotContain(t => t.Code == "AYT-SB2" && t.IsActive);
     }
 
     [Fact]

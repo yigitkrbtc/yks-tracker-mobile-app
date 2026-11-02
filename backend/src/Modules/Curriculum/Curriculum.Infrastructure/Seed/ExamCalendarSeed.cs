@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Nirengi.Modules.Curriculum.Application.Abstractions;
 using Nirengi.Modules.Curriculum.Domain.Calendar;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure.Seed;
@@ -11,7 +10,7 @@ namespace Nirengi.Modules.Curriculum.Infrastructure.Seed;
 /// data/seed/exam_calendar.json compiled into the assembly and parsed once. Parsing validates codes and date
 /// order, so a broken file fails the unit tests and startup, never a request.
 /// </summary>
-internal sealed class ExamCalendarSeed : IExamCalendarSource
+internal sealed class ExamCalendarSeed
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
@@ -55,44 +54,9 @@ internal sealed class ExamCalendarSeed : IExamCalendarSource
 
     private static void Validate(ExamCalendar calendar)
     {
-        var at = $"exam year {calendar.ExamYear}";
-        if (string.IsNullOrWhiteSpace(calendar.SourceUrl) || calendar.Events.Count == 0)
+        if (calendar.Problem() is { } problem)
         {
-            throw new FormatException($"{at}: source URL and events are required.");
-        }
-
-        var byCode = new Dictionary<string, ExamCalendarEvent>(StringComparer.Ordinal);
-        foreach (var e in calendar.Events)
-        {
-            if (!ExamCalendar.KnownCodes.Contains(e.Code) || !byCode.TryAdd(e.Code, e))
-            {
-                throw new FormatException($"{at}: unknown or repeated event code '{e.Code}'.");
-            }
-
-            if (e.EndsAt is { } end && end < e.StartsAt)
-            {
-                throw new FormatException($"{at}: event '{e.Code}' ends before it starts.");
-            }
-        }
-
-        if (!byCode.TryGetValue("tyt", out var tyt) || tyt.StartsAt.Year != calendar.ExamYear)
-        {
-            throw new FormatException($"{at}: the TYT date is required and must fall in the exam year.");
-        }
-
-        // Applications close before TYT; AYT and YDT follow TYT; results come last.
-        Require(byCode, "application_end", e => e.StartsAt < tyt.StartsAt, at);
-        Require(byCode, "application_start", e => e.StartsAt < tyt.StartsAt, at);
-        Require(byCode, "ayt", e => e.StartsAt >= tyt.StartsAt, at);
-        Require(byCode, "ydt", e => e.StartsAt >= tyt.StartsAt, at);
-        Require(byCode, "results", e => calendar.Events.All(x => x.Code == "results" || x.StartsAt < e.StartsAt), at);
-    }
-
-    private static void Require(Dictionary<string, ExamCalendarEvent> byCode, string code, Func<ExamCalendarEvent, bool> rule, string at)
-    {
-        if (byCode.TryGetValue(code, out var e) && !rule(e))
-        {
-            throw new FormatException($"{at}: event '{code}' is out of order.");
+            throw new FormatException(problem);
         }
     }
 
