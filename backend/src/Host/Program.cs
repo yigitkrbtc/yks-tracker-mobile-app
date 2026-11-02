@@ -49,6 +49,7 @@ foreach (var module in ModuleCatalog.All)
 var app = builder.Build();
 
 app.UseNirengiForwardedHeaders();
+app.UseNirengiSecurityHeaders();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseSerilogRequestLogging();
@@ -63,6 +64,8 @@ foreach (var module in ModuleCatalog.All)
 {
     module.MapEndpoints(v1.MapGroup(string.Empty).WithTags(module.Name));
 }
+
+app.MapAdminPanel();
 
 if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 {

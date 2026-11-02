@@ -1,6 +1,9 @@
-# Only backend/ and data/seed/ are needed by the API image.
+# The API image needs backend/, data/seed/ and admin/ (built into wwwroot/admin).
 **
 !backend/
 !data/seed/
+!admin/
 **/bin/
 **/obj/
+admin/node_modules/
+admin/dist/
