@@ -1,0 +1,5 @@
+# Bilerek commit'lenmiş, yalnız geliştirme/test değerleri (prod'da ortam değişkeni). Yeni giriş yalnız inceleme ile.
+7ac1ca4433c495994000f784a30ee2301e73c325:backend/tests/Host.IntegrationTests/AuthApi.cs:generic-api-key:13
+7ac1ca4433c495994000f784a30ee2301e73c325:backend/src/Host/appsettings.Development.json:generic-api-key:10
+1fe8a8074c069a66b2afb963794049d999369468:backend/src/Host/appsettings.Development.json:generic-api-key:6
+51f9b0b1f0046258eef9522724d8a343bc531e9b:backend/tests/Host.IntegrationTests/AccountLifecycleTests.cs:generic-api-key:34

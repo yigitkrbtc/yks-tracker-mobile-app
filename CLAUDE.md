@@ -72,6 +72,8 @@ cd admin && npm run dev                       # http://localhost:5173/admin/, /v
 
 ## Süreç
 
+- Sprint işi [`docs/surec/operasyon.md`](docs/surec/operasyon.md)'ye göre operasyon şefi tarafından kartlara bölünür ve `.claude/agents/` rol ajanlarına dağıtılır (ADR-0020); alt ajan kullanımı bu akışta onaylıdır. Yalnız Sonnet/Opus, medium/high; xhigh gerekçe + Yiğit onayıyla. `.claude/hooks/model_guard.py` zorlar.
+- Kodu yazan ajan kendi işini incelemez; sprint kapanışında `docs/surec/metrikler.md`'ye satır eklenir.
 - Her iş ayrı dal + PR; `main` her zaman yeşil. PR'da testler ve mimari testler zorunlu.
 - Analiz motoru değişikliği golden dataset testinden geçmeden birleşmez. Beklenen değerler `reference/build_scenarios.py` + `reference.py` (scipy) ile üretilir, elle yazılmaz; kural değişince `RuleSet` sürümü artar.
 - Ürün adı "Nirengi" geçici; `Directory.Build.props` (`Product`), `AppConfig.appName`, admin başlığı tek değişim noktaları.
