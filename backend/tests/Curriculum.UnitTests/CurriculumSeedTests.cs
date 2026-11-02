@@ -54,14 +54,44 @@ public sealed class CurriculumSeedTests
         var integral = Seed.Topics.Single(t => t.Code == "AYT.AMAT.26");
         integral.SubjectCode.ShouldBe("AYT.AMAT");
         integral.Name.ShouldBe("Belirli İntegral ve Uygulamaları");
-        integral.ExpectedQuestions.ShouldBe(3.33m);
-        integral.Tier.ShouldBe(WeightTier.High);
-        (integral.YearsAsked, integral.YearsCounted).ShouldBe((6, 6));
+        var weight = integral.Weights.ShouldHaveSingleItem();
+        weight.TestCode.ShouldBe("AYT-MAT");
+        weight.ExpectedQuestions.ShouldBe(3.33m);
+        weight.Tier.ShouldBe(WeightTier.High);
+        (weight.YearsAsked, weight.YearsCounted).ShouldBe((6, 6));
         (integral.GradeMin, integral.GradeMax).ShouldBe((12, 12));
 
         var ranged = Seed.Topics.First(t => t.GradeMin != t.GradeMax);
         ranged.GradeMax.ShouldBeGreaterThan(ranged.GradeMin);
         Seed.Topics.ShouldAllBe(t => t.Subtopics.Count > 0 && t.Subtopics.All(s => s.Length > 0));
+    }
+
+    [Fact]
+    public void Ayt_history_and_geography_topics_have_a_weight_per_test_that_adds_up_to_each_test()
+    {
+        var split = Seed.Topics.Where(t => t.SubjectCode is "AYT.TAR" or "AYT.COG").ToList();
+        split.ShouldAllBe(t => t.Weights.Count == 2 && t.Weights[0].TestCode == "AYT-TDE-SB1" && t.Weights[1].TestCode == "AYT-SB2");
+        Seed.Topics.Except(split).ShouldAllBe(t => t.Weights.Count == 1);
+
+        decimal Total(string subject, string test) =>
+            split.Where(t => t.SubjectCode == subject).Sum(t => t.Weights.Single(w => w.TestCode == test).ExpectedQuestions);
+        Total("AYT.TAR", "AYT-TDE-SB1").ShouldBe(10m, 0.1m);
+        Total("AYT.TAR", "AYT-SB2").ShouldBe(11m, 0.1m);
+        Total("AYT.COG", "AYT-TDE-SB1").ShouldBe(6m, 0.1m);
+        Total("AYT.COG", "AYT-SB2").ShouldBe(11m, 0.1m);
+    }
+
+    [Theory]
+    [InlineData("topic_code,test_code,q_i,tier,years_present\nTYT.A.01,T,1,az,1/8\n", "no weight for test U")]
+    [InlineData("topic_code,test_code,q_i,tier,years_present\nTYT.A.01,T,1,az,1/8\nTYT.A.01,T,1,az,1/8\nTYT.A.01,U,1,az,1/8\n", "more than one weight")]
+    [InlineData("topic_code,test_code,q_i,tier,years_present\nTYT.A.01,T,1,az,1/8\nTYT.A.01,X,1,az,1/8\n", "not a test of")]
+    [InlineData("topic_code,q_i,tier,years_present\nTYT.A.01,1,az,1/8\n", "several tests")]
+    public void Weights_of_a_two_test_subject_need_one_row_per_test(string weights, string message)
+    {
+        const string structure = """{"examYear":2027,"tests":[{"code":"T","session":"TYT","name":"T","questionCount":1},{"code":"U","session":"TYT","name":"U","questionCount":1},{"code":"X","session":"TYT","name":"X","questionCount":1}],"units":[{"code":"TYT.A","name":"A","tests":["T","U"]}],"scoreTypes":[]}""";
+        const string taxonomy = "session,unit,topic_code,topic,subtopics,grade,description\nTYT,A,TYT.A.01,X,y,9,\n";
+
+        Should.Throw<FormatException>(() => CurriculumSeed.Parse(structure, taxonomy, weights, NoSources)).Message.ShouldContain(message);
     }
 
     [Fact]

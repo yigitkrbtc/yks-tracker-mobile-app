@@ -47,14 +47,19 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
 
         var subjects = await db.Subjects.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
         var subjectOrder = subjects.Select((s, i) => (s.Id, i)).ToDictionary(x => x.Id, x => x.i);
-        var weights = await db.TopicWeights.AsNoTracking()
-            .Where(w => w.ExamYear == release.ExamYear)
-            .ToDictionaryAsync(w => w.TopicId, w => w.ExpectedQuestions, cancellationToken);
+        var weights = (await db.TopicWeights.AsNoTracking()
+                .Where(w => w.ExamYear == release.ExamYear)
+                .ToListAsync(cancellationToken))
+            .GroupBy(w => w.TopicId)
+            .ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyDictionary<string, decimal>)g.ToDictionary(w => w.TestCode, w => w.ExpectedQuestions, StringComparer.Ordinal));
+        IReadOnlyDictionary<string, decimal> none = new Dictionary<string, decimal>(StringComparer.Ordinal);
         var topics = (await db.Topics.AsNoTracking().ToListAsync(cancellationToken))
             .OrderBy(t => subjectOrder.GetValueOrDefault(t.SubjectCode, int.MaxValue))
             .ThenBy(t => t.SortOrder)
             .ThenBy(t => t.Code, StringComparer.Ordinal)
-            .Select(t => new CatalogWeightedTopic(t.Id, t.SubjectCode, weights.GetValueOrDefault(t.Id), t.Status == TopicStatus.Active, t.Code, t.Name))
+            .Select(t => new CatalogWeightedTopic(t.Id, t.SubjectCode, weights.GetValueOrDefault(t.Id) ?? none, t.Status == TopicStatus.Active, t.Code, t.Name))
             .ToList();
         var scoreTypes = await db.ScoreTypes.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
 

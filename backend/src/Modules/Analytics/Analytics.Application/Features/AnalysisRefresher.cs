@@ -98,10 +98,12 @@ internal sealed class AnalysisRefresher(
             activeTests = [.. catalog.Subjects.SelectMany(s => s.TestCodes).Distinct(StringComparer.Ordinal)];
         }
 
+        // q_i is the sum over the student's tests (ADR-0019): AYT history counts 10 + 11 for SÖZ, 10 for EA.
+        var tests = activeTests.ToHashSet(StringComparer.Ordinal);
         return new AnalysisInput(
             today,
             new AnalysisCatalog(
-                [.. catalog.Topics.Select(t => new CatalogTopicInfo(t.Id, t.SubjectCode, (double)t.ExpectedQuestions))],
+                [.. catalog.Topics.Select(t => new CatalogTopicInfo(t.Id, t.SubjectCode, (double)t.ExpectedFor(tests)))],
                 [.. catalog.Subjects.Select(s => new CatalogSubjectInfo(s.Code, s.TestCodes))],
                 [.. catalog.MockSections.Select(s => new CatalogSectionInfo(s.Code, s.TestCode, s.ParentCode, s.SubjectCodes, s.QuestionCount))]),
             activeTests,
@@ -126,7 +128,7 @@ internal sealed class AnalysisRefresher(
             .Where(s => s.TestCodes.Any(activeTests.Contains))
             .Select(s => s.Code)
             .ToHashSet(StringComparer.Ordinal);
-        var weights = catalog.Topics.ToDictionary(t => t.Id, t => (double)t.ExpectedQuestions);
+        var weights = catalog.Topics.ToDictionary(t => t.Id, t => (double)t.ExpectedFor(activeTests));
         var rules = RuleSet.V1;
 
         return new AnalysisSummary(

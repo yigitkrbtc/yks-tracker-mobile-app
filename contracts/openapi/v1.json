@@ -3430,7 +3430,8 @@
           "gradeMin",
           "gradeMax",
           "expectedQuestions",
-          "tier"
+          "tier",
+          "weights"
         ],
         "type": "object",
         "properties": {
@@ -3476,6 +3477,12 @@
           },
           "tier": {
             "$ref": "#/components/schemas/WeightTier"
+          },
+          "weights": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicWeightDto"
+            }
           }
         }
       },
@@ -3974,6 +3981,30 @@
               "string"
             ],
             "format": "int64"
+          }
+        }
+      },
+      "TopicWeightDto": {
+        "required": [
+          "testCode",
+          "expectedQuestions",
+          "tier"
+        ],
+        "type": "object",
+        "properties": {
+          "testCode": {
+            "type": "string"
+          },
+          "expectedQuestions": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "tier": {
+            "$ref": "#/components/schemas/WeightTier"
           }
         }
       },

@@ -219,7 +219,7 @@ public sealed class PlanBuilderTests
         var b = Math3().State("TUR.1").State("MAT.1").Priority("MAT.1", "TUR.1").Gap("TYT-MAT", 0.2).Build();
         b.Items.ShouldBe(a.Items);
         a.WeekStart.ShouldBe(new DateOnly(2026, 11, 2));
-        a.RuleSetVersion.ShouldBe("R2026.1");
+        a.RuleSetVersion.ShouldBe("R2026.2");
     }
 
     [Fact]

@@ -353,6 +353,11 @@ namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("exam_year");
 
+                    b.Property<string>("TestCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("test_code");
+
                     b.Property<decimal>("ExpectedQuestions")
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)")
@@ -372,7 +377,7 @@ namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("years_counted");
 
-                    b.HasKey("TopicId", "ExamYear")
+                    b.HasKey("TopicId", "ExamYear", "TestCode")
                         .HasName("pk_topic_weights");
 
                     b.ToTable("topic_weights", "curriculum");

@@ -163,17 +163,21 @@ public sealed partial class CurriculumSeeder(CurriculumDbContext db, IClock cloc
 
     private async Task SyncWeights(CurriculumSeed seed, Dictionary<string, Guid> topicIds, CancellationToken cancellationToken)
     {
-        var existing = await db.TopicWeights.Where(w => w.ExamYear == seed.ExamYear).ToDictionaryAsync(w => w.TopicId, cancellationToken);
+        var existing = await db.TopicWeights.Where(w => w.ExamYear == seed.ExamYear)
+            .ToDictionaryAsync(w => (w.TopicId, w.TestCode), cancellationToken);
         foreach (var s in seed.Topics)
         {
             var topicId = topicIds[s.Code];
-            if (existing.Remove(topicId, out var weight))
+            foreach (var w in s.Weights)
             {
-                weight.Update(s.ExpectedQuestions, s.Tier, s.YearsAsked, s.YearsCounted);
-            }
-            else
-            {
-                db.TopicWeights.Add(TopicWeight.Create(topicId, seed.ExamYear, s.ExpectedQuestions, s.Tier, s.YearsAsked, s.YearsCounted));
+                if (existing.Remove((topicId, w.TestCode), out var weight))
+                {
+                    weight.Update(w.ExpectedQuestions, w.Tier, w.YearsAsked, w.YearsCounted);
+                }
+                else
+                {
+                    db.TopicWeights.Add(TopicWeight.Create(topicId, seed.ExamYear, w.TestCode, w.ExpectedQuestions, w.Tier, w.YearsAsked, w.YearsCounted));
+                }
             }
         }
 

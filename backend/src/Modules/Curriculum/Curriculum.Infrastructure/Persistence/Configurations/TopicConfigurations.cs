@@ -29,7 +29,8 @@ internal sealed class TopicWeightConfiguration : IEntityTypeConfiguration<TopicW
     public void Configure(EntityTypeBuilder<TopicWeight> builder)
     {
         builder.ToTable("topic_weights");
-        builder.HasKey(w => new { w.TopicId, w.ExamYear });
+        builder.HasKey(w => new { w.TopicId, w.ExamYear, w.TestCode });
+        builder.Property(w => w.TestCode).HasMaxLength(ExamTest.CodeMaxLength);
         builder.Property(w => w.ExpectedQuestions).HasPrecision(5, 2);
         builder.Property(w => w.Tier).HasConversion<string>().HasMaxLength(20);
         builder.HasOne<Topic>().WithMany().HasForeignKey(w => w.TopicId).OnDelete(DeleteBehavior.Cascade);

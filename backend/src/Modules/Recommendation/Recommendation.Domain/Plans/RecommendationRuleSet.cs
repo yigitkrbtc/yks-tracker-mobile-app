@@ -19,7 +19,7 @@ public sealed record RecommendationRuleSet(
     int StarterTopics)
 {
     public static readonly RecommendationRuleSet V1 = new(
-        Version: "R2026.1",
+        Version: "R2026.2",
         MaxItems: 5,
         MaxPerSubject: 2,
         TagWindowDays: 14,

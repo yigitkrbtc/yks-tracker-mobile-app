@@ -20,9 +20,21 @@ public sealed record CatalogMockSection(
     string? AlternativeOf,
     string Name);
 
-/// <summary>A topic with its expected question count for the release's exam year (q_i).</summary>
+/// <summary>A topic with its expected question counts for the release's exam year (q_i), per test.</summary>
+/// <param name="ExpectedByTest">Test code → q_i. AYT history and geography have two tests, everything else one.</param>
 /// <param name="Code">Stable topic code (e.g. <c>AYT.AMAT.26</c>); used for deterministic ordering.</param>
-public sealed record CatalogWeightedTopic(Guid Id, string SubjectCode, decimal ExpectedQuestions, bool IsActive, string Code, string Name);
+public sealed record CatalogWeightedTopic(
+    Guid Id,
+    string SubjectCode,
+    IReadOnlyDictionary<string, decimal> ExpectedByTest,
+    bool IsActive,
+    string Code,
+    string Name)
+{
+    /// <summary>q_i for a student who takes <paramref name="tests"/>: the sum over those tests (ADR-0019).</summary>
+    public decimal ExpectedFor(IReadOnlySet<string> tests) =>
+        ExpectedByTest.Where(w => tests.Contains(w.Key)).Sum(w => w.Value);
+}
 
 public sealed record CatalogSubject(string Code, IReadOnlyList<string> TestCodes);
 

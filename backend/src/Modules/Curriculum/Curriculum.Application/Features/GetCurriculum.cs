@@ -46,7 +46,10 @@ public sealed record ExamTestDto(string Code, ExamSession Session, string Name, 
 
 public sealed record SubjectDto(string Code, ExamSession Session, string Name, IReadOnlyList<string> TestCodes, IReadOnlyList<TopicDto> Topics);
 
-/// <param name="ExpectedQuestions">Average questions per exam (2022–2026), not an official ÖSYM figure.</param>
+/// <param name="ExpectedQuestions">Sum over all tests of the topic. Kept for app versions before ADR-0019; new clients
+/// sum <paramref name="Weights"/> over the tests of the student's score type.</param>
+/// <param name="Tier">Highest tier over all tests (pre ADR-0019 field).</param>
+/// <param name="Weights">Per test; one entry except AYT history and geography.</param>
 public sealed record TopicDto(
     Guid Id,
     string Code,
@@ -55,7 +58,11 @@ public sealed record TopicDto(
     int GradeMin,
     int GradeMax,
     decimal ExpectedQuestions,
-    WeightTier Tier);
+    WeightTier Tier,
+    IReadOnlyList<TopicWeightDto> Weights);
+
+/// <param name="ExpectedQuestions">Average questions per exam in this test (2022–2026), not an official ÖSYM figure.</param>
+public sealed record TopicWeightDto(string TestCode, decimal ExpectedQuestions, WeightTier Tier);
 
 internal sealed class GetCurriculumHandler(ICurriculumRepository curriculum) : IQueryHandler<GetCurriculumQuery, CurriculumResponse>
 {
@@ -73,7 +80,8 @@ internal sealed class GetCurriculumHandler(ICurriculumRepository curriculum) : I
         var topics = await curriculum.GetActiveTopics(cancellationToken);
         var sources = await curriculum.GetActiveSources(cancellationToken);
         var mockSections = await curriculum.GetMockSections(cancellationToken);
-        var weights = (await curriculum.GetWeights(release.ExamYear, cancellationToken)).ToDictionary(w => w.TopicId);
+        var weights = (await curriculum.GetWeights(release.ExamYear, cancellationToken)).ToLookup(w => w.TopicId);
+        var testOrder = tests.Select((t, i) => (t.Id, i)).ToDictionary(x => x.Id, x => x.i);
         var topicsBySubject = topics.ToLookup(t => t.SubjectCode);
 
         return new CurriculumResponse(
@@ -86,20 +94,21 @@ internal sealed class GetCurriculumHandler(ICurriculumRepository curriculum) : I
                 s.Session,
                 s.Name,
                 s.TestCodes,
-                [.. topicsBySubject[s.Id].Select(t => ToDto(t, weights.GetValueOrDefault(t.Id)))]))],
+                [.. topicsBySubject[s.Id].Select(t => ToDto(t, [.. weights[t.Id].OrderBy(w => testOrder.GetValueOrDefault(w.TestCode))]))]))],
             [.. sources.Select(s => new SourceDto(s.Id, s.Code, s.Name, s.Kind))],
             [.. mockSections.Select(s => new MockSectionDto(s.Id, s.TestCode, s.SubjectCode, s.Name, s.QuestionCount, s.ParentCode, s.AlternativeOf))]);
     }
 
-    private static TopicDto ToDto(Topic topic, TopicWeight? weight) => new(
+    private static TopicDto ToDto(Topic topic, List<TopicWeight> weights) => new(
         topic.Id,
         topic.Code,
         topic.Name,
         topic.Subtopics,
         topic.GradeMin,
         topic.GradeMax,
-        weight?.ExpectedQuestions ?? 0m,
-        weight?.Tier ?? WeightTier.Rare);
+        weights.Sum(w => w.ExpectedQuestions),
+        weights.Count == 0 ? WeightTier.Rare : weights.Max(w => w.Tier),
+        [.. weights.Select(w => new TopicWeightDto(w.TestCode, w.ExpectedQuestions, w.Tier))]);
 }
 
 internal sealed class GetCurriculumVersionHandler(ICurriculumRepository curriculum) : IQueryHandler<GetCurriculumVersionQuery, string>

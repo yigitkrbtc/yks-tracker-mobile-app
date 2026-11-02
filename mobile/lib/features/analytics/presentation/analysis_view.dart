@@ -82,6 +82,10 @@ class AnalysisView extends ConsumerWidget {
     Curriculum? curriculum,
   ) {
     final topics = curriculum?.topicsById ?? const <String, Topic>{};
+    final activeTests = {
+      for (final t in o.tests)
+        if (t.isActive) t.code,
+    };
     void open(String id) => context.push(TopicAnalysisPage.pathFor(id));
 
     final tests = o.tests.where((t) => t.isActive && t.studiedTopics > 0);
@@ -125,7 +129,7 @@ class AnalysisView extends ConsumerWidget {
                   name: topics[id]?.name ?? 'Konu',
                   detail: topics[id] == null
                       ? ''
-                      : 'Sınavda ≈${decimal(topics[id]!.expectedQuestions)} soru',
+                      : 'Sınavda ≈${decimal(topics[id]!.forTests(activeTests).expectedQuestions)} soru',
                   onTap: () => open(id),
                 ),
             ],

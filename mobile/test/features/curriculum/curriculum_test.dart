@@ -72,4 +72,45 @@ void main() {
     expect(topic.gradeLabel, '9–10. sınıf');
     expect(curriculum.subjects.first.topics.last.notAskedRecently, isTrue);
   });
+
+  test('AYT history weight counts once for EA and twice for SOZ', () {
+    const topic = Topic(
+      id: 't',
+      code: 'AYT.TAR.01',
+      name: 'Tarih',
+      subtopics: ['x'],
+      gradeMin: 9,
+      gradeMax: 9,
+      expectedQuestions: 1.9,
+      tier: WeightTier.medium,
+      weights: [
+        TopicWeight(
+          testCode: 'AYT-TDE-SB1',
+          expectedQuestions: 0.8,
+          tier: WeightTier.medium,
+        ),
+        TopicWeight(
+          testCode: 'AYT-SB2',
+          expectedQuestions: 1.1,
+          tier: WeightTier.medium,
+        ),
+      ],
+    );
+    final ea = curriculum.testsFor(['EA']);
+    final soz = curriculum.testsFor(['SOZ']);
+
+    expect(topic.forTests(ea).expectedQuestions, 0.8);
+    expect(topic.forTests(soz).expectedQuestions, 1.9);
+    expect(topic.forTests({'AYT-MAT'}).notAskedRecently, isTrue);
+    expect(topic.forTests({'AYT-MAT'}).tier, WeightTier.rare);
+    expect(Topic.fromJson(topic.toJson()).weights.length, 2);
+  });
+
+  test('a topic cached without per-test weights keeps its total', () {
+    final json = curriculum.subjects.first.topics.first.toJson()
+      ..remove('weights');
+    final topic = Topic.fromJson(json);
+    expect(topic.weights, isEmpty);
+    expect(topic.forTests({'AYT-MAT'}).expectedQuestions, 2.4);
+  });
 }

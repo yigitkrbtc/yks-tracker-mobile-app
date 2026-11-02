@@ -1,371 +1,422 @@
-session,unit,topic_code,topic,2019,2020,2021,2022,2023,2024,2025,2026,mean_2019_2026,mean_2022_2026,q_i,years_present,tier,grade
-AYT,AMAT,AYT.AMAT.26,Belirli İntegral ve Uygulamaları,4,0,3,4,0,4,3,3,3.5,3.5,3.33,6/6,çok,12
-AYT,AMAT,AYT.AMAT.19,"Trigonometri: Toplam-Fark, İki Kat Açı ve Denklemler",0,1,2,2,2,3,2,3,1.88,2.4,2.29,7/8,çok,12
-AYT,AMAT,AYT.AMAT.02,"Bölme-Bölünebilme, Asal Sayılar ve EBOB-EKOK",2,2,2,2,3,2,2,2,2.12,2.2,2.1,8/8,çok,9
-AYT,AMAT,AYT.AMAT.09,Fonksiyonlar,2,2,2,2,2,2,2,2,2.0,2.0,1.9,8/8,orta,10-11
-AYT,AMAT,AYT.AMAT.20,Üstel ve Logaritmik Fonksiyonlar,3,3,1,2,3,1,2,2,2.12,2.0,1.9,8/8,orta,12
-AYT,AMAT,AYT.AMAT.22,Limit ve Süreklilik,2,0,2,2,0,2,2,2,2.0,2.0,1.9,6/6,orta,12
-AYT,AMAT,AYT.AMAT.23,Türev,4,0,1,3,0,0,2,2,2.0,1.75,1.67,5/6,orta,12
-AYT,AMAT,AYT.AMAT.24,Türevin Uygulamaları,0,0,3,1,0,3,1,1,1.5,1.5,1.43,5/6,orta,12
-AYT,AMAT,AYT.AMAT.01,Temel Kavramlar ve Sayı Basamakları,2,2,0,1,2,1,2,1,1.38,1.4,1.33,7/8,orta,9
-AYT,AMAT,AYT.AMAT.03,"Rasyonel Sayılar, Basit Eşitsizlikler ve Mutlak Değer",2,2,0,0,2,1,2,1,1.25,1.2,1.14,6/8,orta,9
-AYT,AMAT,AYT.AMAT.11,İkinci Dereceden Denklemler,1,1,1,2,1,1,1,1,1.12,1.2,1.14,8/8,orta,10
-AYT,AMAT,AYT.AMAT.18,Trigonometri,2,2,3,1,1,1,2,1,1.62,1.2,1.14,8/8,orta,11
-AYT,AMAT,AYT.AMAT.21,Diziler,1,2,1,1,2,1,1,1,1.25,1.2,1.14,8/8,orta,12
-AYT,AMAT,AYT.AMAT.07,Kümeler ve Kartezyen Çarpım,1,2,1,1,1,1,1,1,1.12,1.0,0.95,8/8,orta,9
-AYT,AMAT,AYT.AMAT.08,Mantık,1,0,1,1,1,1,1,1,0.88,1.0,0.95,7/8,orta,9
-AYT,AMAT,AYT.AMAT.15,Permütasyon ve Kombinasyon,1,1,1,1,1,1,1,1,1.0,1.0,0.95,8/8,orta,10
-AYT,AMAT,AYT.AMAT.16,Binom Açılımı,0,1,1,1,1,1,1,1,0.88,1.0,0.95,7/8,orta,10
-AYT,AMAT,AYT.AMAT.17,Olasılık,1,1,1,1,1,1,1,1,1.0,1.0,0.95,8/8,orta,10
-AYT,AMAT,AYT.AMAT.10,Polinomlar,1,2,1,0,2,1,1,0,1.0,0.8,0.76,6/8,az,10
-AYT,AMAT,AYT.AMAT.04,Üslü ve Köklü Sayılar,0,2,1,1,1,0,0,1,0.75,0.6,0.57,5/8,az,9
-AYT,AMAT,AYT.AMAT.13,Parabol (İkinci Dereceden Fonksiyonlar),1,1,0,0,1,1,0,1,0.62,0.6,0.57,5/8,az,11
-AYT,AMAT,AYT.AMAT.14,Eşitsizlikler,0,0,1,1,1,0,0,1,0.5,0.6,0.57,4/8,az,11
-AYT,AMAT,AYT.AMAT.05,"Çarpanlara Ayırma, Oran-Orantı ve Denklemler",0,0,1,0,1,1,0,0,0.38,0.4,0.38,3/8,nadir,9
-AYT,AMAT,AYT.AMAT.06,Problemler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-AYT,AMAT,AYT.AMAT.12,Karmaşık Sayılar,1,2,0,0,0,0,0,0,0.38,0.0,0.0,2/8,nadir,10
-AYT,AMAT,AYT.AMAT.25,Belirsiz İntegral,0,0,1,0,0,0,0,0,0.17,0.0,0.0,1/6,nadir,12
-AYT,BIY,AYT.BIY.11,Komünite Ekolojisi,0,1,1,1,1,1,1,1,0.88,1.0,0.94,7/8,orta,11
-AYT,BIY,AYT.BIY.13,Nükleik Asitler ve DNA Replikasyonu,1,1,1,1,1,1,1,1,1.0,1.0,0.94,8/8,orta,12
-AYT,BIY,AYT.BIY.02,Endokrin Sistem,1,1,1,0,2,1,0,1,0.88,0.8,0.75,6/8,az,11
-AYT,BIY,AYT.BIY.06,Dolaşım Sistemi,1,1,1,1,1,1,0,1,0.88,0.8,0.75,7/8,az,11
-AYT,BIY,AYT.BIY.12,Popülasyon Ekolojisi,0,1,1,1,1,1,0,1,0.75,0.8,0.75,6/8,az,11
-AYT,BIY,AYT.BIY.14,Genetik Şifre ve Protein Sentezi,1,2,1,1,0,1,0,1,1.0,0.75,0.71,6/7,az,12
-AYT,BIY,AYT.BIY.19,Hücresel Solunum,1,1,1,0,0,1,1,1,0.86,0.75,0.71,6/7,az,12
-AYT,BIY,AYT.BIY.20,Bitkilerin Yapısı ve Büyümesi,1,0,0,1,0,0,0,2,0.67,0.75,0.71,3/6,az,12
-AYT,BIY,AYT.BIY.21,Bitkilerde Madde Taşınması,0,0,1,1,0,1,1,0,0.67,0.75,0.71,4/6,az,12
-AYT,BIY,AYT.BIY.01,Sinir Sistemi,0,0,0,0,1,1,1,0,0.38,0.6,0.57,3/8,nadir,11
-AYT,BIY,AYT.BIY.05,Sindirim Sistemi,1,1,0,0,1,1,1,0,0.62,0.6,0.57,5/8,az,11
-AYT,BIY,AYT.BIY.08,Solunum Sistemi,1,1,1,1,1,1,0,0,0.75,0.6,0.57,6/8,az,11
-AYT,BIY,AYT.BIY.09,Üriner Sistem,1,1,0,0,1,0,1,1,0.62,0.6,0.57,5/8,az,11
-AYT,BIY,AYT.BIY.10,Üreme Sistemi ve Embriyonik Gelişim,0,0,0,1,0,0,1,1,0.38,0.6,0.57,3/8,nadir,11
-AYT,BIY,AYT.BIY.16,Canlılık ve Enerji (ATP),0,0,0,1,1,1,0,0,0.43,0.6,0.57,3/7,nadir,12
-AYT,BIY,AYT.BIY.17,Fotosentez,1,1,1,0,1,0,1,1,0.75,0.6,0.57,6/8,az,12
-AYT,BIY,AYT.BIY.04,Destek ve Hareket Sistemi,0,0,1,1,0,0,0,1,0.38,0.4,0.38,3/8,nadir,11
-AYT,BIY,AYT.BIY.15,Biyoteknoloji ve Genetik Mühendisliği,0,0,0,0,1,0,1,0,0.29,0.4,0.38,2/7,nadir,12
-AYT,BIY,AYT.BIY.18,Kemosentez,0,0,0,1,0,0,0,0,0.17,0.25,0.24,1/6,nadir,12
-AYT,BIY,AYT.BIY.22,Bitkisel Hormonlar ve Bitki Hareketleri,1,0,0,0,0,1,0,0,0.33,0.25,0.24,2/6,nadir,12
-AYT,BIY,AYT.BIY.23,Bitkilerde Eşeyli Üreme,1,0,1,0,0,0,1,0,0.5,0.25,0.24,3/6,az,12
-AYT,BIY,AYT.BIY.24,Canlılar ve Çevre (Adaptasyon),1,0,1,0,0,0,1,0,0.5,0.25,0.24,3/6,az,12
-AYT,BIY,AYT.BIY.03,Duyu Organları,0,1,0,1,0,0,0,0,0.25,0.2,0.19,2/8,nadir,11
-AYT,BIY,AYT.BIY.07,Bağışıklık Sistemi,0,0,0,0,0,0,1,0,0.12,0.2,0.19,1/8,nadir,11
-AYT,COG,AYT.COG.22,Çevre Sorunları ve Sürdürülebilirlik,4,2,3,2,1,5,2,2,2.62,2.4,2.34,8/8,çok,11-12
-AYT,COG,AYT.COG.19,Sanayileşme Süreçleri ve Ülkeler Arası Etkileşim,3,3,2,2,1,2,2,3,2.25,2.0,1.95,8/8,orta,11-12
-AYT,COG,AYT.COG.23,"Doğal Afetler, Ekstrem Doğa Olayları ve Küresel İklim Değişimi",0,2,1,3,4,1,1,1,1.62,2.0,1.95,7/8,orta,10-12
-AYT,COG,AYT.COG.18,"Bölgeler, Kültür Bölgeleri ve Türk Kültürü",1,0,2,2,1,2,2,2,1.71,1.8,1.76,7/7,orta,11-12
-AYT,COG,AYT.COG.11,Ekonomik Faaliyetler ve Doğal Kaynaklar,1,1,1,2,0,1,2,2,1.25,1.4,1.37,7/8,orta,11
-AYT,COG,AYT.COG.05,Biyoçeşitlilik ve Ekosistem,1,1,1,0,1,1,1,2,1.0,1.0,0.98,7/8,orta,11
-AYT,COG,AYT.COG.15,Şehirlerin Fonksiyonları ve Etki Alanları,2,2,1,1,0,1,1,1,1.29,1.0,0.98,7/7,orta,12
-AYT,COG,AYT.COG.16,"Türkiye'de Ulaşım, Ticaret ve Turizm",0,0,1,2,1,0,2,0,0.86,1.0,0.98,4/7,orta,12
-AYT,COG,AYT.COG.17,Türkiye'nin İşlevsel Bölgeleri ve Kalkınma Projeleri,1,1,1,1,0,1,1,1,1.0,1.0,0.98,7/7,orta,12
-AYT,COG,AYT.COG.10,Türkiye'de Nüfus ve Yerleşme,1,0,0,1,2,0,0,1,0.62,0.8,0.78,4/8,az,11
-AYT,COG,AYT.COG.13,Türkiye'de Madenler ve Enerji Kaynakları,0,0,1,0,2,1,0,1,0.62,0.8,0.78,4/8,az,11
-AYT,COG,AYT.COG.12,Türkiye'de Tarım ve Hayvancılık,1,1,0,0,1,0,1,1,0.62,0.6,0.59,5/8,az,11
-AYT,COG,AYT.COG.07,Su Ekosistemleri,0,1,0,0,1,0,1,0,0.38,0.4,0.39,3/8,nadir,11
-AYT,COG,AYT.COG.08,Nüfus ve Göç (Dünya),0,0,0,0,0,2,0,0,0.25,0.4,0.39,1/8,nadir,10
-AYT,COG,AYT.COG.09,Nüfus Politikaları,0,2,0,0,1,0,1,0,0.5,0.4,0.39,3/8,nadir,11
-AYT,COG,AYT.COG.06,Madde Döngüleri ve Enerji Akışı,0,0,0,1,0,0,0,0,0.12,0.2,0.2,1/8,nadir,11
-AYT,COG,AYT.COG.21,Küresel ve Bölgesel Örgütler,1,1,1,0,1,0,0,0,0.5,0.2,0.2,4/8,az,11
-AYT,COG,AYT.COG.01,"Dünya'nın Hareketleri, Konum ve Harita",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-AYT,COG,AYT.COG.02,İklim Bilgisi ve Türkiye'nin İklimi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-AYT,COG,AYT.COG.03,"İç ve Dış Kuvvetler, Yer Şekilleri",1,0,1,0,0,0,0,0,0.25,0.0,0.0,2/8,nadir,10
-AYT,COG,AYT.COG.04,"Su, Toprak ve Bitki Örtüsü",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-AYT,COG,AYT.COG.14,Türkiye'de Sanayi,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,11
-AYT,COG,AYT.COG.20,Jeopolitik Konum ve Çatışma Bölgeleri,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,11-12
-AYT,DKAB,AYT.DKAB.07,İslam ve Bilim,0,1,1,2,2,0,1,0,0.88,1.0,0.97,5/8,orta,12
-AYT,DKAB,AYT.DKAB.14,Ahlak ve Değerler,0,1,0,1,1,0,1,1,0.62,0.8,0.77,5/8,az,9-10
-AYT,DKAB,AYT.DKAB.02,Kur'an'a Göre Hz. Muhammed,1,1,0,0,0,2,1,0,0.62,0.6,0.58,4/8,az,11
-AYT,DKAB,AYT.DKAB.03,Kur'an'da Bazı Kavramlar,0,0,1,0,0,0,1,2,0.5,0.6,0.58,3/8,nadir,11
-AYT,DKAB,AYT.DKAB.04,İnançla İlgili Meseleler,0,2,1,1,0,2,0,0,0.75,0.6,0.58,4/8,az,11
-AYT,DKAB,AYT.DKAB.12,İbadet ve Dinî Hükümler,0,0,1,0,1,1,1,0,0.5,0.6,0.58,4/8,az,9-10
-AYT,DKAB,AYT.DKAB.01,Dünya ve Ahiret,1,0,0,1,0,0,0,1,0.38,0.4,0.39,3/8,nadir,11
-AYT,DKAB,AYT.DKAB.05,Yahudilik ve Hristiyanlık,0,0,0,1,1,0,0,0,0.25,0.4,0.39,2/8,nadir,11
-AYT,DKAB,AYT.DKAB.06,Hint ve Çin Dinleri,1,0,0,0,0,0,0,1,0.33,0.25,0.24,2/6,nadir,12
-AYT,DKAB,AYT.DKAB.09,İslam Düşüncesinde Yorumlar,2,0,1,0,0,1,0,0,0.67,0.25,0.24,3/6,az,10-12
-AYT,DKAB,AYT.DKAB.10,Güncel Dinî Meseleler,0,0,0,0,0,0,1,0,0.17,0.25,0.24,1/6,nadir,12
-AYT,DKAB,AYT.DKAB.11,"Din, Kültür ve Sanat",1,0,0,0,0,0,0,1,0.33,0.25,0.24,2/6,nadir,12
-AYT,DKAB,AYT.DKAB.08,Anadolu'da İslam,0,1,0,0,1,0,0,0,0.25,0.2,0.19,2/8,nadir,12
-AYT,DKAB,AYT.DKAB.13,Allah İnsan İlişkisi ve İnanç Esasları,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9-10
-AYT,EDB,AYT.EDB.12,Divan Edebiyatı,3,5,6,6,4,5,4,5,4.75,4.8,4.73,8/8,çok,9-10
-AYT,EDB,AYT.EDB.03,Paragraf,1,4,4,4,4,4,4,4,3.62,4.0,3.94,8/8,çok,9-10
-AYT,EDB,AYT.EDB.11,Halk Edebiyatı,3,2,2,3,4,3,4,3,3.0,3.4,3.35,8/8,çok,9-10
-AYT,EDB,AYT.EDB.07,Edebî Sanatlar,1,2,0,1,2,1,2,1,1.25,1.4,1.38,7/8,orta,9-10
-AYT,EDB,AYT.EDB.16,Cumhuriyet Dönemi Şiiri,1,2,1,1,0,2,1,1,1.29,1.25,1.23,7/7,orta,11-12
-AYT,EDB,AYT.EDB.17,Cumhuriyet Dönemi Roman ve Hikâye,3,0,0,1,1,2,2,0,1.29,1.2,1.18,5/7,orta,11-12
-AYT,EDB,AYT.EDB.01,Sözcükte Anlam,1,1,1,1,1,1,1,1,1.0,1.0,0.99,8/8,orta,9-10
-AYT,EDB,AYT.EDB.02,Cümlede Anlam,1,1,1,1,1,1,1,1,1.0,1.0,0.99,8/8,orta,9-10
-AYT,EDB,AYT.EDB.10,İslamiyet Öncesi ve Geçiş Dönemi Türk Edebiyatı,1,2,1,1,0,1,1,2,1.12,1.0,0.99,7/8,orta,9-10
-AYT,EDB,AYT.EDB.13,Tanzimat Edebiyatı,2,1,2,1,1,1,1,1,1.25,1.0,0.99,8/8,orta,11
-AYT,EDB,AYT.EDB.14,Servet-i Fünun ve Fecr-i Âti,1,1,1,1,1,1,1,1,1.0,1.0,0.99,8/8,orta,11
-AYT,EDB,AYT.EDB.15,Millî Edebiyat Dönemi,1,1,0,2,2,0,0,1,0.88,1.0,0.99,5/8,orta,11
-AYT,EDB,AYT.EDB.19,Edebî Akımlar ve Dünya Edebiyatı,1,1,1,1,1,1,1,1,1.0,1.0,0.99,8/8,orta,11-12
-AYT,EDB,AYT.EDB.06,Şiir Bilgisi,2,0,2,0,1,1,0,0,0.75,0.4,0.39,4/8,az,9
-AYT,EDB,AYT.EDB.08,Anlatmaya Bağlı Metinler: Tür ve Teknik,2,1,1,0,1,0,1,0,0.75,0.4,0.39,5/8,az,9-10
-AYT,EDB,AYT.EDB.09,Öğretici Metinler,0,0,0,0,0,0,0,1,0.17,0.25,0.25,1/6,nadir,9-12
-AYT,EDB,AYT.EDB.18,Cumhuriyet Dönemi Tiyatro,0,0,1,0,0,0,0,1,0.33,0.25,0.25,2/6,nadir,11-12
-AYT,EDB,AYT.EDB.04,Dil Bilgisi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9-10
-AYT,EDB,AYT.EDB.05,"Yazım, Noktalama ve Anlatım Bozuklukları",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9-10
-AYT,FEL,AYT.FEL.01,Felsefe: Felsefenin Konusu ve Problem Alanları (genel),2,0,1,1,0,2,0,2,1.0,1.0,0.97,5/8,orta,10-11
-AYT,FEL,AYT.FEL.11,Psikoloji: Psikoloji Bilimini Tanıma,1,1,0,1,1,1,1,1,0.88,1.0,0.97,7/8,orta,11
-AYT,FEL,AYT.FEL.24,Sosyoloji: Toplumsal Değişme ve Gelişme,0,0,1,1,1,1,1,1,0.75,1.0,0.97,6/8,orta,11
-AYT,FEL,AYT.FEL.36,Mantık: Sembolik (Modern) Mantık,1,0,1,1,0,1,1,1,1.0,1.0,0.97,6/6,orta,11-12
-AYT,FEL,AYT.FEL.13,"Psikoloji: Öğrenme, Bellek, Düşünme",1,0,1,0,1,1,1,1,0.75,0.8,0.78,6/8,az,11
-AYT,FEL,AYT.FEL.32,"Mantık: Klasik Mantık – Kavram, Terim ve Tanım",0,0,0,0,1,1,1,1,0.57,0.8,0.78,4/7,az,11-12
-AYT,FEL,AYT.FEL.02,Felsefe: MÖ 6. yy – MS 2. yy Felsefesi,0,1,1,1,1,0,1,0,0.62,0.6,0.58,5/8,az,11
-AYT,FEL,AYT.FEL.05,Felsefe: 18. – 19. yy Felsefesi,0,1,0,0,1,0,2,0,0.5,0.6,0.58,3/8,nadir,11
-AYT,FEL,AYT.FEL.12,Psikoloji: Psikolojinin Temel Süreçleri,0,0,0,1,1,0,0,1,0.38,0.6,0.58,3/8,nadir,11
-AYT,FEL,AYT.FEL.14,Psikoloji: Ruh Sağlığının Temelleri,0,1,2,1,0,1,1,0,0.75,0.6,0.58,5/8,az,11
-AYT,FEL,AYT.FEL.23,Sosyoloji: Toplumsal Yapı,1,2,0,0,1,1,0,1,0.75,0.6,0.58,5/8,az,11
-AYT,FEL,AYT.FEL.34,Mantık: Klasik Mantık – Akıl Yürütmeler,1,0,1,1,0,0,0,1,0.67,0.5,0.49,4/6,az,11-12
-AYT,FEL,AYT.FEL.03,Felsefe: MS 2. yy – MS 15. yy Felsefesi,1,0,0,0,0,1,0,1,0.38,0.4,0.39,3/8,nadir,11
-AYT,FEL,AYT.FEL.06,Felsefe: 20. yy Felsefesi,0,0,1,1,1,0,0,0,0.38,0.4,0.39,3/8,nadir,11
-AYT,FEL,AYT.FEL.21,Sosyoloji: Sosyolojiye Giriş,1,0,1,0,0,1,1,0,0.5,0.4,0.39,4/8,az,11
-AYT,FEL,AYT.FEL.22,Sosyoloji: Birey ve Toplum,0,1,0,1,0,0,1,0,0.38,0.4,0.39,3/8,nadir,11
-AYT,FEL,AYT.FEL.25,Sosyoloji: Toplum ve Kültür,1,0,1,0,1,0,0,1,0.5,0.4,0.39,4/8,az,11
-AYT,FEL,AYT.FEL.31,Mantık: Mantığa Giriş ve Düşünme İlkeleri,0,2,0,0,1,1,0,0,0.5,0.4,0.39,3/8,nadir,11-12
-AYT,FEL,AYT.FEL.33,Mantık: Klasik Mantık – Önermeler ve Çıkarımlar,1,1,0,1,1,0,0,0,0.5,0.4,0.39,4/8,az,11-12
-AYT,FEL,AYT.FEL.35,Mantık: Mantık ve Dil,0,0,1,0,0,0,1,0,0.33,0.25,0.24,2/6,nadir,11-12
-AYT,FEL,AYT.FEL.26,Sosyoloji: Toplumsal Kurumlar,0,0,0,1,0,0,0,0,0.12,0.2,0.19,1/8,nadir,11
-AYT,FEL,AYT.FEL.04,Felsefe: 15. – 17. yy Felsefesi,0,1,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,11
-AYT,FEL,AYT.FEL.15,Psikoloji: Sosyal Psikoloji,1,1,0,0,0,0,0,0,0.25,0.0,0.0,2/8,nadir,11
-AYT,FIZ,AYT.FIZ.14,Alternatif Akım ve Transformatörler,1,1,1,1,2,1,1,1,1.12,1.2,1.15,8/8,orta,11
-AYT,FIZ,AYT.FIZ.19,Dalga Mekaniği ve Elektromanyetik Dalgalar,1,1,1,1,1,1,2,1,1.12,1.2,1.15,8/8,orta,12
-AYT,FIZ,AYT.FIZ.17,Kütle Çekim ve Kepler Yasaları,0,0,1,1,1,1,2,0,0.86,1.0,0.96,5/7,orta,12
-AYT,FIZ,AYT.FIZ.18,Basit Harmonik Hareket,1,1,1,1,1,1,1,1,1.0,1.0,0.96,8/8,orta,12
-AYT,FIZ,AYT.FIZ.20,Atom Fiziğine Giriş ve Radyoaktivite,1,0,1,1,0,1,1,1,1.0,1.0,0.96,6/6,orta,12
-AYT,FIZ,AYT.FIZ.21,Modern Fizik,1,0,1,2,0,1,0,1,1.0,1.0,0.96,5/6,orta,12
-AYT,FIZ,AYT.FIZ.22,Modern Fiziğin Teknolojideki Uygulamaları,1,0,1,1,0,1,1,1,1.0,1.0,0.96,6/6,orta,12
-AYT,FIZ,AYT.FIZ.12,Manyetik Alan ve Manyetik Kuvvet,0,0,1,1,1,1,1,0,0.62,0.8,0.77,5/8,az,11
-AYT,FIZ,AYT.FIZ.15,Düzgün Çembersel Hareket,1,1,1,1,1,1,0,1,0.88,0.8,0.77,7/8,az,12
-AYT,FIZ,AYT.FIZ.03,Bir Boyutta Sabit İvmeli Hareket,0,0,0,0,1,1,1,0,0.38,0.6,0.58,3/8,nadir,11
-AYT,FIZ,AYT.FIZ.04,Newton'un Hareket Yasaları,0,2,0,1,1,0,1,0,0.62,0.6,0.58,4/8,az,11
-AYT,FIZ,AYT.FIZ.05,İki Boyutta Hareket (Atışlar),1,2,2,0,0,1,1,1,1.0,0.6,0.58,6/8,az,11
-AYT,FIZ,AYT.FIZ.09,Basit Makineler,0,0,0,1,0,1,0,1,0.38,0.6,0.58,3/8,nadir,11
-AYT,FIZ,AYT.FIZ.01,Vektörler,0,0,0,1,1,0,0,0,0.25,0.4,0.38,2/8,nadir,11
-AYT,FIZ,AYT.FIZ.06,Enerji ve Hareket,0,2,0,0,0,0,1,1,0.5,0.4,0.38,3/8,nadir,11
-AYT,FIZ,AYT.FIZ.07,İtme ve Çizgisel Momentum,1,1,0,1,1,0,0,0,0.5,0.4,0.38,4/8,az,11
-AYT,FIZ,AYT.FIZ.08,Tork ve Denge,1,0,1,0,1,0,0,1,0.5,0.4,0.38,4/8,az,11
-AYT,FIZ,AYT.FIZ.10,"Elektriksel Kuvvet, Alan ve Potansiyel",1,0,2,0,0,1,1,0,0.62,0.4,0.38,4/8,az,11
-AYT,FIZ,AYT.FIZ.11,Düzgün Elektrik Alan ve Sığa,0,1,0,0,1,0,0,1,0.38,0.4,0.38,3/8,nadir,11
-AYT,FIZ,AYT.FIZ.16,"Dönme, Yuvarlanma ve Açısal Momentum",1,1,0,0,1,0,0,1,0.5,0.4,0.38,4/8,az,12
-AYT,FIZ,AYT.FIZ.02,Bağıl Hareket,1,0,0,0,0,1,0,0,0.25,0.2,0.19,2/8,nadir,11
-AYT,FIZ,AYT.FIZ.13,Elektromanyetik İndüklenme,1,1,0,0,0,0,0,1,0.38,0.2,0.19,3/8,nadir,11
-AYT,GEO,AYT.GEO.12,Noktanın ve Doğrunun Analitiği,1,2,3,2,2,3,3,3,2.38,2.6,2.48,8/8,çok,10-11
-AYT,GEO,AYT.GEO.14,Çemberin Analitiği,1,0,1,1,0,1,2,1,1.17,1.25,1.19,6/6,orta,12
-AYT,GEO,AYT.GEO.10,Çember,0,1,2,2,1,1,1,1,1.12,1.2,1.14,7/8,orta,10-11
-AYT,GEO,AYT.GEO.15,Katı Cisimler,1,1,1,2,1,1,1,1,1.12,1.2,1.14,8/8,orta,10
-AYT,GEO,AYT.GEO.11,Daire,1,1,1,0,1,1,1,1,0.88,0.8,0.76,7/8,az,10
-AYT,GEO,AYT.GEO.13,Dönüşüm Geometrisi,1,1,1,1,0,1,1,1,0.88,0.8,0.76,7/8,az,10-11
-AYT,GEO,AYT.GEO.01,Doğruda ve Üçgende Açılar,0,1,0,1,2,0,0,0,0.5,0.6,0.57,3/8,nadir,9
-AYT,GEO,AYT.GEO.02,Dik Üçgen ve Trigonometrik Bağıntılar,1,2,0,0,1,1,0,1,0.75,0.6,0.57,5/8,az,9
-AYT,GEO,AYT.GEO.06,Üçgende Alan,1,0,0,1,1,0,1,0,0.5,0.6,0.57,4/8,az,9
-AYT,GEO,AYT.GEO.03,İkizkenar ve Eşkenar Üçgen,0,0,0,0,0,0,0,1,0.12,0.2,0.19,1/8,nadir,9
-AYT,GEO,AYT.GEO.05,Üçgende Eşlik ve Benzerlik,0,1,0,0,1,0,0,0,0.25,0.2,0.19,2/8,nadir,9
-AYT,GEO,AYT.GEO.07,Açı-Kenar Bağıntıları,0,0,0,0,0,1,0,0,0.12,0.2,0.19,1/8,nadir,9
-AYT,GEO,AYT.GEO.09,Dörtgenler ve Özel Dörtgenler,1,0,0,0,1,0,0,0,0.25,0.2,0.19,2/8,nadir,10
-AYT,GEO,AYT.GEO.04,Üçgende Yardımcı Elemanlar,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-AYT,GEO,AYT.GEO.08,Çokgenler,0,1,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
-AYT,KIM,AYT.KIM.09,Kimya ve Elektrik,2,3,2,2,3,2,2,1,2.12,2.0,1.94,8/8,orta,12
-AYT,KIM,AYT.KIM.03,Sıvı Çözeltiler ve Çözünürlük,1,2,2,2,2,2,1,1,1.62,1.6,1.55,8/8,orta,11
-AYT,KIM,AYT.KIM.02,Gazlar,2,1,1,1,2,1,1,2,1.38,1.4,1.36,8/8,orta,11
-AYT,KIM,AYT.KIM.10,Karbon Kimyasına Giriş,1,1,1,1,1,1,2,2,1.25,1.4,1.36,8/8,orta,12
-AYT,KIM,AYT.KIM.01,Modern Atom Teorisi,1,2,1,1,1,1,1,1,1.12,1.0,0.97,8/8,orta,11
-AYT,KIM,AYT.KIM.04,Kimyasal Tepkimelerde Enerji,1,1,1,1,1,1,1,1,1.0,1.0,0.97,8/8,orta,11
-AYT,KIM,AYT.KIM.05,Kimyasal Tepkimelerde Hız,1,1,1,1,1,1,1,1,1.0,1.0,0.97,8/8,orta,11
-AYT,KIM,AYT.KIM.06,Kimyasal Denge,0,1,1,1,1,1,1,1,0.88,1.0,0.97,7/8,orta,11
-AYT,KIM,AYT.KIM.11,Hidrokarbonlar,2,0,1,0,0,1,1,2,1.17,1.0,0.97,5/6,orta,12
-AYT,KIM,AYT.KIM.12,Fonksiyonel Gruplar ve Organik Bileşikler,0,0,1,2,0,1,1,0,0.83,1.0,0.97,4/6,orta,12
-AYT,KIM,AYT.KIM.07,Asit-Baz Dengesi,1,1,1,0,1,1,0,1,0.75,0.6,0.58,6/8,az,11
-AYT,KIM,AYT.KIM.08,Çözünürlük Dengesi,1,0,0,1,0,0,1,0,0.38,0.4,0.39,3/8,nadir,11
-AYT,KIM,AYT.KIM.13,Enerji Kaynakları ve Bilimsel Gelişmeler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
-AYT,KIM,AYT.KIM.14,Mol Kavramı ve Kimyasal Hesaplamalar,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9-10
-AYT,TAR,AYT.TAR.19,I. TBMM Dönemi ve Kurtuluş Savaşı Cepheleri,3,2,3,4,4,2,2,1,2.62,2.6,2.53,8/8,çok,12
-AYT,TAR,AYT.TAR.18,Millî Mücadele Hazırlık Dönemi,1,3,2,2,2,3,2,2,2.12,2.2,2.14,8/8,çok,12
-AYT,TAR,AYT.TAR.04,İlk Türk Devletleri (İslamiyet Öncesi Türk Tarihi),2,2,3,2,2,2,1,2,2.0,1.8,1.75,8/8,orta,9
-AYT,TAR,AYT.TAR.06,Türk-İslam Devletleri,1,2,1,1,1,2,2,0,1.25,1.2,1.17,7/8,orta,9
-AYT,TAR,AYT.TAR.08,Osmanlı Kuruluş Dönemi (1299-1453),1,1,0,2,0,2,1,1,1.0,1.2,1.17,6/8,orta,10
-AYT,TAR,AYT.TAR.15,Osmanlı Dağılma Dönemi (XIX. yy),1,1,2,0,2,1,2,1,1.25,1.2,1.17,7/8,orta,11
-AYT,TAR,AYT.TAR.01,Tarih Bilimi ve Zaman,1,1,1,1,1,1,1,1,1.0,1.0,0.97,8/8,orta,9
-AYT,TAR,AYT.TAR.02,İlk Çağ Uygarlıkları,1,1,1,1,1,1,1,1,1.0,1.0,0.97,8/8,orta,9
-AYT,TAR,AYT.TAR.05,İslam Tarihi ve Uygarlığı,1,1,1,1,1,1,1,1,1.0,1.0,0.97,8/8,orta,9
-AYT,TAR,AYT.TAR.07,Türkiye Selçuklu Devleti ve Anadolu Beylikleri,0,0,0,1,1,0,1,2,0.62,1.0,0.97,4/8,orta,10
-AYT,TAR,AYT.TAR.11,"Osmanlı Devlet Teşkilatı, Kültür ve Medeniyeti",0,2,1,3,0,0,1,1,1.0,1.0,0.97,5/8,orta,10
-AYT,TAR,AYT.TAR.21,Atatürk İnkılapları,1,1,2,0,0,2,1,1,1.14,1.0,0.97,6/7,orta,12
-AYT,TAR,AYT.TAR.25,II. Dünya Savaşı,0,0,0,2,0,1,0,1,0.67,1.0,0.97,3/6,orta,12
-AYT,TAR,AYT.TAR.17,I. Dünya Savaşı,2,1,0,0,1,1,1,1,0.88,0.8,0.78,6/8,az,12
-AYT,TAR,AYT.TAR.09,Osmanlı Yükselme Dönemi (1453-1595),1,0,1,0,2,0,1,0,0.62,0.6,0.58,4/8,az,10
-AYT,TAR,AYT.TAR.13,Osmanlı Gerileme Dönemi (XVIII. yy),0,1,0,1,0,1,0,1,0.5,0.6,0.58,4/8,az,11
-AYT,TAR,AYT.TAR.16,XX. Yüzyıl Başlarında Osmanlı Devleti,1,0,0,0,1,0,1,1,0.57,0.6,0.58,4/7,az,12
-AYT,TAR,AYT.TAR.20,Mudanya Ateşkesi ve Lozan Barış Antlaşması,0,0,0,0,0,0,0,2,0.33,0.5,0.49,1/6,nadir,12
-AYT,TAR,AYT.TAR.12,Osmanlı Duraklama Dönemi (XVII. yy),1,0,1,0,1,0,0,1,0.5,0.4,0.39,4/8,az,11
-AYT,TAR,AYT.TAR.23,Atatürk Dönemi Türk Dış Politikası,0,0,0,0,0,0,1,0,0.17,0.25,0.24,1/6,nadir,12
-AYT,TAR,AYT.TAR.26,Soğuk Savaş Dönemi,0,0,0,0,0,0,1,0,0.17,0.25,0.24,1/6,nadir,12
-AYT,TAR,AYT.TAR.10,Yeni Çağ Avrupa Tarihi,1,1,0,0,1,0,0,0,0.38,0.2,0.19,3/8,nadir,10-11
-AYT,TAR,AYT.TAR.14,Yakın Çağ Avrupa Tarihi,0,0,0,0,0,1,0,0,0.12,0.2,0.19,1/8,nadir,11
-AYT,TAR,AYT.TAR.03,Orta Çağ'da Dünya,1,0,1,0,0,0,0,0,0.25,0.0,0.0,2/8,nadir,9
-AYT,TAR,AYT.TAR.22,Atatürk İlkeleri ve Atatürkçülük,1,1,1,0,0,0,0,0,0.43,0.0,0.0,3/7,nadir,12
-AYT,TAR,AYT.TAR.24,İki Savaş Arası Dönem,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
-AYT,TAR,AYT.TAR.27,Yumuşama Dönemi ve Sonrası,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
-AYT,TAR,AYT.TAR.28,Küreselleşen Dünya,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
-TYT,BIY,TYT.BIY.14,Eşeye Bağlı Kalıtım ve Soyağaçları,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,10
-TYT,BIY,TYT.BIY.07,Hücre Yapısı ve Organeller,1,1,0,1,1,1,0,1,0.75,0.8,0.8,6/8,orta,9
-TYT,BIY,TYT.BIY.10,Canlı Âlemleri ve Virüsler,1,0,0,1,1,0,1,0,0.5,0.6,0.6,4/8,az,9
-TYT,BIY,TYT.BIY.11,"Hücre Döngüsü, Mitoz ve Eşeysiz Üreme",0,0,0,0,1,1,1,0,0.38,0.6,0.6,3/8,nadir,10
-TYT,BIY,TYT.BIY.03,Karbonhidratlar ve Lipitler,0,0,1,0,1,1,0,0,0.38,0.4,0.4,3/8,nadir,9
-TYT,BIY,TYT.BIY.08,Hücre Zarı ve Madde Geçişleri,0,0,1,0,0,0,1,1,0.38,0.4,0.4,3/8,nadir,9
-TYT,BIY,TYT.BIY.12,Mayoz ve Eşeyli Üreme,1,1,1,1,0,0,0,1,0.62,0.4,0.4,5/8,az,10
-TYT,BIY,TYT.BIY.16,Ekosistem Ekolojisi,0,0,1,0,1,1,0,0,0.38,0.4,0.4,3/8,nadir,10
-TYT,BIY,TYT.BIY.17,Güncel Çevre Sorunları ve Sürdürülebilirlik,1,0,0,1,0,0,0,1,0.38,0.4,0.4,3/8,nadir,10
-TYT,BIY,TYT.BIY.01,Biyoloji ve Canlıların Ortak Özellikleri,0,0,0,0,0,0,1,0,0.12,0.2,0.2,1/8,nadir,9
-TYT,BIY,TYT.BIY.04,Proteinler ve Enzimler,0,0,0,0,0,0,0,1,0.12,0.2,0.2,1/8,nadir,9
-TYT,BIY,TYT.BIY.06,Nükleik Asitler ve ATP,1,1,0,1,0,0,0,0,0.38,0.2,0.2,3/8,nadir,9
-TYT,BIY,TYT.BIY.09,Canlıların Sınıflandırılması,0,1,1,0,0,1,0,0,0.38,0.2,0.2,3/8,nadir,9
-TYT,BIY,TYT.BIY.15,Genetik Varyasyon ve Biyolojik Çeşitlilik,0,1,0,0,0,0,1,0,0.25,0.2,0.2,2/8,nadir,10
-TYT,BIY,TYT.BIY.02,İnorganik Bileşikler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,BIY,TYT.BIY.05,Vitaminler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,BIY,TYT.BIY.13,Kalıtımın Genel İlkeleri,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,COG,TYT.COG.15,Nüfus,2,1,1,0,1,1,1,1,1.0,0.8,0.8,7/8,orta,10
-TYT,COG,TYT.COG.19,Bölgeler ve Bölge Türleri,0,1,0,0,1,1,1,1,0.62,0.8,0.8,5/8,orta,9
-TYT,COG,TYT.COG.22,Doğal Afetler,1,1,0,1,0,1,1,1,0.75,0.8,0.8,6/8,orta,10
-TYT,COG,TYT.COG.08,İklim Tipleri ve Türkiye'nin İklimi,0,0,1,1,1,0,0,1,0.5,0.6,0.6,4/8,az,9
-TYT,COG,TYT.COG.05,Atmosfer ve Sıcaklık,0,1,0,0,0,1,1,0,0.38,0.4,0.4,3/8,nadir,9
-TYT,COG,TYT.COG.14,Bitki Örtüsü ve Biyomlar,1,0,0,0,0,1,1,0,0.38,0.4,0.4,3/8,nadir,10
-TYT,COG,TYT.COG.01,"Doğa ve İnsan, Coğrafyanın Bölümleri",1,0,0,1,0,0,0,0,0.25,0.2,0.2,2/8,nadir,9
-TYT,COG,TYT.COG.04,Harita Bilgisi,0,0,0,1,0,0,0,0,0.12,0.2,0.2,1/8,nadir,9
-TYT,COG,TYT.COG.10,Dış Kuvvetler ve Yer Şekilleri,0,1,1,0,1,0,0,0,0.38,0.2,0.2,3/8,nadir,10
-TYT,COG,TYT.COG.11,Türkiye'nin Yer Şekilleri,0,0,0,0,0,0,0,1,0.12,0.2,0.2,1/8,nadir,10
-TYT,COG,TYT.COG.13,Topraklar,0,0,0,0,1,0,0,0,0.12,0.2,0.2,1/8,nadir,10
-TYT,COG,TYT.COG.18,Ekonomik Faaliyetler,0,0,0,1,0,0,0,0,0.12,0.2,0.2,1/8,nadir,10
-TYT,COG,TYT.COG.02,Dünya'nın Şekli ve Hareketleri,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
-TYT,COG,TYT.COG.03,Coğrafi Konum,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,COG,TYT.COG.06,Basınç ve Rüzgârlar,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,COG,TYT.COG.07,"Nem, Yağış ve Buharlaşma",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,COG,TYT.COG.09,Yer'in Yapısı ve İç Kuvvetler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,COG,TYT.COG.12,Su Kaynakları,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
-TYT,COG,TYT.COG.16,Göç,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,COG,TYT.COG.17,Yerleşmeler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,COG,TYT.COG.20,Uluslararası Ulaşım Hatları,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,COG,TYT.COG.21,İnsan-Doğa Etkileşimi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,DKAB,TYT.DKAB.01,Bilgi ve İnanç,1,0,0,1,1,2,0,2,0.88,1.2,1.2,5/8,orta,9
-TYT,DKAB,TYT.DKAB.05,Allah İnsan İlişkisi,1,0,2,2,1,1,1,1,1.12,1.2,1.2,7/8,orta,10
-TYT,DKAB,TYT.DKAB.06,Hz. Muhammed ve Gençlik,1,1,0,0,1,1,1,1,0.75,0.8,0.8,6/8,orta,10
-TYT,DKAB,TYT.DKAB.07,İslam Düşüncesinde Yorumlar,0,0,0,0,2,0,1,1,0.5,0.8,0.8,3/8,nadir,10
-TYT,DKAB,TYT.DKAB.04,Ahlak ve Değerler,1,2,1,0,0,1,2,0,0.88,0.6,0.6,5/8,az,9-10
-TYT,DKAB,TYT.DKAB.03,İslam ve İbadet,1,0,1,1,0,0,0,0,0.38,0.2,0.2,3/8,nadir,9
-TYT,DKAB,TYT.DKAB.08,Gönül Coğrafyamız ve İslam Kültürü,0,0,1,1,0,0,0,0,0.25,0.2,0.2,2/8,nadir,9-10
-TYT,DKAB,TYT.DKAB.02,Din ve İslam,0,2,0,0,0,0,0,0,0.25,0.0,0.0,1/8,nadir,9
-TYT,FEL,TYT.FEL.04,Bilgi Felsefesi,1,1,1,3,1,1,2,0,1.25,1.4,1.4,7/8,orta,10
-TYT,FEL,TYT.FEL.03,Varlık Felsefesi,0,0,1,0,1,0,1,3,0.75,1.0,1.0,4/8,orta,10
-TYT,FEL,TYT.FEL.01,Felsefeyi Tanıma,1,0,1,1,1,1,0,1,0.75,0.8,0.8,6/8,orta,10
-TYT,FEL,TYT.FEL.06,Ahlak Felsefesi,1,2,0,0,1,1,1,1,0.88,0.8,0.8,6/8,orta,10
-TYT,FEL,TYT.FEL.07,Din Felsefesi,0,1,0,1,1,1,0,0,0.5,0.6,0.6,4/8,az,10
-TYT,FEL,TYT.FEL.05,Bilim Felsefesi,1,0,0,0,0,1,1,0,0.38,0.4,0.4,3/8,nadir,10
-TYT,FEL,TYT.FEL.02,Felsefe ile Düşünme,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,FEL,TYT.FEL.08,Siyaset Felsefesi,1,0,1,0,0,0,0,0,0.25,0.0,0.0,2/8,nadir,10
-TYT,FEL,TYT.FEL.09,Sanat Felsefesi,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
-TYT,FEL,TYT.FEL.10,Felsefe Tarihi: Dönem ve Düşünür Özellikleri,0,1,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,11
-TYT,FIZ,TYT.FIZ.06,"Isı, Sıcaklık ve Genleşme",1,0,1,1,1,1,1,1,0.88,1.0,1.0,7/8,orta,9
-TYT,FIZ,TYT.FIZ.02,Madde ve Özellikleri,1,0,1,1,1,1,0,1,0.75,0.8,0.8,6/8,orta,9
-TYT,FIZ,TYT.FIZ.12,Dalgalar,0,1,1,1,0,1,1,1,0.75,0.8,0.8,6/8,orta,10
-TYT,FIZ,TYT.FIZ.03,Hareket,1,0,0,0,1,0,1,1,0.5,0.6,0.6,4/8,az,9
-TYT,FIZ,TYT.FIZ.04,Kuvvet ve Newton'un Hareket Yasaları,0,1,1,1,0,1,1,0,0.62,0.6,0.6,5/8,az,9
-TYT,FIZ,TYT.FIZ.07,Elektrostatik,0,0,0,1,0,0,1,1,0.38,0.6,0.6,3/8,nadir,10
-TYT,FIZ,TYT.FIZ.08,Elektrik Akımı ve Devreler,1,1,1,0,2,1,0,0,0.75,0.6,0.6,5/8,az,10
-TYT,FIZ,TYT.FIZ.11,Kaldırma Kuvveti,0,1,0,0,0,1,1,1,0.5,0.6,0.6,4/8,az,10
-TYT,FIZ,TYT.FIZ.14,Yansıma ve Aynalar,0,1,0,1,1,0,0,1,0.5,0.6,0.6,4/8,az,10
-TYT,FIZ,TYT.FIZ.15,"Kırılma, Mercekler ve Prizmalar",0,0,1,0,0,1,1,0,0.38,0.4,0.4,3/8,nadir,10
-TYT,FIZ,TYT.FIZ.10,Basınç,0,1,1,1,0,0,0,0,0.38,0.2,0.2,3/8,nadir,10
-TYT,FIZ,TYT.FIZ.13,"Aydınlanma, Gölge ve Renk",2,0,0,0,1,0,0,0,0.38,0.2,0.2,2/8,nadir,10
-TYT,FIZ,TYT.FIZ.01,Fizik Bilimine Giriş,0,1,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
-TYT,FIZ,TYT.FIZ.05,"İş, Güç ve Enerji",1,0,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
-TYT,FIZ,TYT.FIZ.09,Mıknatıslar ve Manyetizma,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,GEO,TYT.GEO.09,Dörtgenler,1,4,2,2,2,2,2,2,2.12,2.0,2.0,8/8,çok,10
-TYT,GEO,TYT.GEO.12,Katı Cisimler,2,2,2,2,2,2,2,2,2.0,2.0,2.0,8/8,çok,10-12
-TYT,GEO,TYT.GEO.01,Doğruda ve Üçgende Açılar,1,1,0,1,2,1,1,1,1.0,1.2,1.2,7/8,orta,9
-TYT,GEO,TYT.GEO.02,Dik Üçgen ve Trigonometri,1,1,1,1,1,2,1,1,1.12,1.2,1.2,8/8,orta,9
-TYT,GEO,TYT.GEO.08,Çokgenler,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,10
-TYT,GEO,TYT.GEO.06,Üçgende Alan,0,0,0,1,1,1,1,0,0.5,0.8,0.8,4/8,orta,9
-TYT,GEO,TYT.GEO.03,İkizkenar ve Eşkenar Üçgen,0,0,1,0,0,1,1,1,0.5,0.6,0.6,4/8,az,9
-TYT,GEO,TYT.GEO.05,Üçgende Eşlik ve Benzerlik,0,1,1,1,1,0,0,1,0.62,0.6,0.6,5/8,az,9
-TYT,GEO,TYT.GEO.07,Üçgende Açı-Kenar Bağıntıları,1,0,1,0,0,0,1,1,0.5,0.4,0.4,4/8,az,9
-TYT,GEO,TYT.GEO.04,Açıortay ve Kenarortay,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
-TYT,GEO,TYT.GEO.10,Çember ve Daire,1,0,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10-11
-TYT,GEO,TYT.GEO.11,Analitik Geometri,1,0,1,0,0,0,0,0,0.25,0.0,0.0,2/8,nadir,10-11
-TYT,KIM,TYT.KIM.03,Kimyasal Türler Arası Etkileşimler,1,1,1,1,1,1,1,2,1.12,1.2,1.2,8/8,orta,9
-TYT,KIM,TYT.KIM.02,Atom ve Periyodik Sistem,2,1,1,1,1,1,1,1,1.12,1.0,1.0,8/8,orta,9
-TYT,KIM,TYT.KIM.04,Maddenin Halleri,0,1,1,1,1,1,1,1,0.88,1.0,1.0,7/8,orta,9
-TYT,KIM,TYT.KIM.12,"Asitler, Bazlar ve Tuzlar",1,2,1,1,1,1,1,1,1.12,1.0,1.0,8/8,orta,10
-TYT,KIM,TYT.KIM.01,Kimya Bilimi,1,1,1,1,1,1,1,0,0.88,0.8,0.8,7/8,orta,9
-TYT,KIM,TYT.KIM.10,Karışımlar,1,1,1,1,0,1,1,1,0.88,0.8,0.8,7/8,orta,10
-TYT,KIM,TYT.KIM.07,Mol Kavramı,0,0,0,0,1,1,0,0,0.25,0.4,0.4,2/8,nadir,10
-TYT,KIM,TYT.KIM.09,Kimyasal Hesaplamalar,0,0,1,0,0,0,1,1,0.38,0.4,0.4,3/8,nadir,10
-TYT,KIM,TYT.KIM.06,Kimyanın Temel Kanunları,0,0,0,1,0,0,0,0,0.12,0.2,0.2,1/8,nadir,10
-TYT,KIM,TYT.KIM.11,Ayırma ve Saflaştırma Teknikleri,0,0,0,0,1,0,0,0,0.12,0.2,0.2,1/8,nadir,10
-TYT,KIM,TYT.KIM.05,Doğa ve Kimya,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,KIM,TYT.KIM.08,Kimyasal Tepkimeler ve Denklemler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,KIM,TYT.KIM.13,Kimya Her Yerde,1,0,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
-TYT,TAR,TYT.TAR.04,İlk Türk Devletleri (İslamiyet Öncesi Türk Tarihi),1,1,1,1,1,1,1,1,1.0,1.0,0.96,8/8,orta,9
-TYT,TAR,TYT.TAR.06,Türk-İslam Devletleri,1,0,1,1,1,0,1,1,0.75,0.8,0.77,6/8,az,9
-TYT,TAR,TYT.TAR.15,Millî Mücadele Hazırlık Dönemi,0,1,0,1,1,1,0,1,0.62,0.8,0.77,5/8,az,12
-TYT,TAR,TYT.TAR.16,I. TBMM Dönemi ve Kurtuluş Savaşı Cepheleri,1,0,2,0,0,0,1,1,0.83,0.5,0.48,4/6,az,12
-TYT,TAR,TYT.TAR.17,Mudanya Ateşkesi ve Lozan Barış Antlaşması,0,1,0,0,1,0,1,0,0.38,0.4,0.38,3/8,nadir,12
-TYT,TAR,TYT.TAR.18,Atatürk İnkılapları,0,0,0,0,0,1,0,0,0.17,0.25,0.24,1/6,nadir,12
-TYT,TAR,TYT.TAR.19,Atatürk İlkeleri ve Atatürkçülük,1,0,0,1,0,0,0,0,0.33,0.25,0.24,2/6,nadir,12
-TYT,TAR,TYT.TAR.07,Türkiye Selçuklu Devleti ve Anadolu Beylikleri,0,1,0,0,0,1,0,0,0.25,0.2,0.19,2/8,nadir,10
-TYT,TAR,TYT.TAR.08,Osmanlı Kuruluş Dönemi (1299-1453),0,0,0,1,0,0,0,0,0.12,0.2,0.19,1/8,nadir,10
-TYT,TAR,TYT.TAR.10,"Osmanlı Devlet Teşkilatı, Kültür ve Medeniyeti",1,0,1,0,0,0,0,1,0.38,0.2,0.19,3/8,nadir,10
-TYT,TAR,TYT.TAR.11,Osmanlı Duraklama Dönemi (XVII. yy),0,0,0,0,0,1,0,0,0.12,0.2,0.19,1/8,nadir,11
-TYT,TAR,TYT.TAR.12,Osmanlı Gerileme Dönemi (XVIII. yy),0,0,0,0,0,0,1,0,0.12,0.2,0.19,1/8,nadir,11
-TYT,TAR,TYT.TAR.13,Osmanlı Dağılma Dönemi (XIX. yy),0,1,0,0,1,0,0,0,0.25,0.2,0.19,2/8,nadir,11
-TYT,TAR,TYT.TAR.01,Tarih Bilimi ve Zaman,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,TAR,TYT.TAR.02,İlk Çağ Uygarlıkları,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,TAR,TYT.TAR.03,Orta Çağ'da Dünya,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,TAR,TYT.TAR.05,İslam Tarihi ve Uygarlığı,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
-TYT,TAR,TYT.TAR.09,Osmanlı Yükselme Dönemi (1453-1595),0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,TAR,TYT.TAR.14,XX. Yüzyıl Başlarında Osmanlı ve I. Dünya Savaşı,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
-TYT,TAR,TYT.TAR.20,Atatürk Dönemi Türk Dış Politikası,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
-TYT,TAR,TYT.TAR.21,Çağdaş Türk ve Dünya Tarihi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
-TYT,TMAT,TYT.TMAT.13,Problemler,13,13,9,12,10,11,13,11,11.5,11.4,11.4,8/8,çok,9
-TYT,TMAT,TYT.TMAT.05,Rasyonel Sayılar,1,2,2,3,3,2,2,2,2.12,2.4,2.4,8/8,çok,9
-TYT,TMAT,TYT.TMAT.02,Sayı Basamakları,0,2,3,2,3,2,1,2,1.88,2.0,2.0,7/8,çok,9
-TYT,TMAT,TYT.TMAT.01,Temel Kavramlar,2,1,2,1,1,2,2,1,1.5,1.4,1.4,8/8,orta,9
-TYT,TMAT,TYT.TMAT.03,Bölme ve Bölünebilme,2,0,1,2,1,1,1,1,1.12,1.2,1.2,7/8,orta,9
-TYT,TMAT,TYT.TMAT.07,Mutlak Değer,1,1,1,1,1,2,1,1,1.12,1.2,1.2,8/8,orta,9
-TYT,TMAT,TYT.TMAT.19,Permütasyon ve Kombinasyon,2,1,1,1,1,2,1,1,1.25,1.2,1.2,8/8,orta,10
-TYT,TMAT,TYT.TMAT.08,Üslü Sayılar,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,9
-TYT,TMAT,TYT.TMAT.09,Köklü Sayılar,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,9
-TYT,TMAT,TYT.TMAT.14,Kümeler,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,9
-TYT,TMAT,TYT.TMAT.15,Mantık,0,0,1,1,1,1,1,1,0.75,1.0,1.0,6/8,orta,9
-TYT,TMAT,TYT.TMAT.16,Fonksiyonlar,2,2,1,1,1,1,1,1,1.25,1.0,1.0,8/8,orta,10
-TYT,TMAT,TYT.TMAT.20,Olasılık,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,10
-TYT,TMAT,TYT.TMAT.21,Veri ve İstatistik,1,1,2,1,1,1,1,1,1.12,1.0,1.0,8/8,orta,9-10
-TYT,TMAT,TYT.TMAT.06,Basit Eşitsizlikler,1,1,1,0,2,0,1,1,0.88,0.8,0.8,6/8,orta,9
-TYT,TMAT,TYT.TMAT.11,Oran-Orantı,2,2,0,2,0,1,0,1,1.0,0.8,0.8,5/8,orta,9
-TYT,TMAT,TYT.TMAT.04,EBOB-EKOK,0,0,0,0,1,0,0,1,0.25,0.4,0.4,2/8,nadir,9
-TYT,TMAT,TYT.TMAT.12,Denklem Çözme,0,0,0,0,0,0,1,1,0.25,0.4,0.4,2/8,nadir,9
-TYT,TMAT,TYT.TMAT.10,Çarpanlara Ayırma,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
-TYT,TMAT,TYT.TMAT.17,Polinomlar,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,TMAT,TYT.TMAT.18,İkinci Dereceden Denklemler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,TUR,TYT.TUR.04,Paragrafta Yardımcı Düşünce ve Çıkarım,13,17,14,19,17,19,18,15,16.5,17.6,17.6,8/8,çok,9-12
-TYT,TUR,TYT.TUR.01,Sözcükte Anlam,4,5,5,4,3,5,5,5,4.5,4.4,4.4,8/8,çok,9-10
-TYT,TUR,TYT.TUR.02,Cümlede Anlam,3,3,3,3,4,3,3,3,3.12,3.2,3.2,8/8,çok,9-10
-TYT,TUR,TYT.TUR.03,Paragrafta Ana Düşünce ve Konu,3,2,6,1,3,2,1,7,3.12,2.8,2.8,8/8,çok,9-12
-TYT,TUR,TYT.TUR.07,"Paragrafta Yapı (Akış, Bölme, Sıralama)",2,2,2,3,2,2,2,2,2.12,2.2,2.2,8/8,çok,9-12
-TYT,TUR,TYT.TUR.06,Paragraf Tamamlama ve Cümle Yerleştirme,2,3,2,3,3,1,3,0,2.12,2.0,2.0,7/8,çok,9-12
-TYT,TUR,TYT.TUR.09,Yazım Kuralları,2,2,2,2,2,2,2,2,2.0,2.0,2.0,8/8,çok,9-10
-TYT,TUR,TYT.TUR.10,Noktalama İşaretleri,2,2,2,2,2,2,2,2,2.0,2.0,2.0,8/8,çok,9-10
-TYT,TUR,TYT.TUR.21,Cümlenin Ögeleri,2,1,0,1,1,1,1,1,1.0,1.0,1.0,7/8,orta,11
-TYT,TUR,TYT.TUR.05,Paragrafta Anlatım Biçimleri ve Düşünceyi Geliştirme Yolları,1,1,1,0,1,1,1,1,0.88,0.8,0.8,7/8,orta,9-12
-TYT,TUR,TYT.TUR.11,Sözcük Yapısı ve Ekler,2,1,0,1,0,0,1,1,0.75,0.6,0.6,5/8,az,9-10
-TYT,TUR,TYT.TUR.19,Fiilimsiler,0,0,0,0,1,0,1,1,0.38,0.6,0.6,3/8,nadir,11
-TYT,TUR,TYT.TUR.08,Ses Bilgisi,1,0,1,0,1,0,0,0,0.38,0.2,0.2,3/8,nadir,9
-TYT,TUR,TYT.TUR.12,İsimler ve İsim Tamlamaları,0,0,1,0,0,1,0,0,0.25,0.2,0.2,2/8,nadir,10
-TYT,TUR,TYT.TUR.17,Sözcük Türleri (Karma),2,0,1,1,0,0,0,0,0.5,0.2,0.2,3/8,nadir,10
-TYT,TUR,TYT.TUR.22,Cümle Türleri,0,0,0,0,0,1,0,0,0.12,0.2,0.2,1/8,nadir,11
-TYT,TUR,TYT.TUR.13,Sıfatlar ve Sıfat Tamlamaları,0,1,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
-TYT,TUR,TYT.TUR.14,Zamirler,1,0,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
-TYT,TUR,TYT.TUR.15,Zarflar,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,TUR,TYT.TUR.16,"Edat, Bağlaç, Ünlem",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
-TYT,TUR,TYT.TUR.18,"Fiiller: Kip, Kişi ve Ek Fiil",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10-11
-TYT,TUR,TYT.TUR.20,Fiilde Çatı,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,11
-TYT,TUR,TYT.TUR.23,Anlatım Bozuklukları,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,11-12
+session,unit,topic_code,test_code,topic,2019,2020,2021,2022,2023,2024,2025,2026,mean_2019_2026,mean_2022_2026,q_i,years_present,tier,grade
+AYT,AMAT,AYT.AMAT.26,AYT-MAT,Belirli İntegral ve Uygulamaları,4,0,3,4,0,4,3,3,3.5,3.5,3.33,6/6,çok,12
+AYT,AMAT,AYT.AMAT.19,AYT-MAT,"Trigonometri: Toplam-Fark, İki Kat Açı ve Denklemler",0,1,2,2,2,3,2,3,1.88,2.4,2.29,7/8,çok,12
+AYT,AMAT,AYT.AMAT.02,AYT-MAT,"Bölme-Bölünebilme, Asal Sayılar ve EBOB-EKOK",2,2,2,2,3,2,2,2,2.12,2.2,2.1,8/8,çok,9
+AYT,AMAT,AYT.AMAT.09,AYT-MAT,Fonksiyonlar,2,2,2,2,2,2,2,2,2.0,2.0,1.9,8/8,orta,10-11
+AYT,AMAT,AYT.AMAT.20,AYT-MAT,Üstel ve Logaritmik Fonksiyonlar,3,3,1,2,3,1,2,2,2.12,2.0,1.9,8/8,orta,12
+AYT,AMAT,AYT.AMAT.22,AYT-MAT,Limit ve Süreklilik,2,0,2,2,0,2,2,2,2.0,2.0,1.9,6/6,orta,12
+AYT,AMAT,AYT.AMAT.23,AYT-MAT,Türev,4,0,1,3,0,0,2,2,2.0,1.75,1.67,5/6,orta,12
+AYT,AMAT,AYT.AMAT.24,AYT-MAT,Türevin Uygulamaları,0,0,3,1,0,3,1,1,1.5,1.5,1.43,5/6,orta,12
+AYT,AMAT,AYT.AMAT.01,AYT-MAT,Temel Kavramlar ve Sayı Basamakları,2,2,0,1,2,1,2,1,1.38,1.4,1.33,7/8,orta,9
+AYT,AMAT,AYT.AMAT.03,AYT-MAT,"Rasyonel Sayılar, Basit Eşitsizlikler ve Mutlak Değer",2,2,0,0,2,1,2,1,1.25,1.2,1.14,6/8,orta,9
+AYT,AMAT,AYT.AMAT.11,AYT-MAT,İkinci Dereceden Denklemler,1,1,1,2,1,1,1,1,1.12,1.2,1.14,8/8,orta,10
+AYT,AMAT,AYT.AMAT.18,AYT-MAT,Trigonometri,2,2,3,1,1,1,2,1,1.62,1.2,1.14,8/8,orta,11
+AYT,AMAT,AYT.AMAT.21,AYT-MAT,Diziler,1,2,1,1,2,1,1,1,1.25,1.2,1.14,8/8,orta,12
+AYT,AMAT,AYT.AMAT.07,AYT-MAT,Kümeler ve Kartezyen Çarpım,1,2,1,1,1,1,1,1,1.12,1.0,0.95,8/8,orta,9
+AYT,AMAT,AYT.AMAT.08,AYT-MAT,Mantık,1,0,1,1,1,1,1,1,0.88,1.0,0.95,7/8,orta,9
+AYT,AMAT,AYT.AMAT.15,AYT-MAT,Permütasyon ve Kombinasyon,1,1,1,1,1,1,1,1,1.0,1.0,0.95,8/8,orta,10
+AYT,AMAT,AYT.AMAT.16,AYT-MAT,Binom Açılımı,0,1,1,1,1,1,1,1,0.88,1.0,0.95,7/8,orta,10
+AYT,AMAT,AYT.AMAT.17,AYT-MAT,Olasılık,1,1,1,1,1,1,1,1,1.0,1.0,0.95,8/8,orta,10
+AYT,AMAT,AYT.AMAT.10,AYT-MAT,Polinomlar,1,2,1,0,2,1,1,0,1.0,0.8,0.76,6/8,az,10
+AYT,AMAT,AYT.AMAT.04,AYT-MAT,Üslü ve Köklü Sayılar,0,2,1,1,1,0,0,1,0.75,0.6,0.57,5/8,az,9
+AYT,AMAT,AYT.AMAT.13,AYT-MAT,Parabol (İkinci Dereceden Fonksiyonlar),1,1,0,0,1,1,0,1,0.62,0.6,0.57,5/8,az,11
+AYT,AMAT,AYT.AMAT.14,AYT-MAT,Eşitsizlikler,0,0,1,1,1,0,0,1,0.5,0.6,0.57,4/8,az,11
+AYT,AMAT,AYT.AMAT.05,AYT-MAT,"Çarpanlara Ayırma, Oran-Orantı ve Denklemler",0,0,1,0,1,1,0,0,0.38,0.4,0.38,3/8,nadir,9
+AYT,AMAT,AYT.AMAT.06,AYT-MAT,Problemler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+AYT,AMAT,AYT.AMAT.12,AYT-MAT,Karmaşık Sayılar,1,2,0,0,0,0,0,0,0.38,0.0,0.0,2/8,nadir,10
+AYT,AMAT,AYT.AMAT.25,AYT-MAT,Belirsiz İntegral,0,0,1,0,0,0,0,0,0.17,0.0,0.0,1/6,nadir,12
+AYT,BIY,AYT.BIY.11,AYT-FEN,Komünite Ekolojisi,0,1,1,1,1,1,1,1,0.88,1.0,0.94,7/8,orta,11
+AYT,BIY,AYT.BIY.13,AYT-FEN,Nükleik Asitler ve DNA Replikasyonu,1,1,1,1,1,1,1,1,1.0,1.0,0.94,8/8,orta,12
+AYT,BIY,AYT.BIY.02,AYT-FEN,Endokrin Sistem,1,1,1,0,2,1,0,1,0.88,0.8,0.75,6/8,az,11
+AYT,BIY,AYT.BIY.06,AYT-FEN,Dolaşım Sistemi,1,1,1,1,1,1,0,1,0.88,0.8,0.75,7/8,az,11
+AYT,BIY,AYT.BIY.12,AYT-FEN,Popülasyon Ekolojisi,0,1,1,1,1,1,0,1,0.75,0.8,0.75,6/8,az,11
+AYT,BIY,AYT.BIY.14,AYT-FEN,Genetik Şifre ve Protein Sentezi,1,2,1,1,0,1,0,1,1.0,0.75,0.71,6/7,az,12
+AYT,BIY,AYT.BIY.19,AYT-FEN,Hücresel Solunum,1,1,1,0,0,1,1,1,0.86,0.75,0.71,6/7,az,12
+AYT,BIY,AYT.BIY.20,AYT-FEN,Bitkilerin Yapısı ve Büyümesi,1,0,0,1,0,0,0,2,0.67,0.75,0.71,3/6,az,12
+AYT,BIY,AYT.BIY.21,AYT-FEN,Bitkilerde Madde Taşınması,0,0,1,1,0,1,1,0,0.67,0.75,0.71,4/6,az,12
+AYT,BIY,AYT.BIY.01,AYT-FEN,Sinir Sistemi,0,0,0,0,1,1,1,0,0.38,0.6,0.57,3/8,nadir,11
+AYT,BIY,AYT.BIY.05,AYT-FEN,Sindirim Sistemi,1,1,0,0,1,1,1,0,0.62,0.6,0.57,5/8,az,11
+AYT,BIY,AYT.BIY.08,AYT-FEN,Solunum Sistemi,1,1,1,1,1,1,0,0,0.75,0.6,0.57,6/8,az,11
+AYT,BIY,AYT.BIY.09,AYT-FEN,Üriner Sistem,1,1,0,0,1,0,1,1,0.62,0.6,0.57,5/8,az,11
+AYT,BIY,AYT.BIY.10,AYT-FEN,Üreme Sistemi ve Embriyonik Gelişim,0,0,0,1,0,0,1,1,0.38,0.6,0.57,3/8,nadir,11
+AYT,BIY,AYT.BIY.16,AYT-FEN,Canlılık ve Enerji (ATP),0,0,0,1,1,1,0,0,0.43,0.6,0.57,3/7,nadir,12
+AYT,BIY,AYT.BIY.17,AYT-FEN,Fotosentez,1,1,1,0,1,0,1,1,0.75,0.6,0.57,6/8,az,12
+AYT,BIY,AYT.BIY.04,AYT-FEN,Destek ve Hareket Sistemi,0,0,1,1,0,0,0,1,0.38,0.4,0.38,3/8,nadir,11
+AYT,BIY,AYT.BIY.15,AYT-FEN,Biyoteknoloji ve Genetik Mühendisliği,0,0,0,0,1,0,1,0,0.29,0.4,0.38,2/7,nadir,12
+AYT,BIY,AYT.BIY.18,AYT-FEN,Kemosentez,0,0,0,1,0,0,0,0,0.17,0.25,0.24,1/6,nadir,12
+AYT,BIY,AYT.BIY.22,AYT-FEN,Bitkisel Hormonlar ve Bitki Hareketleri,1,0,0,0,0,1,0,0,0.33,0.25,0.24,2/6,nadir,12
+AYT,BIY,AYT.BIY.23,AYT-FEN,Bitkilerde Eşeyli Üreme,1,0,1,0,0,0,1,0,0.5,0.25,0.24,3/6,az,12
+AYT,BIY,AYT.BIY.24,AYT-FEN,Canlılar ve Çevre (Adaptasyon),1,0,1,0,0,0,1,0,0.5,0.25,0.24,3/6,az,12
+AYT,BIY,AYT.BIY.03,AYT-FEN,Duyu Organları,0,1,0,1,0,0,0,0,0.25,0.2,0.19,2/8,nadir,11
+AYT,BIY,AYT.BIY.07,AYT-FEN,Bağışıklık Sistemi,0,0,0,0,0,0,1,0,0.12,0.2,0.19,1/8,nadir,11
+AYT,COG,AYT.COG.22,AYT-SB2,Çevre Sorunları ve Sürdürülebilirlik,3,1,2,2,1,2,2,2,1.88,1.8,1.75,8/8,orta,11-12
+AYT,COG,AYT.COG.19,AYT-SB2,Sanayileşme Süreçleri ve Ülkeler Arası Etkileşim,3,3,0,1,1,2,1,2,1.62,1.4,1.36,7/8,orta,11-12
+AYT,COG,AYT.COG.11,AYT-SB2,Ekonomik Faaliyetler ve Doğal Kaynaklar,0,1,1,2,0,1,2,1,1.0,1.2,1.17,6/8,orta,11
+AYT,COG,AYT.COG.23,AYT-SB2,"Doğal Afetler, Ekstrem Doğa Olayları ve Küresel İklim Değişimi",0,2,1,1,2,1,1,1,1.12,1.2,1.17,7/8,orta,10-12
+AYT,COG,AYT.COG.18,AYT-SB2,"Bölgeler, Kültür Bölgeleri ve Türk Kültürü",1,0,1,1,1,1,1,1,1.0,1.0,0.97,7/7,orta,11-12
+AYT,COG,AYT.COG.15,AYT-SB2,Şehirlerin Fonksiyonları ve Etki Alanları,1,1,1,1,0,1,0,1,0.86,0.75,0.73,6/7,az,12
+AYT,COG,AYT.COG.17,AYT-SB2,Türkiye'nin İşlevsel Bölgeleri ve Kalkınma Projeleri,1,0,1,1,0,1,1,0,0.83,0.75,0.73,5/6,az,12
+AYT,COG,AYT.COG.16,AYT-SB2,"Türkiye'de Ulaşım, Ticaret ve Turizm",0,0,0,1,1,0,1,0,0.43,0.6,0.58,3/7,nadir,12
+AYT,COG,AYT.COG.05,AYT-SB2,Biyoçeşitlilik ve Ekosistem,1,0,1,0,0,1,0,1,0.5,0.4,0.39,4/8,az,11
+AYT,COG,AYT.COG.07,AYT-SB2,Su Ekosistemleri,0,1,0,0,1,0,1,0,0.38,0.4,0.39,3/8,nadir,11
+AYT,COG,AYT.COG.09,AYT-SB2,Nüfus Politikaları,0,1,0,0,1,0,1,0,0.38,0.4,0.39,3/8,nadir,11
+AYT,COG,AYT.COG.10,AYT-SB2,Türkiye'de Nüfus ve Yerleşme,1,0,0,0,1,0,0,1,0.38,0.4,0.39,3/8,nadir,11
+AYT,COG,AYT.COG.12,AYT-SB2,Türkiye'de Tarım ve Hayvancılık,0,1,0,0,1,0,0,1,0.38,0.4,0.39,3/8,nadir,11
+AYT,COG,AYT.COG.13,AYT-SB2,Türkiye'de Madenler ve Enerji Kaynakları,0,0,1,0,1,1,0,0,0.38,0.4,0.39,3/8,nadir,11
+AYT,COG,AYT.COG.06,AYT-SB2,Madde Döngüleri ve Enerji Akışı,0,0,0,1,0,0,0,0,0.12,0.2,0.19,1/8,nadir,11
+AYT,COG,AYT.COG.01,AYT-SB2,"Dünya'nın Hareketleri, Konum ve Harita",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+AYT,COG,AYT.COG.02,AYT-SB2,İklim Bilgisi ve Türkiye'nin İklimi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+AYT,COG,AYT.COG.03,AYT-SB2,"İç ve Dış Kuvvetler, Yer Şekilleri",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+AYT,COG,AYT.COG.04,AYT-SB2,"Su, Toprak ve Bitki Örtüsü",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+AYT,COG,AYT.COG.08,AYT-SB2,Nüfus ve Göç (Dünya),0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+AYT,COG,AYT.COG.14,AYT-SB2,Türkiye'de Sanayi,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,11
+AYT,COG,AYT.COG.20,AYT-SB2,Jeopolitik Konum ve Çatışma Bölgeleri,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,11-12
+AYT,COG,AYT.COG.21,AYT-SB2,Küresel ve Bölgesel Örgütler,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,11
+AYT,COG,AYT.COG.18,AYT-TDE-SB1,"Bölgeler, Kültür Bölgeleri ve Türk Kültürü",0,0,1,1,0,1,1,1,0.83,1.0,0.9,5/6,orta,11-12
+AYT,COG,AYT.COG.23,AYT-TDE-SB1,"Doğal Afetler, Ekstrem Doğa Olayları ve Küresel İklim Değişimi",0,0,0,2,2,0,0,0,0.57,0.8,0.72,2/7,nadir,10-12
+AYT,COG,AYT.COG.19,AYT-TDE-SB1,Sanayileşme Süreçleri ve Ülkeler Arası Etkileşim,0,0,2,1,0,0,1,1,0.83,0.75,0.67,4/6,az,11-12
+AYT,COG,AYT.COG.22,AYT-TDE-SB1,Çevre Sorunları ve Sürdürülebilirlik,1,1,1,0,0,3,0,0,0.86,0.75,0.67,4/7,az,11-12
+AYT,COG,AYT.COG.05,AYT-TDE-SB1,Biyoçeşitlilik ve Ekosistem,0,1,0,0,1,0,1,1,0.5,0.6,0.54,4/8,az,11
+AYT,COG,AYT.COG.16,AYT-TDE-SB1,"Türkiye'de Ulaşım, Ticaret ve Turizm",0,0,1,1,0,0,1,0,0.5,0.5,0.45,3/6,az,12
+AYT,COG,AYT.COG.08,AYT-TDE-SB1,Nüfus ve Göç (Dünya),0,0,0,0,0,2,0,0,0.25,0.4,0.36,1/8,nadir,10
+AYT,COG,AYT.COG.10,AYT-TDE-SB1,Türkiye'de Nüfus ve Yerleşme,0,0,0,1,1,0,0,0,0.25,0.4,0.36,2/8,nadir,11
+AYT,COG,AYT.COG.13,AYT-TDE-SB1,Türkiye'de Madenler ve Enerji Kaynakları,0,0,0,0,1,0,0,1,0.25,0.4,0.36,2/8,nadir,11
+AYT,COG,AYT.COG.15,AYT-TDE-SB1,Şehirlerin Fonksiyonları ve Etki Alanları,1,1,0,0,0,0,1,0,0.43,0.25,0.22,3/7,nadir,12
+AYT,COG,AYT.COG.17,AYT-TDE-SB1,Türkiye'nin İşlevsel Bölgeleri ve Kalkınma Projeleri,0,1,0,0,0,0,0,1,0.29,0.25,0.22,2/7,nadir,12
+AYT,COG,AYT.COG.11,AYT-TDE-SB1,Ekonomik Faaliyetler ve Doğal Kaynaklar,1,0,0,0,0,0,0,1,0.25,0.2,0.18,2/8,nadir,11
+AYT,COG,AYT.COG.12,AYT-TDE-SB1,Türkiye'de Tarım ve Hayvancılık,1,0,0,0,0,0,1,0,0.25,0.2,0.18,2/8,nadir,11
+AYT,COG,AYT.COG.21,AYT-TDE-SB1,Küresel ve Bölgesel Örgütler,1,1,0,0,1,0,0,0,0.38,0.2,0.18,3/8,nadir,11
+AYT,COG,AYT.COG.01,AYT-TDE-SB1,"Dünya'nın Hareketleri, Konum ve Harita",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+AYT,COG,AYT.COG.02,AYT-TDE-SB1,İklim Bilgisi ve Türkiye'nin İklimi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+AYT,COG,AYT.COG.03,AYT-TDE-SB1,"İç ve Dış Kuvvetler, Yer Şekilleri",1,0,1,0,0,0,0,0,0.25,0.0,0.0,2/8,nadir,10
+AYT,COG,AYT.COG.04,AYT-TDE-SB1,"Su, Toprak ve Bitki Örtüsü",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+AYT,COG,AYT.COG.06,AYT-TDE-SB1,Madde Döngüleri ve Enerji Akışı,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,11
+AYT,COG,AYT.COG.07,AYT-TDE-SB1,Su Ekosistemleri,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,11
+AYT,COG,AYT.COG.09,AYT-TDE-SB1,Nüfus Politikaları,0,1,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,11
+AYT,COG,AYT.COG.14,AYT-TDE-SB1,Türkiye'de Sanayi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,11
+AYT,COG,AYT.COG.20,AYT-TDE-SB1,Jeopolitik Konum ve Çatışma Bölgeleri,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,11-12
+AYT,DKAB,AYT.DKAB.07,AYT-SB2,İslam ve Bilim,0,1,1,2,2,0,1,0,0.88,1.0,0.97,5/8,orta,12
+AYT,DKAB,AYT.DKAB.14,AYT-SB2,Ahlak ve Değerler,0,1,0,1,1,0,1,1,0.62,0.8,0.77,5/8,az,9-10
+AYT,DKAB,AYT.DKAB.02,AYT-SB2,Kur'an'a Göre Hz. Muhammed,1,1,0,0,0,2,1,0,0.62,0.6,0.58,4/8,az,11
+AYT,DKAB,AYT.DKAB.03,AYT-SB2,Kur'an'da Bazı Kavramlar,0,0,1,0,0,0,1,2,0.5,0.6,0.58,3/8,nadir,11
+AYT,DKAB,AYT.DKAB.04,AYT-SB2,İnançla İlgili Meseleler,0,2,1,1,0,2,0,0,0.75,0.6,0.58,4/8,az,11
+AYT,DKAB,AYT.DKAB.12,AYT-SB2,İbadet ve Dinî Hükümler,0,0,1,0,1,1,1,0,0.5,0.6,0.58,4/8,az,9-10
+AYT,DKAB,AYT.DKAB.01,AYT-SB2,Dünya ve Ahiret,1,0,0,1,0,0,0,1,0.38,0.4,0.39,3/8,nadir,11
+AYT,DKAB,AYT.DKAB.05,AYT-SB2,Yahudilik ve Hristiyanlık,0,0,0,1,1,0,0,0,0.25,0.4,0.39,2/8,nadir,11
+AYT,DKAB,AYT.DKAB.06,AYT-SB2,Hint ve Çin Dinleri,1,0,0,0,0,0,0,1,0.33,0.25,0.24,2/6,nadir,12
+AYT,DKAB,AYT.DKAB.09,AYT-SB2,İslam Düşüncesinde Yorumlar,2,0,1,0,0,1,0,0,0.67,0.25,0.24,3/6,az,10-12
+AYT,DKAB,AYT.DKAB.10,AYT-SB2,Güncel Dinî Meseleler,0,0,0,0,0,0,1,0,0.17,0.25,0.24,1/6,nadir,12
+AYT,DKAB,AYT.DKAB.11,AYT-SB2,"Din, Kültür ve Sanat",1,0,0,0,0,0,0,1,0.33,0.25,0.24,2/6,nadir,12
+AYT,DKAB,AYT.DKAB.08,AYT-SB2,Anadolu'da İslam,0,1,0,0,1,0,0,0,0.25,0.2,0.19,2/8,nadir,12
+AYT,DKAB,AYT.DKAB.13,AYT-SB2,Allah İnsan İlişkisi ve İnanç Esasları,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9-10
+AYT,EDB,AYT.EDB.12,AYT-TDE-SB1,Divan Edebiyatı,3,5,6,6,4,5,4,5,4.75,4.8,4.73,8/8,çok,9-10
+AYT,EDB,AYT.EDB.03,AYT-TDE-SB1,Paragraf,1,4,4,4,4,4,4,4,3.62,4.0,3.94,8/8,çok,9-10
+AYT,EDB,AYT.EDB.11,AYT-TDE-SB1,Halk Edebiyatı,3,2,2,3,4,3,4,3,3.0,3.4,3.35,8/8,çok,9-10
+AYT,EDB,AYT.EDB.07,AYT-TDE-SB1,Edebî Sanatlar,1,2,0,1,2,1,2,1,1.25,1.4,1.38,7/8,orta,9-10
+AYT,EDB,AYT.EDB.16,AYT-TDE-SB1,Cumhuriyet Dönemi Şiiri,1,2,1,1,0,2,1,1,1.29,1.25,1.23,7/7,orta,11-12
+AYT,EDB,AYT.EDB.17,AYT-TDE-SB1,Cumhuriyet Dönemi Roman ve Hikâye,3,0,0,1,1,2,2,0,1.29,1.2,1.18,5/7,orta,11-12
+AYT,EDB,AYT.EDB.01,AYT-TDE-SB1,Sözcükte Anlam,1,1,1,1,1,1,1,1,1.0,1.0,0.99,8/8,orta,9-10
+AYT,EDB,AYT.EDB.02,AYT-TDE-SB1,Cümlede Anlam,1,1,1,1,1,1,1,1,1.0,1.0,0.99,8/8,orta,9-10
+AYT,EDB,AYT.EDB.10,AYT-TDE-SB1,İslamiyet Öncesi ve Geçiş Dönemi Türk Edebiyatı,1,2,1,1,0,1,1,2,1.12,1.0,0.99,7/8,orta,9-10
+AYT,EDB,AYT.EDB.13,AYT-TDE-SB1,Tanzimat Edebiyatı,2,1,2,1,1,1,1,1,1.25,1.0,0.99,8/8,orta,11
+AYT,EDB,AYT.EDB.14,AYT-TDE-SB1,Servet-i Fünun ve Fecr-i Âti,1,1,1,1,1,1,1,1,1.0,1.0,0.99,8/8,orta,11
+AYT,EDB,AYT.EDB.15,AYT-TDE-SB1,Millî Edebiyat Dönemi,1,1,0,2,2,0,0,1,0.88,1.0,0.99,5/8,orta,11
+AYT,EDB,AYT.EDB.19,AYT-TDE-SB1,Edebî Akımlar ve Dünya Edebiyatı,1,1,1,1,1,1,1,1,1.0,1.0,0.99,8/8,orta,11-12
+AYT,EDB,AYT.EDB.06,AYT-TDE-SB1,Şiir Bilgisi,2,0,2,0,1,1,0,0,0.75,0.4,0.39,4/8,az,9
+AYT,EDB,AYT.EDB.08,AYT-TDE-SB1,Anlatmaya Bağlı Metinler: Tür ve Teknik,2,1,1,0,1,0,1,0,0.75,0.4,0.39,5/8,az,9-10
+AYT,EDB,AYT.EDB.09,AYT-TDE-SB1,Öğretici Metinler,0,0,0,0,0,0,0,1,0.17,0.25,0.25,1/6,nadir,9-12
+AYT,EDB,AYT.EDB.18,AYT-TDE-SB1,Cumhuriyet Dönemi Tiyatro,0,0,1,0,0,0,0,1,0.33,0.25,0.25,2/6,nadir,11-12
+AYT,EDB,AYT.EDB.04,AYT-TDE-SB1,Dil Bilgisi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9-10
+AYT,EDB,AYT.EDB.05,AYT-TDE-SB1,"Yazım, Noktalama ve Anlatım Bozuklukları",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9-10
+AYT,FEL,AYT.FEL.01,AYT-SB2,Felsefe: Felsefenin Konusu ve Problem Alanları (genel),2,0,1,1,0,2,0,2,1.0,1.0,0.97,5/8,orta,10-11
+AYT,FEL,AYT.FEL.11,AYT-SB2,Psikoloji: Psikoloji Bilimini Tanıma,1,1,0,1,1,1,1,1,0.88,1.0,0.97,7/8,orta,11
+AYT,FEL,AYT.FEL.24,AYT-SB2,Sosyoloji: Toplumsal Değişme ve Gelişme,0,0,1,1,1,1,1,1,0.75,1.0,0.97,6/8,orta,11
+AYT,FEL,AYT.FEL.36,AYT-SB2,Mantık: Sembolik (Modern) Mantık,1,0,1,1,0,1,1,1,1.0,1.0,0.97,6/6,orta,11-12
+AYT,FEL,AYT.FEL.13,AYT-SB2,"Psikoloji: Öğrenme, Bellek, Düşünme",1,0,1,0,1,1,1,1,0.75,0.8,0.78,6/8,az,11
+AYT,FEL,AYT.FEL.32,AYT-SB2,"Mantık: Klasik Mantık – Kavram, Terim ve Tanım",0,0,0,0,1,1,1,1,0.57,0.8,0.78,4/7,az,11-12
+AYT,FEL,AYT.FEL.02,AYT-SB2,Felsefe: MÖ 6. yy – MS 2. yy Felsefesi,0,1,1,1,1,0,1,0,0.62,0.6,0.58,5/8,az,11
+AYT,FEL,AYT.FEL.05,AYT-SB2,Felsefe: 18. – 19. yy Felsefesi,0,1,0,0,1,0,2,0,0.5,0.6,0.58,3/8,nadir,11
+AYT,FEL,AYT.FEL.12,AYT-SB2,Psikoloji: Psikolojinin Temel Süreçleri,0,0,0,1,1,0,0,1,0.38,0.6,0.58,3/8,nadir,11
+AYT,FEL,AYT.FEL.14,AYT-SB2,Psikoloji: Ruh Sağlığının Temelleri,0,1,2,1,0,1,1,0,0.75,0.6,0.58,5/8,az,11
+AYT,FEL,AYT.FEL.23,AYT-SB2,Sosyoloji: Toplumsal Yapı,1,2,0,0,1,1,0,1,0.75,0.6,0.58,5/8,az,11
+AYT,FEL,AYT.FEL.34,AYT-SB2,Mantık: Klasik Mantık – Akıl Yürütmeler,1,0,1,1,0,0,0,1,0.67,0.5,0.49,4/6,az,11-12
+AYT,FEL,AYT.FEL.03,AYT-SB2,Felsefe: MS 2. yy – MS 15. yy Felsefesi,1,0,0,0,0,1,0,1,0.38,0.4,0.39,3/8,nadir,11
+AYT,FEL,AYT.FEL.06,AYT-SB2,Felsefe: 20. yy Felsefesi,0,0,1,1,1,0,0,0,0.38,0.4,0.39,3/8,nadir,11
+AYT,FEL,AYT.FEL.21,AYT-SB2,Sosyoloji: Sosyolojiye Giriş,1,0,1,0,0,1,1,0,0.5,0.4,0.39,4/8,az,11
+AYT,FEL,AYT.FEL.22,AYT-SB2,Sosyoloji: Birey ve Toplum,0,1,0,1,0,0,1,0,0.38,0.4,0.39,3/8,nadir,11
+AYT,FEL,AYT.FEL.25,AYT-SB2,Sosyoloji: Toplum ve Kültür,1,0,1,0,1,0,0,1,0.5,0.4,0.39,4/8,az,11
+AYT,FEL,AYT.FEL.31,AYT-SB2,Mantık: Mantığa Giriş ve Düşünme İlkeleri,0,2,0,0,1,1,0,0,0.5,0.4,0.39,3/8,nadir,11-12
+AYT,FEL,AYT.FEL.33,AYT-SB2,Mantık: Klasik Mantık – Önermeler ve Çıkarımlar,1,1,0,1,1,0,0,0,0.5,0.4,0.39,4/8,az,11-12
+AYT,FEL,AYT.FEL.35,AYT-SB2,Mantık: Mantık ve Dil,0,0,1,0,0,0,1,0,0.33,0.25,0.24,2/6,nadir,11-12
+AYT,FEL,AYT.FEL.26,AYT-SB2,Sosyoloji: Toplumsal Kurumlar,0,0,0,1,0,0,0,0,0.12,0.2,0.19,1/8,nadir,11
+AYT,FEL,AYT.FEL.04,AYT-SB2,Felsefe: 15. – 17. yy Felsefesi,0,1,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,11
+AYT,FEL,AYT.FEL.15,AYT-SB2,Psikoloji: Sosyal Psikoloji,1,1,0,0,0,0,0,0,0.25,0.0,0.0,2/8,nadir,11
+AYT,FIZ,AYT.FIZ.14,AYT-FEN,Alternatif Akım ve Transformatörler,1,1,1,1,2,1,1,1,1.12,1.2,1.15,8/8,orta,11
+AYT,FIZ,AYT.FIZ.19,AYT-FEN,Dalga Mekaniği ve Elektromanyetik Dalgalar,1,1,1,1,1,1,2,1,1.12,1.2,1.15,8/8,orta,12
+AYT,FIZ,AYT.FIZ.17,AYT-FEN,Kütle Çekim ve Kepler Yasaları,0,0,1,1,1,1,2,0,0.86,1.0,0.96,5/7,orta,12
+AYT,FIZ,AYT.FIZ.18,AYT-FEN,Basit Harmonik Hareket,1,1,1,1,1,1,1,1,1.0,1.0,0.96,8/8,orta,12
+AYT,FIZ,AYT.FIZ.20,AYT-FEN,Atom Fiziğine Giriş ve Radyoaktivite,1,0,1,1,0,1,1,1,1.0,1.0,0.96,6/6,orta,12
+AYT,FIZ,AYT.FIZ.21,AYT-FEN,Modern Fizik,1,0,1,2,0,1,0,1,1.0,1.0,0.96,5/6,orta,12
+AYT,FIZ,AYT.FIZ.22,AYT-FEN,Modern Fiziğin Teknolojideki Uygulamaları,1,0,1,1,0,1,1,1,1.0,1.0,0.96,6/6,orta,12
+AYT,FIZ,AYT.FIZ.12,AYT-FEN,Manyetik Alan ve Manyetik Kuvvet,0,0,1,1,1,1,1,0,0.62,0.8,0.77,5/8,az,11
+AYT,FIZ,AYT.FIZ.15,AYT-FEN,Düzgün Çembersel Hareket,1,1,1,1,1,1,0,1,0.88,0.8,0.77,7/8,az,12
+AYT,FIZ,AYT.FIZ.03,AYT-FEN,Bir Boyutta Sabit İvmeli Hareket,0,0,0,0,1,1,1,0,0.38,0.6,0.58,3/8,nadir,11
+AYT,FIZ,AYT.FIZ.04,AYT-FEN,Newton'un Hareket Yasaları,0,2,0,1,1,0,1,0,0.62,0.6,0.58,4/8,az,11
+AYT,FIZ,AYT.FIZ.05,AYT-FEN,İki Boyutta Hareket (Atışlar),1,2,2,0,0,1,1,1,1.0,0.6,0.58,6/8,az,11
+AYT,FIZ,AYT.FIZ.09,AYT-FEN,Basit Makineler,0,0,0,1,0,1,0,1,0.38,0.6,0.58,3/8,nadir,11
+AYT,FIZ,AYT.FIZ.01,AYT-FEN,Vektörler,0,0,0,1,1,0,0,0,0.25,0.4,0.38,2/8,nadir,11
+AYT,FIZ,AYT.FIZ.06,AYT-FEN,Enerji ve Hareket,0,2,0,0,0,0,1,1,0.5,0.4,0.38,3/8,nadir,11
+AYT,FIZ,AYT.FIZ.07,AYT-FEN,İtme ve Çizgisel Momentum,1,1,0,1,1,0,0,0,0.5,0.4,0.38,4/8,az,11
+AYT,FIZ,AYT.FIZ.08,AYT-FEN,Tork ve Denge,1,0,1,0,1,0,0,1,0.5,0.4,0.38,4/8,az,11
+AYT,FIZ,AYT.FIZ.10,AYT-FEN,"Elektriksel Kuvvet, Alan ve Potansiyel",1,0,2,0,0,1,1,0,0.62,0.4,0.38,4/8,az,11
+AYT,FIZ,AYT.FIZ.11,AYT-FEN,Düzgün Elektrik Alan ve Sığa,0,1,0,0,1,0,0,1,0.38,0.4,0.38,3/8,nadir,11
+AYT,FIZ,AYT.FIZ.16,AYT-FEN,"Dönme, Yuvarlanma ve Açısal Momentum",1,1,0,0,1,0,0,1,0.5,0.4,0.38,4/8,az,12
+AYT,FIZ,AYT.FIZ.02,AYT-FEN,Bağıl Hareket,1,0,0,0,0,1,0,0,0.25,0.2,0.19,2/8,nadir,11
+AYT,FIZ,AYT.FIZ.13,AYT-FEN,Elektromanyetik İndüklenme,1,1,0,0,0,0,0,1,0.38,0.2,0.19,3/8,nadir,11
+AYT,GEO,AYT.GEO.12,AYT-MAT,Noktanın ve Doğrunun Analitiği,1,2,3,2,2,3,3,3,2.38,2.6,2.48,8/8,çok,10-11
+AYT,GEO,AYT.GEO.14,AYT-MAT,Çemberin Analitiği,1,0,1,1,0,1,2,1,1.17,1.25,1.19,6/6,orta,12
+AYT,GEO,AYT.GEO.10,AYT-MAT,Çember,0,1,2,2,1,1,1,1,1.12,1.2,1.14,7/8,orta,10-11
+AYT,GEO,AYT.GEO.15,AYT-MAT,Katı Cisimler,1,1,1,2,1,1,1,1,1.12,1.2,1.14,8/8,orta,10
+AYT,GEO,AYT.GEO.11,AYT-MAT,Daire,1,1,1,0,1,1,1,1,0.88,0.8,0.76,7/8,az,10
+AYT,GEO,AYT.GEO.13,AYT-MAT,Dönüşüm Geometrisi,1,1,1,1,0,1,1,1,0.88,0.8,0.76,7/8,az,10-11
+AYT,GEO,AYT.GEO.01,AYT-MAT,Doğruda ve Üçgende Açılar,0,1,0,1,2,0,0,0,0.5,0.6,0.57,3/8,nadir,9
+AYT,GEO,AYT.GEO.02,AYT-MAT,Dik Üçgen ve Trigonometrik Bağıntılar,1,2,0,0,1,1,0,1,0.75,0.6,0.57,5/8,az,9
+AYT,GEO,AYT.GEO.06,AYT-MAT,Üçgende Alan,1,0,0,1,1,0,1,0,0.5,0.6,0.57,4/8,az,9
+AYT,GEO,AYT.GEO.03,AYT-MAT,İkizkenar ve Eşkenar Üçgen,0,0,0,0,0,0,0,1,0.12,0.2,0.19,1/8,nadir,9
+AYT,GEO,AYT.GEO.05,AYT-MAT,Üçgende Eşlik ve Benzerlik,0,1,0,0,1,0,0,0,0.25,0.2,0.19,2/8,nadir,9
+AYT,GEO,AYT.GEO.07,AYT-MAT,Açı-Kenar Bağıntıları,0,0,0,0,0,1,0,0,0.12,0.2,0.19,1/8,nadir,9
+AYT,GEO,AYT.GEO.09,AYT-MAT,Dörtgenler ve Özel Dörtgenler,1,0,0,0,1,0,0,0,0.25,0.2,0.19,2/8,nadir,10
+AYT,GEO,AYT.GEO.04,AYT-MAT,Üçgende Yardımcı Elemanlar,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+AYT,GEO,AYT.GEO.08,AYT-MAT,Çokgenler,0,1,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
+AYT,KIM,AYT.KIM.09,AYT-FEN,Kimya ve Elektrik,2,3,2,2,3,2,2,1,2.12,2.0,1.94,8/8,orta,12
+AYT,KIM,AYT.KIM.03,AYT-FEN,Sıvı Çözeltiler ve Çözünürlük,1,2,2,2,2,2,1,1,1.62,1.6,1.55,8/8,orta,11
+AYT,KIM,AYT.KIM.02,AYT-FEN,Gazlar,2,1,1,1,2,1,1,2,1.38,1.4,1.36,8/8,orta,11
+AYT,KIM,AYT.KIM.10,AYT-FEN,Karbon Kimyasına Giriş,1,1,1,1,1,1,2,2,1.25,1.4,1.36,8/8,orta,12
+AYT,KIM,AYT.KIM.01,AYT-FEN,Modern Atom Teorisi,1,2,1,1,1,1,1,1,1.12,1.0,0.97,8/8,orta,11
+AYT,KIM,AYT.KIM.04,AYT-FEN,Kimyasal Tepkimelerde Enerji,1,1,1,1,1,1,1,1,1.0,1.0,0.97,8/8,orta,11
+AYT,KIM,AYT.KIM.05,AYT-FEN,Kimyasal Tepkimelerde Hız,1,1,1,1,1,1,1,1,1.0,1.0,0.97,8/8,orta,11
+AYT,KIM,AYT.KIM.06,AYT-FEN,Kimyasal Denge,0,1,1,1,1,1,1,1,0.88,1.0,0.97,7/8,orta,11
+AYT,KIM,AYT.KIM.11,AYT-FEN,Hidrokarbonlar,2,0,1,0,0,1,1,2,1.17,1.0,0.97,5/6,orta,12
+AYT,KIM,AYT.KIM.12,AYT-FEN,Fonksiyonel Gruplar ve Organik Bileşikler,0,0,1,2,0,1,1,0,0.83,1.0,0.97,4/6,orta,12
+AYT,KIM,AYT.KIM.07,AYT-FEN,Asit-Baz Dengesi,1,1,1,0,1,1,0,1,0.75,0.6,0.58,6/8,az,11
+AYT,KIM,AYT.KIM.08,AYT-FEN,Çözünürlük Dengesi,1,0,0,1,0,0,1,0,0.38,0.4,0.39,3/8,nadir,11
+AYT,KIM,AYT.KIM.13,AYT-FEN,Enerji Kaynakları ve Bilimsel Gelişmeler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+AYT,KIM,AYT.KIM.14,AYT-FEN,Mol Kavramı ve Kimyasal Hesaplamalar,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9-10
+AYT,TAR,AYT.TAR.19,AYT-SB2,I. TBMM Dönemi ve Kurtuluş Savaşı Cepheleri,1,1,1,3,2,1,1,1,1.38,1.6,1.54,8/8,orta,12
+AYT,TAR,AYT.TAR.01,AYT-SB2,Tarih Bilimi ve Zaman,1,1,1,1,1,1,1,1,1.0,1.0,0.96,8/8,orta,9
+AYT,TAR,AYT.TAR.18,AYT-SB2,Millî Mücadele Hazırlık Dönemi,1,2,1,0,1,2,1,1,1.12,1.0,0.96,7/8,orta,12
+AYT,TAR,AYT.TAR.04,AYT-SB2,İlk Türk Devletleri (İslamiyet Öncesi Türk Tarihi),1,1,2,1,1,1,0,1,1.0,0.8,0.77,7/8,az,9
+AYT,TAR,AYT.TAR.06,AYT-SB2,Türk-İslam Devletleri,1,1,0,1,0,1,2,0,0.75,0.8,0.77,5/8,az,9
+AYT,TAR,AYT.TAR.11,AYT-SB2,"Osmanlı Devlet Teşkilatı, Kültür ve Medeniyeti",0,2,1,2,0,0,1,1,0.88,0.8,0.77,5/8,az,10
+AYT,TAR,AYT.TAR.25,AYT-SB2,II. Dünya Savaşı,0,0,0,1,0,1,0,1,0.5,0.75,0.72,3/6,az,12
+AYT,TAR,AYT.TAR.15,AYT-SB2,Osmanlı Dağılma Dönemi (XIX. yy),0,0,1,0,1,0,1,1,0.5,0.6,0.58,4/8,az,11
+AYT,TAR,AYT.TAR.21,AYT-SB2,Atatürk İnkılapları,1,0,1,0,0,1,1,0,0.67,0.5,0.48,4/6,az,12
+AYT,TAR,AYT.TAR.07,AYT-SB2,Türkiye Selçuklu Devleti ve Anadolu Beylikleri,0,0,0,0,1,0,0,1,0.25,0.4,0.39,2/8,nadir,10
+AYT,TAR,AYT.TAR.08,AYT-SB2,Osmanlı Kuruluş Dönemi (1299-1453),1,0,0,1,0,1,0,0,0.38,0.4,0.39,3/8,nadir,10
+AYT,TAR,AYT.TAR.09,AYT-SB2,Osmanlı Yükselme Dönemi (1453-1595),1,0,1,0,1,0,1,0,0.5,0.4,0.39,4/8,az,10
+AYT,TAR,AYT.TAR.12,AYT-SB2,Osmanlı Duraklama Dönemi (XVII. yy),0,0,0,0,1,0,0,1,0.25,0.4,0.39,2/8,nadir,11
+AYT,TAR,AYT.TAR.13,AYT-SB2,Osmanlı Gerileme Dönemi (XVIII. yy),0,1,0,1,0,1,0,0,0.38,0.4,0.39,3/8,nadir,11
+AYT,TAR,AYT.TAR.16,AYT-SB2,XX. Yüzyıl Başlarında Osmanlı Devleti,1,0,0,0,1,0,1,0,0.43,0.4,0.39,3/7,nadir,12
+AYT,TAR,AYT.TAR.17,AYT-SB2,I. Dünya Savaşı,1,0,0,0,0,0,0,1,0.33,0.25,0.24,2/6,nadir,12
+AYT,TAR,AYT.TAR.20,AYT-SB2,Mudanya Ateşkesi ve Lozan Barış Antlaşması,0,0,0,0,0,0,0,1,0.17,0.25,0.24,1/6,nadir,12
+AYT,TAR,AYT.TAR.26,AYT-SB2,Soğuk Savaş Dönemi,0,0,0,0,0,0,1,0,0.17,0.25,0.24,1/6,nadir,12
+AYT,TAR,AYT.TAR.10,AYT-SB2,Yeni Çağ Avrupa Tarihi,1,1,0,0,1,0,0,0,0.38,0.2,0.19,3/8,nadir,10-11
+AYT,TAR,AYT.TAR.14,AYT-SB2,Yakın Çağ Avrupa Tarihi,0,0,0,0,0,1,0,0,0.12,0.2,0.19,1/8,nadir,11
+AYT,TAR,AYT.TAR.02,AYT-SB2,İlk Çağ Uygarlıkları,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+AYT,TAR,AYT.TAR.03,AYT-SB2,Orta Çağ'da Dünya,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
+AYT,TAR,AYT.TAR.05,AYT-SB2,İslam Tarihi ve Uygarlığı,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+AYT,TAR,AYT.TAR.22,AYT-SB2,Atatürk İlkeleri ve Atatürkçülük,0,1,1,0,0,0,0,0,0.29,0.0,0.0,2/7,nadir,12
+AYT,TAR,AYT.TAR.23,AYT-SB2,Atatürk Dönemi Türk Dış Politikası,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+AYT,TAR,AYT.TAR.24,AYT-SB2,İki Savaş Arası Dönem,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+AYT,TAR,AYT.TAR.27,AYT-SB2,Yumuşama Dönemi ve Sonrası,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+AYT,TAR,AYT.TAR.28,AYT-SB2,Küreselleşen Dünya,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+AYT,TAR,AYT.TAR.18,AYT-TDE-SB1,Millî Mücadele Hazırlık Dönemi,0,1,1,2,1,1,1,1,1.0,1.2,1.17,7/8,orta,12
+AYT,TAR,AYT.TAR.02,AYT-TDE-SB1,İlk Çağ Uygarlıkları,1,1,1,1,1,1,1,1,1.0,1.0,0.97,8/8,orta,9
+AYT,TAR,AYT.TAR.04,AYT-TDE-SB1,İlk Türk Devletleri (İslamiyet Öncesi Türk Tarihi),1,1,1,1,1,1,1,1,1.0,1.0,0.97,8/8,orta,9
+AYT,TAR,AYT.TAR.05,AYT-TDE-SB1,İslam Tarihi ve Uygarlığı,1,1,1,1,1,1,1,1,1.0,1.0,0.97,8/8,orta,9
+AYT,TAR,AYT.TAR.19,AYT-TDE-SB1,I. TBMM Dönemi ve Kurtuluş Savaşı Cepheleri,2,1,2,1,2,1,1,0,1.25,1.0,0.97,7/8,orta,12
+AYT,TAR,AYT.TAR.08,AYT-TDE-SB1,Osmanlı Kuruluş Dönemi (1299-1453),0,1,0,1,0,1,1,1,0.62,0.8,0.78,5/8,az,10
+AYT,TAR,AYT.TAR.07,AYT-TDE-SB1,Türkiye Selçuklu Devleti ve Anadolu Beylikleri,0,0,0,1,0,0,1,1,0.38,0.6,0.58,3/8,nadir,10
+AYT,TAR,AYT.TAR.15,AYT-TDE-SB1,Osmanlı Dağılma Dönemi (XIX. yy),1,1,1,0,1,1,1,0,0.75,0.6,0.58,6/8,az,11
+AYT,TAR,AYT.TAR.17,AYT-TDE-SB1,I. Dünya Savaşı,1,1,0,0,1,1,1,0,0.62,0.6,0.58,5/8,az,12
+AYT,TAR,AYT.TAR.21,AYT-TDE-SB1,Atatürk İnkılapları,0,1,1,0,0,1,0,1,0.57,0.5,0.49,4/7,az,12
+AYT,TAR,AYT.TAR.06,AYT-TDE-SB1,Türk-İslam Devletleri,0,1,1,0,1,1,0,0,0.5,0.4,0.39,4/8,az,9
+AYT,TAR,AYT.TAR.16,AYT-TDE-SB1,XX. Yüzyıl Başlarında Osmanlı Devleti,0,0,0,0,0,0,0,1,0.17,0.25,0.24,1/6,nadir,12
+AYT,TAR,AYT.TAR.20,AYT-TDE-SB1,Mudanya Ateşkesi ve Lozan Barış Antlaşması,0,0,0,0,0,0,0,1,0.17,0.25,0.24,1/6,nadir,12
+AYT,TAR,AYT.TAR.23,AYT-TDE-SB1,Atatürk Dönemi Türk Dış Politikası,0,0,0,0,0,0,1,0,0.17,0.25,0.24,1/6,nadir,12
+AYT,TAR,AYT.TAR.25,AYT-TDE-SB1,II. Dünya Savaşı,0,0,0,1,0,0,0,0,0.17,0.25,0.24,1/6,nadir,12
+AYT,TAR,AYT.TAR.09,AYT-TDE-SB1,Osmanlı Yükselme Dönemi (1453-1595),0,0,0,0,1,0,0,0,0.12,0.2,0.19,1/8,nadir,10
+AYT,TAR,AYT.TAR.11,AYT-TDE-SB1,"Osmanlı Devlet Teşkilatı, Kültür ve Medeniyeti",0,0,0,1,0,0,0,0,0.12,0.2,0.19,1/8,nadir,10
+AYT,TAR,AYT.TAR.13,AYT-TDE-SB1,Osmanlı Gerileme Dönemi (XVIII. yy),0,0,0,0,0,0,0,1,0.12,0.2,0.19,1/8,nadir,11
+AYT,TAR,AYT.TAR.01,AYT-TDE-SB1,Tarih Bilimi ve Zaman,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+AYT,TAR,AYT.TAR.03,AYT-TDE-SB1,Orta Çağ'da Dünya,1,0,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
+AYT,TAR,AYT.TAR.10,AYT-TDE-SB1,Yeni Çağ Avrupa Tarihi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10-11
+AYT,TAR,AYT.TAR.12,AYT-TDE-SB1,Osmanlı Duraklama Dönemi (XVII. yy),1,0,1,0,0,0,0,0,0.25,0.0,0.0,2/8,nadir,11
+AYT,TAR,AYT.TAR.14,AYT-TDE-SB1,Yakın Çağ Avrupa Tarihi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,11
+AYT,TAR,AYT.TAR.22,AYT-TDE-SB1,Atatürk İlkeleri ve Atatürkçülük,1,0,0,0,0,0,0,0,0.17,0.0,0.0,1/6,nadir,12
+AYT,TAR,AYT.TAR.24,AYT-TDE-SB1,İki Savaş Arası Dönem,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+AYT,TAR,AYT.TAR.26,AYT-TDE-SB1,Soğuk Savaş Dönemi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+AYT,TAR,AYT.TAR.27,AYT-TDE-SB1,Yumuşama Dönemi ve Sonrası,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+AYT,TAR,AYT.TAR.28,AYT-TDE-SB1,Küreselleşen Dünya,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+TYT,BIY,TYT.BIY.14,TYT-FEN,Eşeye Bağlı Kalıtım ve Soyağaçları,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,10
+TYT,BIY,TYT.BIY.07,TYT-FEN,Hücre Yapısı ve Organeller,1,1,0,1,1,1,0,1,0.75,0.8,0.8,6/8,orta,9
+TYT,BIY,TYT.BIY.10,TYT-FEN,Canlı Âlemleri ve Virüsler,1,0,0,1,1,0,1,0,0.5,0.6,0.6,4/8,az,9
+TYT,BIY,TYT.BIY.11,TYT-FEN,"Hücre Döngüsü, Mitoz ve Eşeysiz Üreme",0,0,0,0,1,1,1,0,0.38,0.6,0.6,3/8,nadir,10
+TYT,BIY,TYT.BIY.03,TYT-FEN,Karbonhidratlar ve Lipitler,0,0,1,0,1,1,0,0,0.38,0.4,0.4,3/8,nadir,9
+TYT,BIY,TYT.BIY.08,TYT-FEN,Hücre Zarı ve Madde Geçişleri,0,0,1,0,0,0,1,1,0.38,0.4,0.4,3/8,nadir,9
+TYT,BIY,TYT.BIY.12,TYT-FEN,Mayoz ve Eşeyli Üreme,1,1,1,1,0,0,0,1,0.62,0.4,0.4,5/8,az,10
+TYT,BIY,TYT.BIY.16,TYT-FEN,Ekosistem Ekolojisi,0,0,1,0,1,1,0,0,0.38,0.4,0.4,3/8,nadir,10
+TYT,BIY,TYT.BIY.17,TYT-FEN,Güncel Çevre Sorunları ve Sürdürülebilirlik,1,0,0,1,0,0,0,1,0.38,0.4,0.4,3/8,nadir,10
+TYT,BIY,TYT.BIY.01,TYT-FEN,Biyoloji ve Canlıların Ortak Özellikleri,0,0,0,0,0,0,1,0,0.12,0.2,0.2,1/8,nadir,9
+TYT,BIY,TYT.BIY.04,TYT-FEN,Proteinler ve Enzimler,0,0,0,0,0,0,0,1,0.12,0.2,0.2,1/8,nadir,9
+TYT,BIY,TYT.BIY.06,TYT-FEN,Nükleik Asitler ve ATP,1,1,0,1,0,0,0,0,0.38,0.2,0.2,3/8,nadir,9
+TYT,BIY,TYT.BIY.09,TYT-FEN,Canlıların Sınıflandırılması,0,1,1,0,0,1,0,0,0.38,0.2,0.2,3/8,nadir,9
+TYT,BIY,TYT.BIY.15,TYT-FEN,Genetik Varyasyon ve Biyolojik Çeşitlilik,0,1,0,0,0,0,1,0,0.25,0.2,0.2,2/8,nadir,10
+TYT,BIY,TYT.BIY.02,TYT-FEN,İnorganik Bileşikler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,BIY,TYT.BIY.05,TYT-FEN,Vitaminler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,BIY,TYT.BIY.13,TYT-FEN,Kalıtımın Genel İlkeleri,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,COG,TYT.COG.15,TYT-SOS,Nüfus,2,1,1,0,1,1,1,1,1.0,0.8,0.8,7/8,orta,10
+TYT,COG,TYT.COG.19,TYT-SOS,Bölgeler ve Bölge Türleri,0,1,0,0,1,1,1,1,0.62,0.8,0.8,5/8,orta,9
+TYT,COG,TYT.COG.22,TYT-SOS,Doğal Afetler,1,1,0,1,0,1,1,1,0.75,0.8,0.8,6/8,orta,10
+TYT,COG,TYT.COG.08,TYT-SOS,İklim Tipleri ve Türkiye'nin İklimi,0,0,1,1,1,0,0,1,0.5,0.6,0.6,4/8,az,9
+TYT,COG,TYT.COG.05,TYT-SOS,Atmosfer ve Sıcaklık,0,1,0,0,0,1,1,0,0.38,0.4,0.4,3/8,nadir,9
+TYT,COG,TYT.COG.14,TYT-SOS,Bitki Örtüsü ve Biyomlar,1,0,0,0,0,1,1,0,0.38,0.4,0.4,3/8,nadir,10
+TYT,COG,TYT.COG.01,TYT-SOS,"Doğa ve İnsan, Coğrafyanın Bölümleri",1,0,0,1,0,0,0,0,0.25,0.2,0.2,2/8,nadir,9
+TYT,COG,TYT.COG.04,TYT-SOS,Harita Bilgisi,0,0,0,1,0,0,0,0,0.12,0.2,0.2,1/8,nadir,9
+TYT,COG,TYT.COG.10,TYT-SOS,Dış Kuvvetler ve Yer Şekilleri,0,1,1,0,1,0,0,0,0.38,0.2,0.2,3/8,nadir,10
+TYT,COG,TYT.COG.11,TYT-SOS,Türkiye'nin Yer Şekilleri,0,0,0,0,0,0,0,1,0.12,0.2,0.2,1/8,nadir,10
+TYT,COG,TYT.COG.13,TYT-SOS,Topraklar,0,0,0,0,1,0,0,0,0.12,0.2,0.2,1/8,nadir,10
+TYT,COG,TYT.COG.18,TYT-SOS,Ekonomik Faaliyetler,0,0,0,1,0,0,0,0,0.12,0.2,0.2,1/8,nadir,10
+TYT,COG,TYT.COG.02,TYT-SOS,Dünya'nın Şekli ve Hareketleri,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
+TYT,COG,TYT.COG.03,TYT-SOS,Coğrafi Konum,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,COG,TYT.COG.06,TYT-SOS,Basınç ve Rüzgârlar,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,COG,TYT.COG.07,TYT-SOS,"Nem, Yağış ve Buharlaşma",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,COG,TYT.COG.09,TYT-SOS,Yer'in Yapısı ve İç Kuvvetler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,COG,TYT.COG.12,TYT-SOS,Su Kaynakları,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
+TYT,COG,TYT.COG.16,TYT-SOS,Göç,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,COG,TYT.COG.17,TYT-SOS,Yerleşmeler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,COG,TYT.COG.20,TYT-SOS,Uluslararası Ulaşım Hatları,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,COG,TYT.COG.21,TYT-SOS,İnsan-Doğa Etkileşimi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,DKAB,TYT.DKAB.01,TYT-SOS,Bilgi ve İnanç,1,0,0,1,1,2,0,2,0.88,1.2,1.2,5/8,orta,9
+TYT,DKAB,TYT.DKAB.05,TYT-SOS,Allah İnsan İlişkisi,1,0,2,2,1,1,1,1,1.12,1.2,1.2,7/8,orta,10
+TYT,DKAB,TYT.DKAB.06,TYT-SOS,Hz. Muhammed ve Gençlik,1,1,0,0,1,1,1,1,0.75,0.8,0.8,6/8,orta,10
+TYT,DKAB,TYT.DKAB.07,TYT-SOS,İslam Düşüncesinde Yorumlar,0,0,0,0,2,0,1,1,0.5,0.8,0.8,3/8,nadir,10
+TYT,DKAB,TYT.DKAB.04,TYT-SOS,Ahlak ve Değerler,1,2,1,0,0,1,2,0,0.88,0.6,0.6,5/8,az,9-10
+TYT,DKAB,TYT.DKAB.03,TYT-SOS,İslam ve İbadet,1,0,1,1,0,0,0,0,0.38,0.2,0.2,3/8,nadir,9
+TYT,DKAB,TYT.DKAB.08,TYT-SOS,Gönül Coğrafyamız ve İslam Kültürü,0,0,1,1,0,0,0,0,0.25,0.2,0.2,2/8,nadir,9-10
+TYT,DKAB,TYT.DKAB.02,TYT-SOS,Din ve İslam,0,2,0,0,0,0,0,0,0.25,0.0,0.0,1/8,nadir,9
+TYT,FEL,TYT.FEL.04,TYT-SOS,Bilgi Felsefesi,1,1,1,3,1,1,2,0,1.25,1.4,1.4,7/8,orta,10
+TYT,FEL,TYT.FEL.03,TYT-SOS,Varlık Felsefesi,0,0,1,0,1,0,1,3,0.75,1.0,1.0,4/8,orta,10
+TYT,FEL,TYT.FEL.01,TYT-SOS,Felsefeyi Tanıma,1,0,1,1,1,1,0,1,0.75,0.8,0.8,6/8,orta,10
+TYT,FEL,TYT.FEL.06,TYT-SOS,Ahlak Felsefesi,1,2,0,0,1,1,1,1,0.88,0.8,0.8,6/8,orta,10
+TYT,FEL,TYT.FEL.07,TYT-SOS,Din Felsefesi,0,1,0,1,1,1,0,0,0.5,0.6,0.6,4/8,az,10
+TYT,FEL,TYT.FEL.05,TYT-SOS,Bilim Felsefesi,1,0,0,0,0,1,1,0,0.38,0.4,0.4,3/8,nadir,10
+TYT,FEL,TYT.FEL.02,TYT-SOS,Felsefe ile Düşünme,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,FEL,TYT.FEL.08,TYT-SOS,Siyaset Felsefesi,1,0,1,0,0,0,0,0,0.25,0.0,0.0,2/8,nadir,10
+TYT,FEL,TYT.FEL.09,TYT-SOS,Sanat Felsefesi,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
+TYT,FEL,TYT.FEL.10,TYT-SOS,Felsefe Tarihi: Dönem ve Düşünür Özellikleri,0,1,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,11
+TYT,FIZ,TYT.FIZ.06,TYT-FEN,"Isı, Sıcaklık ve Genleşme",1,0,1,1,1,1,1,1,0.88,1.0,1.0,7/8,orta,9
+TYT,FIZ,TYT.FIZ.02,TYT-FEN,Madde ve Özellikleri,1,0,1,1,1,1,0,1,0.75,0.8,0.8,6/8,orta,9
+TYT,FIZ,TYT.FIZ.12,TYT-FEN,Dalgalar,0,1,1,1,0,1,1,1,0.75,0.8,0.8,6/8,orta,10
+TYT,FIZ,TYT.FIZ.03,TYT-FEN,Hareket,1,0,0,0,1,0,1,1,0.5,0.6,0.6,4/8,az,9
+TYT,FIZ,TYT.FIZ.04,TYT-FEN,Kuvvet ve Newton'un Hareket Yasaları,0,1,1,1,0,1,1,0,0.62,0.6,0.6,5/8,az,9
+TYT,FIZ,TYT.FIZ.07,TYT-FEN,Elektrostatik,0,0,0,1,0,0,1,1,0.38,0.6,0.6,3/8,nadir,10
+TYT,FIZ,TYT.FIZ.08,TYT-FEN,Elektrik Akımı ve Devreler,1,1,1,0,2,1,0,0,0.75,0.6,0.6,5/8,az,10
+TYT,FIZ,TYT.FIZ.11,TYT-FEN,Kaldırma Kuvveti,0,1,0,0,0,1,1,1,0.5,0.6,0.6,4/8,az,10
+TYT,FIZ,TYT.FIZ.14,TYT-FEN,Yansıma ve Aynalar,0,1,0,1,1,0,0,1,0.5,0.6,0.6,4/8,az,10
+TYT,FIZ,TYT.FIZ.15,TYT-FEN,"Kırılma, Mercekler ve Prizmalar",0,0,1,0,0,1,1,0,0.38,0.4,0.4,3/8,nadir,10
+TYT,FIZ,TYT.FIZ.10,TYT-FEN,Basınç,0,1,1,1,0,0,0,0,0.38,0.2,0.2,3/8,nadir,10
+TYT,FIZ,TYT.FIZ.13,TYT-FEN,"Aydınlanma, Gölge ve Renk",2,0,0,0,1,0,0,0,0.38,0.2,0.2,2/8,nadir,10
+TYT,FIZ,TYT.FIZ.01,TYT-FEN,Fizik Bilimine Giriş,0,1,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
+TYT,FIZ,TYT.FIZ.05,TYT-FEN,"İş, Güç ve Enerji",1,0,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
+TYT,FIZ,TYT.FIZ.09,TYT-FEN,Mıknatıslar ve Manyetizma,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,GEO,TYT.GEO.09,TYT-MAT,Dörtgenler,1,4,2,2,2,2,2,2,2.12,2.0,2.0,8/8,çok,10
+TYT,GEO,TYT.GEO.12,TYT-MAT,Katı Cisimler,2,2,2,2,2,2,2,2,2.0,2.0,2.0,8/8,çok,10-12
+TYT,GEO,TYT.GEO.01,TYT-MAT,Doğruda ve Üçgende Açılar,1,1,0,1,2,1,1,1,1.0,1.2,1.2,7/8,orta,9
+TYT,GEO,TYT.GEO.02,TYT-MAT,Dik Üçgen ve Trigonometri,1,1,1,1,1,2,1,1,1.12,1.2,1.2,8/8,orta,9
+TYT,GEO,TYT.GEO.08,TYT-MAT,Çokgenler,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,10
+TYT,GEO,TYT.GEO.06,TYT-MAT,Üçgende Alan,0,0,0,1,1,1,1,0,0.5,0.8,0.8,4/8,orta,9
+TYT,GEO,TYT.GEO.03,TYT-MAT,İkizkenar ve Eşkenar Üçgen,0,0,1,0,0,1,1,1,0.5,0.6,0.6,4/8,az,9
+TYT,GEO,TYT.GEO.05,TYT-MAT,Üçgende Eşlik ve Benzerlik,0,1,1,1,1,0,0,1,0.62,0.6,0.6,5/8,az,9
+TYT,GEO,TYT.GEO.07,TYT-MAT,Üçgende Açı-Kenar Bağıntıları,1,0,1,0,0,0,1,1,0.5,0.4,0.4,4/8,az,9
+TYT,GEO,TYT.GEO.04,TYT-MAT,Açıortay ve Kenarortay,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
+TYT,GEO,TYT.GEO.10,TYT-MAT,Çember ve Daire,1,0,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10-11
+TYT,GEO,TYT.GEO.11,TYT-MAT,Analitik Geometri,1,0,1,0,0,0,0,0,0.25,0.0,0.0,2/8,nadir,10-11
+TYT,KIM,TYT.KIM.03,TYT-FEN,Kimyasal Türler Arası Etkileşimler,1,1,1,1,1,1,1,2,1.12,1.2,1.2,8/8,orta,9
+TYT,KIM,TYT.KIM.02,TYT-FEN,Atom ve Periyodik Sistem,2,1,1,1,1,1,1,1,1.12,1.0,1.0,8/8,orta,9
+TYT,KIM,TYT.KIM.04,TYT-FEN,Maddenin Halleri,0,1,1,1,1,1,1,1,0.88,1.0,1.0,7/8,orta,9
+TYT,KIM,TYT.KIM.12,TYT-FEN,"Asitler, Bazlar ve Tuzlar",1,2,1,1,1,1,1,1,1.12,1.0,1.0,8/8,orta,10
+TYT,KIM,TYT.KIM.01,TYT-FEN,Kimya Bilimi,1,1,1,1,1,1,1,0,0.88,0.8,0.8,7/8,orta,9
+TYT,KIM,TYT.KIM.10,TYT-FEN,Karışımlar,1,1,1,1,0,1,1,1,0.88,0.8,0.8,7/8,orta,10
+TYT,KIM,TYT.KIM.07,TYT-FEN,Mol Kavramı,0,0,0,0,1,1,0,0,0.25,0.4,0.4,2/8,nadir,10
+TYT,KIM,TYT.KIM.09,TYT-FEN,Kimyasal Hesaplamalar,0,0,1,0,0,0,1,1,0.38,0.4,0.4,3/8,nadir,10
+TYT,KIM,TYT.KIM.06,TYT-FEN,Kimyanın Temel Kanunları,0,0,0,1,0,0,0,0,0.12,0.2,0.2,1/8,nadir,10
+TYT,KIM,TYT.KIM.11,TYT-FEN,Ayırma ve Saflaştırma Teknikleri,0,0,0,0,1,0,0,0,0.12,0.2,0.2,1/8,nadir,10
+TYT,KIM,TYT.KIM.05,TYT-FEN,Doğa ve Kimya,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,KIM,TYT.KIM.08,TYT-FEN,Kimyasal Tepkimeler ve Denklemler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,KIM,TYT.KIM.13,TYT-FEN,Kimya Her Yerde,1,0,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
+TYT,TAR,TYT.TAR.04,TYT-SOS,İlk Türk Devletleri (İslamiyet Öncesi Türk Tarihi),1,1,1,1,1,1,1,1,1.0,1.0,0.96,8/8,orta,9
+TYT,TAR,TYT.TAR.06,TYT-SOS,Türk-İslam Devletleri,1,0,1,1,1,0,1,1,0.75,0.8,0.77,6/8,az,9
+TYT,TAR,TYT.TAR.15,TYT-SOS,Millî Mücadele Hazırlık Dönemi,0,1,0,1,1,1,0,1,0.62,0.8,0.77,5/8,az,12
+TYT,TAR,TYT.TAR.16,TYT-SOS,I. TBMM Dönemi ve Kurtuluş Savaşı Cepheleri,1,0,2,0,0,0,1,1,0.83,0.5,0.48,4/6,az,12
+TYT,TAR,TYT.TAR.17,TYT-SOS,Mudanya Ateşkesi ve Lozan Barış Antlaşması,0,1,0,0,1,0,1,0,0.38,0.4,0.38,3/8,nadir,12
+TYT,TAR,TYT.TAR.18,TYT-SOS,Atatürk İnkılapları,0,0,0,0,0,1,0,0,0.17,0.25,0.24,1/6,nadir,12
+TYT,TAR,TYT.TAR.19,TYT-SOS,Atatürk İlkeleri ve Atatürkçülük,1,0,0,1,0,0,0,0,0.33,0.25,0.24,2/6,nadir,12
+TYT,TAR,TYT.TAR.07,TYT-SOS,Türkiye Selçuklu Devleti ve Anadolu Beylikleri,0,1,0,0,0,1,0,0,0.25,0.2,0.19,2/8,nadir,10
+TYT,TAR,TYT.TAR.08,TYT-SOS,Osmanlı Kuruluş Dönemi (1299-1453),0,0,0,1,0,0,0,0,0.12,0.2,0.19,1/8,nadir,10
+TYT,TAR,TYT.TAR.10,TYT-SOS,"Osmanlı Devlet Teşkilatı, Kültür ve Medeniyeti",1,0,1,0,0,0,0,1,0.38,0.2,0.19,3/8,nadir,10
+TYT,TAR,TYT.TAR.11,TYT-SOS,Osmanlı Duraklama Dönemi (XVII. yy),0,0,0,0,0,1,0,0,0.12,0.2,0.19,1/8,nadir,11
+TYT,TAR,TYT.TAR.12,TYT-SOS,Osmanlı Gerileme Dönemi (XVIII. yy),0,0,0,0,0,0,1,0,0.12,0.2,0.19,1/8,nadir,11
+TYT,TAR,TYT.TAR.13,TYT-SOS,Osmanlı Dağılma Dönemi (XIX. yy),0,1,0,0,1,0,0,0,0.25,0.2,0.19,2/8,nadir,11
+TYT,TAR,TYT.TAR.01,TYT-SOS,Tarih Bilimi ve Zaman,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,TAR,TYT.TAR.02,TYT-SOS,İlk Çağ Uygarlıkları,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,TAR,TYT.TAR.03,TYT-SOS,Orta Çağ'da Dünya,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,TAR,TYT.TAR.05,TYT-SOS,İslam Tarihi ve Uygarlığı,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,9
+TYT,TAR,TYT.TAR.09,TYT-SOS,Osmanlı Yükselme Dönemi (1453-1595),0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,TAR,TYT.TAR.14,TYT-SOS,XX. Yüzyıl Başlarında Osmanlı ve I. Dünya Savaşı,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+TYT,TAR,TYT.TAR.20,TYT-SOS,Atatürk Dönemi Türk Dış Politikası,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+TYT,TAR,TYT.TAR.21,TYT-SOS,Çağdaş Türk ve Dünya Tarihi,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,12
+TYT,TMAT,TYT.TMAT.13,TYT-MAT,Problemler,13,13,9,12,10,11,13,11,11.5,11.4,11.4,8/8,çok,9
+TYT,TMAT,TYT.TMAT.05,TYT-MAT,Rasyonel Sayılar,1,2,2,3,3,2,2,2,2.12,2.4,2.4,8/8,çok,9
+TYT,TMAT,TYT.TMAT.02,TYT-MAT,Sayı Basamakları,0,2,3,2,3,2,1,2,1.88,2.0,2.0,7/8,çok,9
+TYT,TMAT,TYT.TMAT.01,TYT-MAT,Temel Kavramlar,2,1,2,1,1,2,2,1,1.5,1.4,1.4,8/8,orta,9
+TYT,TMAT,TYT.TMAT.03,TYT-MAT,Bölme ve Bölünebilme,2,0,1,2,1,1,1,1,1.12,1.2,1.2,7/8,orta,9
+TYT,TMAT,TYT.TMAT.07,TYT-MAT,Mutlak Değer,1,1,1,1,1,2,1,1,1.12,1.2,1.2,8/8,orta,9
+TYT,TMAT,TYT.TMAT.19,TYT-MAT,Permütasyon ve Kombinasyon,2,1,1,1,1,2,1,1,1.25,1.2,1.2,8/8,orta,10
+TYT,TMAT,TYT.TMAT.08,TYT-MAT,Üslü Sayılar,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,9
+TYT,TMAT,TYT.TMAT.09,TYT-MAT,Köklü Sayılar,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,9
+TYT,TMAT,TYT.TMAT.14,TYT-MAT,Kümeler,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,9
+TYT,TMAT,TYT.TMAT.15,TYT-MAT,Mantık,0,0,1,1,1,1,1,1,0.75,1.0,1.0,6/8,orta,9
+TYT,TMAT,TYT.TMAT.16,TYT-MAT,Fonksiyonlar,2,2,1,1,1,1,1,1,1.25,1.0,1.0,8/8,orta,10
+TYT,TMAT,TYT.TMAT.20,TYT-MAT,Olasılık,1,1,1,1,1,1,1,1,1.0,1.0,1.0,8/8,orta,10
+TYT,TMAT,TYT.TMAT.21,TYT-MAT,Veri ve İstatistik,1,1,2,1,1,1,1,1,1.12,1.0,1.0,8/8,orta,9-10
+TYT,TMAT,TYT.TMAT.06,TYT-MAT,Basit Eşitsizlikler,1,1,1,0,2,0,1,1,0.88,0.8,0.8,6/8,orta,9
+TYT,TMAT,TYT.TMAT.11,TYT-MAT,Oran-Orantı,2,2,0,2,0,1,0,1,1.0,0.8,0.8,5/8,orta,9
+TYT,TMAT,TYT.TMAT.04,TYT-MAT,EBOB-EKOK,0,0,0,0,1,0,0,1,0.25,0.4,0.4,2/8,nadir,9
+TYT,TMAT,TYT.TMAT.12,TYT-MAT,Denklem Çözme,0,0,0,0,0,0,1,1,0.25,0.4,0.4,2/8,nadir,9
+TYT,TMAT,TYT.TMAT.10,TYT-MAT,Çarpanlara Ayırma,0,0,1,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,9
+TYT,TMAT,TYT.TMAT.17,TYT-MAT,Polinomlar,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,TMAT,TYT.TMAT.18,TYT-MAT,İkinci Dereceden Denklemler,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,TUR,TYT.TUR.04,TYT-TUR,Paragrafta Yardımcı Düşünce ve Çıkarım,13,17,14,19,17,19,18,15,16.5,17.6,17.6,8/8,çok,9-12
+TYT,TUR,TYT.TUR.01,TYT-TUR,Sözcükte Anlam,4,5,5,4,3,5,5,5,4.5,4.4,4.4,8/8,çok,9-10
+TYT,TUR,TYT.TUR.02,TYT-TUR,Cümlede Anlam,3,3,3,3,4,3,3,3,3.12,3.2,3.2,8/8,çok,9-10
+TYT,TUR,TYT.TUR.03,TYT-TUR,Paragrafta Ana Düşünce ve Konu,3,2,6,1,3,2,1,7,3.12,2.8,2.8,8/8,çok,9-12
+TYT,TUR,TYT.TUR.07,TYT-TUR,"Paragrafta Yapı (Akış, Bölme, Sıralama)",2,2,2,3,2,2,2,2,2.12,2.2,2.2,8/8,çok,9-12
+TYT,TUR,TYT.TUR.06,TYT-TUR,Paragraf Tamamlama ve Cümle Yerleştirme,2,3,2,3,3,1,3,0,2.12,2.0,2.0,7/8,çok,9-12
+TYT,TUR,TYT.TUR.09,TYT-TUR,Yazım Kuralları,2,2,2,2,2,2,2,2,2.0,2.0,2.0,8/8,çok,9-10
+TYT,TUR,TYT.TUR.10,TYT-TUR,Noktalama İşaretleri,2,2,2,2,2,2,2,2,2.0,2.0,2.0,8/8,çok,9-10
+TYT,TUR,TYT.TUR.21,TYT-TUR,Cümlenin Ögeleri,2,1,0,1,1,1,1,1,1.0,1.0,1.0,7/8,orta,11
+TYT,TUR,TYT.TUR.05,TYT-TUR,Paragrafta Anlatım Biçimleri ve Düşünceyi Geliştirme Yolları,1,1,1,0,1,1,1,1,0.88,0.8,0.8,7/8,orta,9-12
+TYT,TUR,TYT.TUR.11,TYT-TUR,Sözcük Yapısı ve Ekler,2,1,0,1,0,0,1,1,0.75,0.6,0.6,5/8,az,9-10
+TYT,TUR,TYT.TUR.19,TYT-TUR,Fiilimsiler,0,0,0,0,1,0,1,1,0.38,0.6,0.6,3/8,nadir,11
+TYT,TUR,TYT.TUR.08,TYT-TUR,Ses Bilgisi,1,0,1,0,1,0,0,0,0.38,0.2,0.2,3/8,nadir,9
+TYT,TUR,TYT.TUR.12,TYT-TUR,İsimler ve İsim Tamlamaları,0,0,1,0,0,1,0,0,0.25,0.2,0.2,2/8,nadir,10
+TYT,TUR,TYT.TUR.17,TYT-TUR,Sözcük Türleri (Karma),2,0,1,1,0,0,0,0,0.5,0.2,0.2,3/8,nadir,10
+TYT,TUR,TYT.TUR.22,TYT-TUR,Cümle Türleri,0,0,0,0,0,1,0,0,0.12,0.2,0.2,1/8,nadir,11
+TYT,TUR,TYT.TUR.13,TYT-TUR,Sıfatlar ve Sıfat Tamlamaları,0,1,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
+TYT,TUR,TYT.TUR.14,TYT-TUR,Zamirler,1,0,0,0,0,0,0,0,0.12,0.0,0.0,1/8,nadir,10
+TYT,TUR,TYT.TUR.15,TYT-TUR,Zarflar,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,TUR,TYT.TUR.16,TYT-TUR,"Edat, Bağlaç, Ünlem",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10
+TYT,TUR,TYT.TUR.18,TYT-TUR,"Fiiller: Kip, Kişi ve Ek Fiil",0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,10-11
+TYT,TUR,TYT.TUR.20,TYT-TUR,Fiilde Çatı,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/8,nadir,11
+TYT,TUR,TYT.TUR.23,TYT-TUR,Anlatım Bozuklukları,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0/6,nadir,11-12
