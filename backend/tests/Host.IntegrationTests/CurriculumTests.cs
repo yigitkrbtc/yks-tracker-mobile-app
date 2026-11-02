@@ -1,6 +1,11 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Nirengi.BuildingBlocks.Application.Abstractions;
+using Nirengi.Modules.Curriculum.Domain.Versions;
+using Nirengi.Modules.Curriculum.Infrastructure.Persistence;
 using Nirengi.Modules.Curriculum.Contracts;
 using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
@@ -91,6 +96,47 @@ public sealed class CurriculumTests(NirengiApiFactory factory)
         restored.Status.ShouldBe(TopicStatus.Active);
         (await db.Topics.CountAsync(ct)).ShouldBe(370);
         (await db.TopicWeights.CountAsync(ct)).ShouldBe(shipped.Topics.Sum(t => t.Weights.Count));
+    }
+
+    [Fact]
+    public async Task Without_auto_publish_a_changed_seed_waits_as_a_draft()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var scope = factory.Services.CreateAsyncScope();
+        var services = scope.ServiceProvider;
+        var db = services.GetRequiredService<CurriculumDbContext>();
+        var seeder = new CurriculumSeeder(
+            db,
+            services.GetRequiredService<CurriculumPublisher>(),
+            services.GetRequiredService<IClock>(),
+            Options.Create(new CurriculumOptions { AutoPublishSeed = false }),
+            NullLogger<CurriculumSeeder>.Instance);
+        var shipped = CurriculumSeed.LoadEmbedded();
+        var before = await db.Releases.AsNoTracking().SingleAsync(ct);
+        var renamed = shipped with
+        {
+            Topics = [shipped.Topics[0] with { Name = "Yeniden adlandırıldı" }, .. shipped.Topics.Skip(1)],
+            Hash = new string('1', 64),
+        };
+
+        try
+        {
+            (await seeder.Apply(renamed, ct)).ShouldBeTrue();
+
+            var draft = await db.Drafts.AsNoTracking().SingleAsync(d => d.Kind == DraftKind.SeedImport, ct);
+            var update = CurriculumJson.Operations(draft.Operations).ShouldHaveSingleItem().ShouldBeOfType<UpdateTopic>();
+            update.Code.ShouldBe(shipped.Topics[0].Code);
+            update.Name.ShouldBe("Yeniden adlandırıldı");
+            var after = await db.Releases.AsNoTracking().SingleAsync(ct);
+            after.VersionNumber.ShouldBe(before.VersionNumber);
+            after.SeedHash.ShouldBe(before.SeedHash);
+
+            (await seeder.Apply(renamed, ct)).ShouldBeFalse(); // already waiting
+        }
+        finally
+        {
+            await db.Drafts.Where(d => d.Kind == DraftKind.SeedImport).ExecuteDeleteAsync(ct);
+        }
     }
 
     [Fact]
