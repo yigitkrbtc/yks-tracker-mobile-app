@@ -33,7 +33,6 @@ public static class ModuleInfrastructureRegistration
             .UseNpgsql(connectionString, npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", schema))
             .UseSnakeCaseNamingConvention());
 
-        services.AddScoped<IEventOutbox>(sp => sp.GetRequiredService<TContext>());
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<IClock, SystemClock>();
         services.AddOptions<OutboxOptions>().BindConfiguration("Outbox");

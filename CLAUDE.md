@@ -23,7 +23,7 @@ S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S
 - Modüller arası erişim yalnız `<Modül>.Contracts` (sorgu arayüzü, integration event DTO'su). Başka modülün DbContext'i, tablosu veya iç tipi kullanılmaz.
 - Her modül kendi şemasına yazar (`<Modül>DbContext.SchemaName`). Kolon adları snake_case (otomatik).
 - Komut/sorgu: `ICommand<T>`/`IQuery<T>` + `internal sealed` handler, `IDispatcher` ile çağrılır. Doğrulama FluentValidation validator'ında. Hata `Result`/`Error` ile döner; iş akışı için exception atılmaz.
-- Modüller arası yan etki: handler `IEventOutbox.Enqueue(event)` çağırır, olay aynı `SaveChanges` ile yazılır. Event handler'lar idempotent olmalı.
+- Modüller arası yan etki: handler modülünün unit of work'ünü (`IIdentityUnitOfWork`, `ITrackingUnitOfWork`…) enjekte edip `Enqueue(event)` çağırır; olay aynı `SaveChanges` ile modülün kendi outbox'ına yazılır. Kapsayıcıda genel `IEventOutbox` kaydı yoktur (son kayıt kazanır, olay yanlış modüle yazılır; `OutboxRegistrationTests` zorlar). Event handler'lar idempotent olmalı.
 - Endpoint'ler modülün `MapEndpoints(v1)` metodunda, `/v1` altında. Hata yanıtı `ToProblem()` ile ProblemDetails.
 - Saat için `IClock`; `DateTime.Now` kullanılmaz. Analytics Engine saati parametre olarak alır, I/O yapmaz.
 - Kişisel veri tutan her modül `IPersonalDataExporter` uygular ve kaydeder; `/v1/me/export` bunları toplar (ADR-0018).
