@@ -19,7 +19,15 @@ public interface IEmailSender
 /// code, travels only in <see cref="ProtectedPayload"/> (AES-GCM under a key derived from the HashKey); the outbox row keeps nothing readable.
 /// </summary>
 /// <param name="ValidUntil">After this instant the mail is pointless (the code expired) and is dropped unsent.</param>
-public sealed record IdentityEmailRequested(Guid Id, DateTimeOffset OccurredAt, DateTimeOffset ValidUntil, string ProtectedPayload) : IIntegrationEvent;
+public sealed record IdentityEmailRequested(Guid Id, DateTimeOffset OccurredAt, DateTimeOffset ValidUntil, string ProtectedPayload) : IIntegrationEvent
+{
+    /// <summary>
+    /// What the payload is bound to: the event id and its deadline. A payload copied into another row (another id, a
+    /// later <c>ValidUntil</c>) then fails to open instead of being mailed under the new row's terms.
+    /// </summary>
+    public static string AssociatedData(Guid id, DateTimeOffset validUntil) =>
+        string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{id:N}|{validUntil.UtcTicks}");
+}
 
 /// <summary>What <see cref="IdentityEmailRequested.ProtectedPayload"/> holds once unprotected.</summary>
 public sealed record IdentityEmailPayload(EmailMessage Message, EmailCodeBinding? Code);
@@ -33,7 +41,9 @@ public sealed record EmailCodeBinding(Guid UserId, CodePurpose Purpose, string C
 /// <summary>Encrypts the mail payload while it waits in the outbox table.</summary>
 public interface IEmailPayloadProtector
 {
-    string Protect(string plaintext);
+    /// <param name="plaintext">What to hide.</param>
+    /// <param name="associatedData">Authenticated, not encrypted: opening needs the same value (see <see cref="IdentityEmailRequested.AssociatedData"/>).</param>
+    string Protect(string plaintext, string associatedData);
 
-    string Unprotect(string protectedValue);
+    string Unprotect(string protectedValue, string associatedData);
 }

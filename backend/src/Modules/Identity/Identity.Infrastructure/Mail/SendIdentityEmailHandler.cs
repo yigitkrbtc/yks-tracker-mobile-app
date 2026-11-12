@@ -43,7 +43,9 @@ internal sealed partial class SendIdentityEmailHandler(
         IdentityEmailPayload? payload;
         try
         {
-            payload = JsonSerializer.Deserialize<IdentityEmailPayload>(protector.Unprotect(integrationEvent.ProtectedPayload));
+            payload = JsonSerializer.Deserialize<IdentityEmailPayload>(protector.Unprotect(
+                integrationEvent.ProtectedPayload,
+                IdentityEmailRequested.AssociatedData(integrationEvent.Id, integrationEvent.ValidUntil)));
         }
         catch (Exception ex) when (ex is CryptographicException or JsonException)
         {

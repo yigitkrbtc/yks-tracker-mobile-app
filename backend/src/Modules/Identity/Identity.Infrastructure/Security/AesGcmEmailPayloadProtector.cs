@@ -8,7 +8,7 @@ namespace Nirengi.Modules.Identity.Infrastructure.Security;
 /// <summary>
 /// AES-256-GCM under a key derived (HKDF-SHA256) from <c>Identity:Security:HashKey</c>, the same secret that keys the
 /// code hashes, so the payload sits behind the same trust boundary: reading the database is not enough to open it.
-/// Layout (base64): version(1) | nonce(12) | tag(16) | ciphertext. The version byte is authenticated.
+/// Layout (base64): version(1) | nonce(12) | tag(16) | ciphertext. Authenticated with version | associated data (the event id and deadline).
 /// </summary>
 internal sealed class AesGcmEmailPayloadProtector : IEmailPayloadProtector
 {
@@ -28,7 +28,7 @@ internal sealed class AesGcmEmailPayloadProtector : IEmailPayloadProtector
         _key = HKDF.DeriveKey(HashAlgorithmName.SHA256, Convert.FromBase64String(options.Value.HashKey), 32, salt: null, info: KeyInfo);
     }
 
-    public string Protect(string plaintext)
+    public string Protect(string plaintext, string associatedData)
     {
         var data = Encoding.UTF8.GetBytes(plaintext);
         var output = new byte[HeaderSize + data.Length];
@@ -38,12 +38,14 @@ internal sealed class AesGcmEmailPayloadProtector : IEmailPayloadProtector
         RandomNumberGenerator.Fill(nonce);
 
         using var aes = new AesGcm(_key, TagSize);
-        aes.Encrypt(nonce, data, output.AsSpan(HeaderSize), tag, output.AsSpan(0, 1));
+        aes.Encrypt(nonce, data, output.AsSpan(HeaderSize), tag, Aad(associatedData));
         return Convert.ToBase64String(output);
     }
 
+    private static byte[] Aad(string associatedData) => [Version, .. Encoding.UTF8.GetBytes(associatedData)];
+
     /// <exception cref="CryptographicException">The value is malformed, from another key, or was altered.</exception>
-    public string Unprotect(string protectedValue)
+    public string Unprotect(string protectedValue, string associatedData)
     {
         var input = new byte[(protectedValue.Length * 3 / 4) + 3];
         if (!Convert.TryFromBase64String(protectedValue, input, out var length) || length < HeaderSize)
@@ -58,7 +60,7 @@ internal sealed class AesGcmEmailPayloadProtector : IEmailPayloadProtector
 
         var data = new byte[length - HeaderSize];
         using var aes = new AesGcm(_key, TagSize);
-        aes.Decrypt(input.AsSpan(1, NonceSize), input.AsSpan(HeaderSize, length - HeaderSize), input.AsSpan(1 + NonceSize, TagSize), data, input.AsSpan(0, 1));
+        aes.Decrypt(input.AsSpan(1, NonceSize), input.AsSpan(HeaderSize, length - HeaderSize), input.AsSpan(1 + NonceSize, TagSize), data, Aad(associatedData));
         return Encoding.UTF8.GetString(data);
     }
 }

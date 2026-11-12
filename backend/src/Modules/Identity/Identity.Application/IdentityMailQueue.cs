@@ -17,8 +17,12 @@ internal sealed class IdentityMailQueue(IIdentityUnitOfWork unitOfWork, IEmailPa
     public void Enqueue(EmailMessage message, TimeSpan validFor, EmailCodeBinding? code = null)
     {
         var now = clock.UtcNow;
-        var payload = protector.Protect(JsonSerializer.Serialize(new IdentityEmailPayload(message, code)));
-        unitOfWork.Enqueue(new IdentityEmailRequested(Guid.CreateVersion7(now), now, now + validFor, payload));
+        var id = Guid.CreateVersion7(now);
+        var validUntil = now + validFor;
+        var payload = protector.Protect(
+            JsonSerializer.Serialize(new IdentityEmailPayload(message, code)),
+            IdentityEmailRequested.AssociatedData(id, validUntil));
+        unitOfWork.Enqueue(new IdentityEmailRequested(id, now, validUntil, payload));
     }
 
     public void EnqueueCode(EmailMessage message, IssuedCode issued, TimeSpan validFor) => Enqueue(message, validFor, issued.Binding);

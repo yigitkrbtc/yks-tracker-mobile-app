@@ -209,33 +209,49 @@ public sealed class IdentityMailOutboxTests(NirengiApiFactory factory)
         var now = DateTimeOffset.UtcNow;
         var liveId = await EnqueueMail(live, now + TimeSpan.FromHours(1), ct);
 
-        var raw = Convert.FromBase64String(Protect(tampered));
+        var validUntil = now + TimeSpan.FromHours(1);
+        var tamperedEventId = Guid.CreateVersion7();
+        var raw = Convert.FromBase64String(Protect(tampered, tamperedEventId, validUntil));
         raw[^1] ^= 0x01;
-        var tamperedId = await EnqueueRaw(Convert.ToBase64String(raw), now, ct);
-        var garbageId = await EnqueueRaw("bozuk-yuk", now, ct);
+        var tamperedId = await EnqueueRaw(Convert.ToBase64String(raw), validUntil, ct, tamperedEventId);
+        var garbageId = await EnqueueRaw("bozuk-yuk", validUntil, ct);
 
-        foreach (var id in new[] { liveId, tamperedId, garbageId })
+        // A genuine payload copied into a row with another id (or deadline) is not honoured either.
+        var copied = AuthApi.NewEmail();
+        var copiedFrom = Guid.CreateVersion7();
+        var copiedPayload = Protect(copied, copiedFrom, validUntil);
+        var copiedId = await EnqueueRaw(copiedPayload, validUntil, ct);
+        var extendedId = await EnqueueRaw(copiedPayload, validUntil + TimeSpan.FromDays(30), ct);
+
+        foreach (var id in new[] { liveId, tamperedId, garbageId, copiedId, extendedId })
         {
             await WaitUntilProcessed(id, ct);
         }
 
         factory.Mail.To(live).Count.ShouldBe(1);
         factory.Mail.To(tampered).ShouldBeEmpty();
-        (await Find(tamperedId, ct)).Attempts.ShouldBe(0);
-        (await Find(garbageId, ct)).Attempts.ShouldBe(0);
+        factory.Mail.To(copied).ShouldBeEmpty();
+        foreach (var id in new[] { tamperedId, garbageId, copiedId, extendedId })
+        {
+            (await Find(id, ct)).Attempts.ShouldBe(0);
+        }
     }
 
-    private string Protect(string to) =>
-        factory.Services.GetRequiredService<IEmailPayloadProtector>()
-            .Protect(JsonSerializer.Serialize(new IdentityEmailPayload(new EmailMessage(to, "Konu", "Gövde"), null)));
+    private string Protect(string to, Guid id, DateTimeOffset validUntil) =>
+        factory.Services.GetRequiredService<IEmailPayloadProtector>().Protect(
+            JsonSerializer.Serialize(new IdentityEmailPayload(new EmailMessage(to, "Konu", "Gövde"), null)),
+            IdentityEmailRequested.AssociatedData(id, validUntil));
 
-    private Task<Guid> EnqueueMail(string to, DateTimeOffset validUntil, CancellationToken ct) =>
-        EnqueueRaw(Protect(to), validUntil, ct);
+    private Task<Guid> EnqueueMail(string to, DateTimeOffset validUntil, CancellationToken ct)
+    {
+        var id = Guid.CreateVersion7();
+        return EnqueueRaw(Protect(to, id, validUntil), validUntil, ct, id);
+    }
 
-    private async Task<Guid> EnqueueRaw(string protectedPayload, DateTimeOffset validUntil, CancellationToken ct)
+    private async Task<Guid> EnqueueRaw(string protectedPayload, DateTimeOffset validUntil, CancellationToken ct, Guid? id = null)
     {
         var now = DateTimeOffset.UtcNow;
-        var integrationEvent = new IdentityEmailRequested(Guid.CreateVersion7(now), now, validUntil, protectedPayload);
+        var integrationEvent = new IdentityEmailRequested(id ?? Guid.CreateVersion7(now), now, validUntil, protectedPayload);
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
         db.Enqueue(integrationEvent);
