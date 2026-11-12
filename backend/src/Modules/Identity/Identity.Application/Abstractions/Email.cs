@@ -16,7 +16,7 @@ public interface IEmailSender
 
 /// <summary>
 /// Identity's own outbox event for "mail this to the user" (ADR-0021, PR 2). The mail itself, which can hold a plain
-/// code, travels only in <see cref="ProtectedPayload"/> (Data Protection); the outbox row keeps nothing readable.
+/// code, travels only in <see cref="ProtectedPayload"/> (AES-GCM under a key derived from the HashKey); the outbox row keeps nothing readable.
 /// </summary>
 /// <param name="ValidUntil">After this instant the mail is pointless (the code expired) and is dropped unsent.</param>
 public sealed record IdentityEmailRequested(Guid Id, DateTimeOffset OccurredAt, DateTimeOffset ValidUntil, string ProtectedPayload) : IIntegrationEvent;

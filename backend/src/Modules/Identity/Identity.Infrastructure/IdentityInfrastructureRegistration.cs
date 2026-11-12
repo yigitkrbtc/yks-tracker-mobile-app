@@ -44,7 +44,7 @@ public static class IdentityInfrastructureRegistration
         services.AddSingleton<ITokenIssuer, JwtTokenIssuer>();
         services.AddSingleton<ITotpAuthenticator, OtpNetTotpAuthenticator>();
         services.AddSingleton<ISecretProtector, DataProtectionSecretProtector>();
-        services.AddSingleton<IEmailPayloadProtector, DataProtectionEmailPayloadProtector>();
+        services.AddSingleton<IEmailPayloadProtector, AesGcmEmailPayloadProtector>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IIntegrationEventHandler<IdentityEmailRequested>, SendIdentityEmailHandler>();
 

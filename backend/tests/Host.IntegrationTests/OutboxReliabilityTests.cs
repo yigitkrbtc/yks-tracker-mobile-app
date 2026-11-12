@@ -99,6 +99,26 @@ public sealed class OutboxReliabilityTests(NirengiApiFactory factory)
     }
 
     [Fact]
+    public async Task A_handler_cancellation_that_is_not_a_shutdown_counts_as_that_messages_failure()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var harness = await Harness.Create(factory, Options);
+        var timingOut = await harness.Enqueue(ct);
+        harness.Handler.TimesOut.Add(timingOut);
+        harness.Clock.UtcNow += TimeSpan.FromSeconds(1);
+        var behind = await harness.Enqueue(ct);
+
+        // Does not throw: the batch survives and the message behind the failing one is delivered.
+        await harness.Processor.ProcessBatch(ct);
+
+        var failed = await harness.Find(timingOut, ct);
+        failed.ProcessedAt.ShouldBeNull();
+        failed.Attempts.ShouldBe(1);
+        failed.NextAttemptAt.ShouldNotBeNull();
+        (await harness.Find(behind, ct)).ProcessedAt.ShouldNotBeNull();
+    }
+
+    [Fact]
     public async Task Processed_messages_older_than_the_retention_period_are_deleted()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -198,6 +218,9 @@ public sealed class OutboxReliabilityTests(NirengiApiFactory factory)
         /// <summary>Messages that always fail.</summary>
         public ConcurrentBag<Guid> Poison { get; } = [];
 
+        /// <summary>Messages whose handler is cancelled by its own timeout, not by a shutdown.</summary>
+        public ConcurrentBag<Guid> TimesOut { get; } = [];
+
         public TimeSpan Delay { get; set; }
 
         public int Calls(Guid id) => _calls.GetValueOrDefault(id);
@@ -208,6 +231,11 @@ public sealed class OutboxReliabilityTests(NirengiApiFactory factory)
             if (Delay > TimeSpan.Zero)
             {
                 await Task.Delay(Delay, cancellationToken);
+            }
+
+            if (TimesOut.Contains(integrationEvent.Id))
+            {
+                throw new OperationCanceledException("simulated command timeout");
             }
 
             if (calls <= FailFirst || Poison.Contains(integrationEvent.Id))

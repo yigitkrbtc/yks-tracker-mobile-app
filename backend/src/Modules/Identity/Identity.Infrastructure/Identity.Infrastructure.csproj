@@ -4,6 +4,9 @@
     <ProjectReference Include="../../../BuildingBlocks/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Nirengi.Identity.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="MailKit" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">

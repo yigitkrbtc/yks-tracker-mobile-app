@@ -31,12 +31,19 @@ internal sealed partial class SmtpEmailSender(IOptions<SmtpOptions> options, ILo
             await client.SendAsync(mime, cancellationToken);
             await client.DisconnectAsync(quit: true, cancellationToken);
         }
-        catch (Exception ex) when (ex is ParseException or SmtpCommandException { ErrorCode: SmtpErrorCode.RecipientNotAccepted })
+        catch (Exception ex) when (IsPermanentRefusal(ex))
         {
             // The relay or the parser refuses this recipient for good: retrying would only repeat it forever.
             LogRecipientRefused(logger, ex);
         }
     }
+
+    /// <summary>
+    /// True only for a refusal no retry can change: an address the parser rejects, or a recipient the relay rejects with a
+    /// permanent (5xx) status. A temporary (4xx) rejection, such as greylisting or a full mailbox, is retried.
+    /// </summary>
+    internal static bool IsPermanentRefusal(Exception exception) => exception is ParseException
+        or SmtpCommandException { ErrorCode: SmtpErrorCode.RecipientNotAccepted, StatusCode: >= (SmtpStatusCode)500 };
 
     private static SecureSocketOptions ToMailKit(SmtpSecurity security) => security switch
     {

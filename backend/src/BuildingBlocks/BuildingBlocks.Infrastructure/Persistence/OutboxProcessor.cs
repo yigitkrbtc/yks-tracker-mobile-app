@@ -32,6 +32,59 @@ public sealed class OutboxOptions
     public TimeSpan StaleAfter { get; set; } = TimeSpan.FromMinutes(15);
 }
 
+/// <summary>
+/// Rejects settings that would make the worker spin (a zero poll interval or delay) or never run a batch; checked at startup.
+/// </summary>
+public sealed class OutboxOptionsValidator : IValidateOptions<OutboxOptions>
+{
+    public ValidateOptionsResult Validate(string? name, OutboxOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        List<string> failures = [];
+        if (options.PollInterval <= TimeSpan.Zero)
+        {
+            failures.Add("Outbox:PollInterval must be greater than zero.");
+        }
+
+        if (options.BatchSize <= 0)
+        {
+            failures.Add("Outbox:BatchSize must be greater than zero.");
+        }
+
+        if (options.BaseDelay <= TimeSpan.Zero)
+        {
+            failures.Add("Outbox:BaseDelay must be greater than zero.");
+        }
+
+        if (options.MaxDelay < options.BaseDelay)
+        {
+            failures.Add("Outbox:MaxDelay must not be shorter than Outbox:BaseDelay.");
+        }
+
+        if (options.AlertAfterAttempts <= 0)
+        {
+            failures.Add("Outbox:AlertAfterAttempts must be greater than zero.");
+        }
+
+        if (options.RetentionPeriod <= TimeSpan.Zero)
+        {
+            failures.Add("Outbox:RetentionPeriod must be greater than zero.");
+        }
+
+        if (options.CleanupInterval <= TimeSpan.Zero)
+        {
+            failures.Add("Outbox:CleanupInterval must be greater than zero.");
+        }
+
+        if (options.StaleAfter <= TimeSpan.Zero)
+        {
+            failures.Add("Outbox:StaleAfter must be greater than zero.");
+        }
+
+        return failures.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(failures);
+    }
+}
+
 public static class OutboxBackoff
 {
     /// <summary>Delay before the next attempt after <paramref name="attempts"/> failures: min(2^(attempts-1) * BaseDelay, MaxDelay).</summary>
@@ -73,8 +126,9 @@ public sealed partial class OutboxProcessor<TContext>(
                     _lastCleanup = clock.UtcNow;
                 }
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {
+                // Only a requested stop ends the loop; any other failure (a timeout's cancellation included) is logged and retried next tick.
                 LogBatchFailed(logger, typeof(TContext).Name, ex);
             }
         }
@@ -106,8 +160,9 @@ public sealed partial class OutboxProcessor<TContext>(
                 message.NextAttemptAt = null;
                 message.LastError = null;
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
             {
+                // A cancellation that is not a shutdown (a handler's own timeout) counts as this message's failure.
                 message.Attempts++;
                 message.NextAttemptAt = clock.UtcNow + OutboxBackoff.Delay(message.Attempts, settings);
                 message.LastError = ex.Message;

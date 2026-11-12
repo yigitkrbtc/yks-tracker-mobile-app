@@ -17,6 +17,12 @@ public sealed class NirengiApiFactory : WebApplicationFactory<Program>, IAsyncLi
 
     public static readonly string TestSigningKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
+    /// <summary>
+    /// One HashKey for every host built from this factory. The e-mail payload is encrypted under it, and hosts made with
+    /// <c>WithWebHostBuilder</c> share the database (and so its outbox) with the main one, like instances of one deployment.
+    /// </summary>
+    public static readonly string TestHashKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
     public const string AdminEmail = "admin@nirengi.test";
 
     public FakeEmailSender Mail { get; } = new();
@@ -81,7 +87,7 @@ public sealed class NirengiApiFactory : WebApplicationFactory<Program>, IAsyncLi
         builder.UseSetting("Curriculum:AutoPublishSeed", "true");
         builder.UseSetting("RateLimiting:Auth:PermitLimit", "10000");
         builder.UseSetting("RateLimiting:Session:PermitLimit", "10000");
-        builder.UseSetting("Identity:Security:HashKey", Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));
+        builder.UseSetting("Identity:Security:HashKey", TestHashKey);
         builder.UseSetting("Identity:AdminEmails:0", AdminEmail);
         builder.UseSetting("Smtp:Host", "localhost");
         builder.UseSetting("Smtp:FromAddress", "test@nirengi.local");
