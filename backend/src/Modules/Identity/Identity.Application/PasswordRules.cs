@@ -65,12 +65,15 @@ internal static class PasswordRules
 
         var nothingButPeel = folded.Trim(Peelable).Length == 0;
         return nothingButPeel || Cores(folded).Any(core =>
-            CommonWords.Contains(core)
-            || IsRun(core)
-            || names.Any(p => core == p || (core.Contains(p, StringComparison.Ordinal) && core.Length - p.Length <= 2)));
+            IsRun(core)
+            || IsWordOrName(LeetFold(core), names));
     }
 
-    /// <summary>Leet-folded cores of <paramref name="folded"/>: the word between 0..n peeled characters at each end.</summary>
+    private static bool IsWordOrName(string leetCore, List<string> names) =>
+        CommonWords.Contains(leetCore)
+        || names.Any(p => leetCore == p || (leetCore.Contains(p, StringComparison.Ordinal) && leetCore.Length - p.Length <= 2));
+
+    /// <summary>Cores of <paramref name="folded"/> (letter-folded, not leet-folded): the word between 0..n peeled characters at each end.</summary>
     private static IEnumerable<string> Cores(string folded)
     {
         var lead = folded.Length - folded.TrimStart(Peelable).Length;
@@ -85,7 +88,7 @@ internal static class PasswordRules
         {
             for (var end = folded.Length - trail; end <= folded.Length; end++)
             {
-                yield return LeetFold(folded[start..end]);
+                yield return folded[start..end];
             }
         }
     }

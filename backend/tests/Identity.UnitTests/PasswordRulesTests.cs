@@ -18,6 +18,8 @@ public sealed class PasswordRulesTests
     [InlineData("Passw0rd!")]
     [InlineData("S1fr3-2024")]
     [InlineData("4dm1n12345")]
+    [InlineData("1q2w3e4r5t!!")]
+    [InlineData("!1q2w3e4r5t")]
     public void Common_passwords_are_refused(string password) =>
         PasswordRules.IsCommon(password).ShouldBeTrue();
 
