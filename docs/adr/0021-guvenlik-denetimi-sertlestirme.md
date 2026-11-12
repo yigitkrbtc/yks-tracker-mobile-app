@@ -1,6 +1,6 @@
 # ADR-0021: Güvenlik denetimi sertleştirmesi
 
-- Durum: Kabul edildi (PR 1: kimlik)
+- Durum: Kabul edildi (PR 1: kimlik, PR 2: olay güvenilirliği)
 - Tarih: 2026-11-12
 
 ## Bağlam
@@ -19,9 +19,18 @@
 - **M3 Refresh tolerans penceresi.** Döndürülmüş (`Rotated`) token 60 sn içinde (`Identity:RefreshReuseGrace`) tekrar gelirse yanıt yolda kaybolmuş sayılır: `ReplacedById` zinciri en çok 5 adım izlenir, her halkanın iptali tolerans içinde olmalı; ilk halka `Rotated`, sonrakiler `Superseded` olmalı ve zincirin sonundaki aktif halef `Superseded` nedeniyle döndürülür, yeni çift verilir. Böylece art arda iki kez kaybolan yanıt da oturumu düşürmez. Zincirde `Rotated` (halef sunulup kullanılmış), `Logout`, `ReuseDetected` gibi başka neden ya da süresi geçmiş halka görülürse ya da `Superseded` token doğrudan sunulursa yeniden kullanım: aile iptal. Bedel: tokenı 60 sn içinde çalan biri meşru istemcinin halefini geçersiz kılabilir; meşru istemci halefi sunduğunda aile ölür, saldırı yine yakalanır.
 - **İ4 Yaygın şifre.** Kayıt ve sıfırlamada uçlardaki rakam/işaret atılınca (uçtaki rakam kelimenin parçası olabilir: her soyma miktarı denenir) kalan çekirdek, leet katlamasından sonra (0→o, 1→i, 3→e, 4→a, 5→s, 7→t, @→a, $→s; yalnız kelime karşılaştırması için) yaygın kelime listesinde, klavye dizisi, ≤ 3 farklı karakter ya da kişinin adı (± 2 karakter) ise ret. 10 bin yaygın şifre listesi denendi; uzunluk + harf + rakam kuralını geçen yalnız 5 kayıt çıktığı için kelime + dizi kuralı seçildi.
 
+**PR 2: Olay güvenilirliği**
+
+- **G2 Outbox kaybı.** Eski işlemci 2 sn'de bir yokluyor, 10 başarısızlıkta mesajı kalıcı terk ediyordu: ~20 sn'lik DB ya da handler kesintisi `UserDeleted` gibi bir olayı kaybettirip kişisel veriyi silinmemiş bırakabilirdi. Şimdi mesaj **asla terk edilmez**: `MaxAttempts` kaldırıldı, her başarısızlıkta `attempts++` ve `next_attempt_at = now + min(2^(attempts-1) * BaseDelay, MaxDelay)` (varsayılan 5 sn … 1 sa). Sınırsız deneme seçildi, çünkü "yeterince çok denedik" diye bir olayı atmanın güvenli bir eşiği yok: kesinti uzarsa olay bekler, kesinti bitince teslim edilir. Bedel: kalıcı bozuk bir mesaj (örn. artık var olmayan tip) saatte bir sonsuza dek denenir; bu sessiz kalmaz: `attempts >= AlertAfterAttempts` (10) olunca her başarısızlık Error düzeyinde loglanır ve aşağıdaki sağlık denetimi Degraded olur. Takılan mesaj sıradakileri bloklamaz (aşağıdaki `SKIP LOCKED` ve `next_attempt_at` süzgeci).
+- **Çift işleme.** Seçim bir transaction içinde `... WHERE processed_at IS NULL AND (next_attempt_at IS NULL OR next_attempt_at <= now) ORDER BY occurred_at LIMIT n FOR UPDATE SKIP LOCKED` (EF `FromSqlRaw`; tablo/kolon adları modelden). Birden çok örnek ya da paralel `ProcessBatch` ayrık satırlar alır. Her mesajın handler'ları kendi DI scope'unda çalışır (claim transaction'ından bağımsız DbContext). Teslimat yine en az bir kez: işlemci batch ortasında ölürse transaction geri alınır, batch yeniden teslim edilir; handler'lar idempotent kalır. `ix_outbox_messages_unprocessed` `(occurred_at) INCLUDE (next_attempt_at) WHERE processed_at IS NULL` oldu.
+- **Temizlik.** İşlenmiş mesajlar `RetentionPeriod` (7 gün) sonra saatte bir `ExecuteDelete` ile silinir. İşlenmemişe dokunulmaz.
+- **Sağlık.** Her modül için `outbox-<Context>` sağlık denetimi `ready` etiketiyle kaydolur (`AddModuleInfrastructure` içinde, böylece yeni modül otomatik kapsanır): en eski işlenmemiş mesaj `StaleAfter` (15 dk) den eskiyse Degraded. Degraded `/health/ready`'yi 200 bırakır (konteyner yeniden başlatılmaz; sorun bir yeniden başlatmayla geçmez) ama yanıt gövdesinde ve izlemede görünür.
+- **Ayarlar** (`Outbox:*`): `BaseDelay`, `MaxDelay`, `AlertAfterAttempts`, `RetentionPeriod`, `CleanupInterval`, `StaleAfter`.
+
 ## Sonuçlar
 
 - Eski mobil sürüm doğrulamada şifre göndermez ve 400 alır; beta öncesi olduğumuz için uyumluluk katmanı yazılmadı.
 - `verification_codes` tablosuna `attempt_window_started_at`, `failed_attempts_in_window`; `refresh_tokens` tablosuna `issued_with_mfa` eklendi (migration `VerificationCodeAttemptWindow`).
 - Kayıt tekrarı (`ReplacePendingRegistration`) kilit sayacını sıfırlar: yeniden kayıt olan, önceki denemelerin kilidini devralmaz.
 - Regresyonlar `Host.IntegrationTests/IdentityHardeningTests.cs` içinde; G1 testi düzeltmeden önce kırmızıydı.
+- PR 2: tüm modüllerde `outbox_messages.next_attempt_at` (null = hemen) ve yeniden kurulan kısmi indeks (migration `OutboxRetryBackoff`); mevcut satırlarda null kalır, yani ilk yoklamada hemen denenir. Regresyonlar `Host.IntegrationTests/OutboxReliabilityTests.cs` içinde (modül başına ayrı veritabanı + elle sürülen saat); 15 kez başarısız olup sonra teslim edilen mesaj testi, eski `attempts < 10` davranışına karşı kırmızıydı.

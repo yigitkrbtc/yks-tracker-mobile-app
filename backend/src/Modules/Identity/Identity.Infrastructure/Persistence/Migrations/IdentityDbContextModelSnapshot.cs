@@ -61,6 +61,10 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("last_error");
 
+                    b.Property<DateTimeOffset?>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
                     b.Property<DateTimeOffset>("OccurredAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("occurred_at");
@@ -86,6 +90,8 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                     b.HasIndex("OccurredAt")
                         .HasDatabaseName("ix_outbox_messages_unprocessed")
                         .HasFilter("processed_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("OccurredAt"), new[] { "NextAttemptAt" });
 
                     b.ToTable("outbox_messages", "identity");
                 });

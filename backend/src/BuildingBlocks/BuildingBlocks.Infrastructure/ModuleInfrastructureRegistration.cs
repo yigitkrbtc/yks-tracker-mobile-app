@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Nirengi.BuildingBlocks.Application.Abstractions;
 using Nirengi.BuildingBlocks.Application.Events;
 using Nirengi.BuildingBlocks.Application.Messaging;
@@ -37,6 +38,10 @@ public static class ModuleInfrastructureRegistration
         services.TryAddSingleton<IClock, SystemClock>();
         services.AddOptions<OutboxOptions>().BindConfiguration("Outbox");
         services.AddHostedService<OutboxProcessor<TContext>>();
+        services.AddHealthChecks().AddCheck<OutboxHealthCheck<TContext>>(
+            $"outbox-{typeof(TContext).Name}",
+            failureStatus: HealthStatus.Degraded,
+            tags: ["ready"]);
         services.AddApplicationHandlers(applicationAssembly);
         return services;
     }
