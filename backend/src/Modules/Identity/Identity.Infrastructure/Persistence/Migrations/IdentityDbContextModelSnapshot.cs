@@ -422,6 +422,26 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                     b.ToTable("users", "identity");
                 });
 
+            modelBuilder.Entity("Nirengi.Modules.Identity.Infrastructure.Persistence.Configurations.SentEmail", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.HasKey("EventId")
+                        .HasName("pk_sent_emails");
+
+                    b.HasIndex("SentAt")
+                        .HasDatabaseName("ix_sent_emails_sent_at");
+
+                    b.ToTable("sent_emails", "identity");
+                });
+
             modelBuilder.Entity("Nirengi.Modules.Identity.Domain.Codes.VerificationCode", b =>
                 {
                     b.HasOne("Nirengi.Modules.Identity.Domain.Users.User", null)

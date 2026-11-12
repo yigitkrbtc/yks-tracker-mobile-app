@@ -20,7 +20,7 @@ internal sealed class ResendVerificationCodeValidator : AbstractValidator<Resend
 internal sealed class ResendVerificationCodeHandler(
     IUserRepository users,
     VerificationCodes codes,
-    IEmailSender email,
+    IdentityMailQueue mail,
     IIdentityUnitOfWork unitOfWork,
     IClock clock,
     IdentityOptions options) : ICommandHandler<ResendVerificationCodeCommand, Unit>
@@ -39,8 +39,8 @@ internal sealed class ResendVerificationCodeHandler(
             return Unit.Value;
         }
 
+        mail.EnqueueCode(IdentityEmails.VerificationCode(user.Email, user.FirstName, code.Code, options.CodeLifetime), code, options.CodeLifetime);
         await unitOfWork.SaveChanges(cancellationToken);
-        await email.Send(IdentityEmails.VerificationCode(user.Email, user.FirstName, code, options.CodeLifetime), cancellationToken);
         return Unit.Value;
     }
 }

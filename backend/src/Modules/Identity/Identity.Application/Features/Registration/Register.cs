@@ -47,7 +47,7 @@ internal sealed class RegisterHandler(
     IConsentRepository consents,
     VerificationCodes codes,
     IPasswordHasher hasher,
-    IEmailSender email,
+    IdentityMailQueue mail,
     IIdentityUnitOfWork unitOfWork,
     IClock clock,
     IdentityOptions options) : ICommandHandler<RegisterCommand, Unit>
@@ -82,7 +82,8 @@ internal sealed class RegisterHandler(
         var user = await users.GetByEmail(address.Value.Normalized, cancellationToken);
         if (user is not null && user.Status != UserStatus.PendingVerification)
         {
-            await email.Send(IdentityEmails.AccountExists(user.Email, user.FirstName), cancellationToken);
+            mail.Enqueue(IdentityEmails.AccountExists(user.Email, user.FirstName), IdentityMailQueue.NoticeValidity);
+            await unitOfWork.SaveChanges(cancellationToken);
             return Unit.Value;
         }
 
@@ -104,18 +105,13 @@ internal sealed class RegisterHandler(
         }
 
         var code = await codes.Issue(user, CodePurpose.EmailVerification, now, cancellationToken);
-
-        // A concurrent sign-up for the same address won; its code is the one in the mailbox.
-        if (!await unitOfWork.TrySaveChanges(cancellationToken))
-        {
-            return Unit.Value;
-        }
-
         if (code is not null)
         {
-            await email.Send(IdentityEmails.VerificationCode(user.Email, user.FirstName, code, options.CodeLifetime), cancellationToken);
+            mail.EnqueueCode(IdentityEmails.VerificationCode(user.Email, user.FirstName, code.Code, options.CodeLifetime), code, options.CodeLifetime);
         }
 
+        // A concurrent sign-up for the same address won; its code is the one in the mailbox (nothing of ours, mail included, was written).
+        await unitOfWork.TrySaveChanges(cancellationToken);
         return Unit.Value;
     }
 }

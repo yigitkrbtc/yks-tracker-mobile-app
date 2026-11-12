@@ -36,7 +36,7 @@ public sealed class AuthApi(NirengiApiFactory factory)
     public async Task<Tokens> RegisterAndVerify(string email)
     {
         (await Post("/v1/auth/register", Registration(email))).StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        var verified = await Post("/v1/auth/email/verify", new { email, code = factory.Mail.LatestCode(email), password = Password });
+        var verified = await Post("/v1/auth/email/verify", new { email, code = await factory.Mail.WaitForCode(email), password = Password });
         verified.StatusCode.ShouldBe(HttpStatusCode.OK);
         return (await Read<SignIn>(verified)).Tokens!;
     }

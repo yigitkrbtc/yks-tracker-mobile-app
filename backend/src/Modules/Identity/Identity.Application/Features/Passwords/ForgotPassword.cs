@@ -20,7 +20,7 @@ internal sealed class ForgotPasswordValidator : AbstractValidator<ForgotPassword
 internal sealed class ForgotPasswordHandler(
     IUserRepository users,
     VerificationCodes codes,
-    IEmailSender email,
+    IdentityMailQueue mail,
     IIdentityUnitOfWork unitOfWork,
     IClock clock,
     IdentityOptions options) : ICommandHandler<ForgotPasswordCommand, Unit>
@@ -39,8 +39,8 @@ internal sealed class ForgotPasswordHandler(
             return Unit.Value;
         }
 
+        mail.EnqueueCode(IdentityEmails.PasswordResetCode(user.Email, user.FirstName, code.Code, options.CodeLifetime), code, options.CodeLifetime);
         await unitOfWork.SaveChanges(cancellationToken);
-        await email.Send(IdentityEmails.PasswordResetCode(user.Email, user.FirstName, code, options.CodeLifetime), cancellationToken);
         return Unit.Value;
     }
 }

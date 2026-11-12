@@ -60,7 +60,7 @@ public sealed class AuthFlowTests(NirengiApiFactory factory)
 
         var email = AuthApi.NewEmail();
         (await _api.Post("/v1/auth/register", AuthApi.Registration(email, birthYear: minorYear))).StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        var verified = await _api.Post("/v1/auth/email/verify", new { email, code = factory.Mail.LatestCode(email), password = AuthApi.Password });
+        var verified = await _api.Post("/v1/auth/email/verify", new { email, code = await factory.Mail.WaitForCode(email), password = AuthApi.Password });
         var profile = await AuthApi.Read<AuthApi.Profile>(await _api.GetMe((await AuthApi.Read<AuthApi.SignIn>(verified)).Tokens!.AccessToken));
         profile.CanGiveMarketingConsent.ShouldBeFalse();
     }
@@ -92,9 +92,10 @@ public sealed class AuthFlowTests(NirengiApiFactory factory)
         var email = AuthApi.NewEmail();
         await _api.RegisterAndVerify(email);
 
+        var mailsBefore = factory.Mail.To(email).Count;
         (await _api.Post("/v1/auth/register", AuthApi.Registration(email))).StatusCode.ShouldBe(HttpStatusCode.Accepted);
 
-        factory.Mail.To(email)[^1].Subject.ShouldContain("zaten var");
+        (await factory.Mail.WaitForMail(email, mailsBefore)).Subject.ShouldContain("zaten var");
         (await _api.Post("/v1/auth/login", new { email, password = AuthApi.Password })).StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
@@ -120,7 +121,7 @@ public sealed class AuthFlowTests(NirengiApiFactory factory)
             HttpStatusCode.Forbidden,
             "identity.email_not_verified");
 
-        var wrong = factory.Mail.LatestCode(email) == "000000" ? "111111" : "000000";
+        var wrong = await factory.Mail.WaitForCode(email) == "000000" ? "111111" : "000000";
         await AuthApi.ShouldBeProblem(
             await _api.Post("/v1/auth/email/verify", new { email, code = wrong, password = AuthApi.Password }),
             HttpStatusCode.BadRequest,
@@ -132,9 +133,11 @@ public sealed class AuthFlowTests(NirengiApiFactory factory)
     {
         var email = AuthApi.NewEmail();
         await _api.Post("/v1/auth/register", AuthApi.Registration(email));
+        await factory.Mail.WaitForMail(email);
 
         (await _api.Post("/v1/auth/email/resend", new { email })).StatusCode.ShouldBe(HttpStatusCode.Accepted);
 
+        await factory.WaitForIdentityMailDelivered();
         factory.Mail.To(email).Count.ShouldBe(1);
     }
 

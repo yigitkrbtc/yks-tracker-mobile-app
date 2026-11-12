@@ -24,8 +24,9 @@ public sealed class AccountLifecycleTests(NirengiApiFactory factory)
         var email = AuthApi.NewEmail();
         var tokens = await _api.RegisterAndVerify(email);
 
+        var mailsBefore = factory.Mail.To(email).Count;
         (await _api.Post("/v1/auth/password/forgot", new { email })).StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        var code = factory.Mail.LatestCode(email);
+        var code = await factory.Mail.WaitForCode(email, mailsBefore);
         (await _api.Post("/v1/auth/password/reset", new { email, code, newPassword = NewPassword })).StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
         (await _api.Post("/v1/auth/refresh", new { refreshToken = tokens.RefreshToken })).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);

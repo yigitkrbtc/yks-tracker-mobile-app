@@ -14,7 +14,7 @@ internal sealed partial class SmtpEmailSender(IOptions<SmtpOptions> options, ILo
         var smtp = options.Value;
         try
         {
-            // Inside the try: an address our looser check accepts can still fail MimeKit's parser.
+            // An address our looser check accepts can still fail MimeKit's parser; no retry will change that.
             using var mime = new MimeMessage();
             mime.From.Add(new MailboxAddress(smtp.FromName, smtp.FromAddress));
             mime.To.Add(MailboxAddress.Parse(message.To));
@@ -31,9 +31,10 @@ internal sealed partial class SmtpEmailSender(IOptions<SmtpOptions> options, ILo
             await client.SendAsync(mime, cancellationToken);
             await client.DisconnectAsync(quit: true, cancellationToken);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is ParseException or SmtpCommandException { ErrorCode: SmtpErrorCode.RecipientNotAccepted })
         {
-            LogSendFailed(logger, ex);
+            // The relay or the parser refuses this recipient for good: retrying would only repeat it forever.
+            LogRecipientRefused(logger, ex);
         }
     }
 
@@ -44,7 +45,7 @@ internal sealed partial class SmtpEmailSender(IOptions<SmtpOptions> options, ILo
         _ => SecureSocketOptions.StartTls,
     };
 
-    // The recipient is personal data; it stays out of the log.
-    [LoggerMessage(Level = LogLevel.Error, Message = "Sending an identity e-mail failed")]
-    private static partial void LogSendFailed(ILogger logger, Exception exception);
+    // The recipient is personal data; it stays out of the log. Every other failure propagates: the outbox retries it.
+    [LoggerMessage(Level = LogLevel.Warning, Message = "An identity e-mail was dropped: the recipient is refused")]
+    private static partial void LogRecipientRefused(ILogger logger, Exception exception);
 }

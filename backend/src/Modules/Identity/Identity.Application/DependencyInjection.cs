@@ -12,6 +12,7 @@ public static class DependencyInjection
         services.AddScoped<CredentialChecker>();
         services.AddScoped<VerificationCodes>();
         services.AddScoped<MfaGate>();
+        services.AddScoped<IdentityMailQueue>();
         return services;
     }
 }

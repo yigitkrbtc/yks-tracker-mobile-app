@@ -15,11 +15,12 @@ public sealed class AdminMfaTests(NirengiApiFactory factory)
     public async Task Admin_must_enrol_totp_then_sign_in_with_a_second_factor()
     {
         const string email = NirengiApiFactory.AdminEmail;
+        var mailsBefore = factory.Mail.To(email).Count;
         (await _api.Post("/v1/auth/register", AuthApi.Registration(email))).StatusCode.ShouldBe(HttpStatusCode.Accepted);
 
         // Verification proves the mailbox but an admin still gets no tokens without TOTP.
         var verified = await AuthApi.Read<AuthApi.SignIn>(
-            await _api.Post("/v1/auth/email/verify", new { email, code = factory.Mail.LatestCode(email), password = AuthApi.Password }));
+            await _api.Post("/v1/auth/email/verify", new { email, code = await factory.Mail.WaitForCode(email, mailsBefore), password = AuthApi.Password }));
         verified.Tokens.ShouldBeNull();
         verified.Mfa!.Step.ShouldBe("TotpSetup");
         var setupToken = verified.Mfa.MfaToken;

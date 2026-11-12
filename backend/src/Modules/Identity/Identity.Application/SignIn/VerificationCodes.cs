@@ -5,6 +5,9 @@ using Nirengi.Modules.Identity.Domain.Users;
 
 namespace Nirengi.Modules.Identity.Application.SignIn;
 
+/// <summary>A freshly issued code: the plain value to mail and what ties that mail to this very code.</summary>
+internal sealed record IssuedCode(string Code, EmailCodeBinding Binding);
+
 /// <summary>Issues and checks 6-digit codes. The hash binds user and purpose, so a code never works elsewhere.</summary>
 internal sealed class VerificationCodes(
     IVerificationCodeRepository codes,
@@ -13,8 +16,8 @@ internal sealed class VerificationCodes(
 {
     public const int Digits = 6;
 
-    /// <summary>Returns the plain code to mail, or null while the resend cooldown is running.</summary>
-    public async Task<string?> Issue(User user, CodePurpose purpose, DateTimeOffset now, CancellationToken cancellationToken)
+    /// <summary>Returns the code to mail, or null while the resend cooldown is running.</summary>
+    public async Task<IssuedCode?> Issue(User user, CodePurpose purpose, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var code = secrets.NewNumericCode(Digits);
         var hash = Hash(user.Id, purpose, code);
@@ -22,7 +25,7 @@ internal sealed class VerificationCodes(
         if (existing is null)
         {
             codes.Add(VerificationCode.Issue(user.Id, purpose, hash, now, options.CodeLifetime));
-            return code;
+            return new IssuedCode(code, new EmailCodeBinding(user.Id, purpose, hash));
         }
 
         if (!existing.CanResend(now, options.CodeResendCooldown))
@@ -31,7 +34,7 @@ internal sealed class VerificationCodes(
         }
 
         existing.Reissue(hash, now, options.CodeLifetime);
-        return code;
+        return new IssuedCode(code, new EmailCodeBinding(user.Id, purpose, hash));
     }
 
     /// <summary>Checks a code; failed attempts are counted on the entity, so callers save either way.</summary>

@@ -21,7 +21,7 @@ public sealed class IdentityHardeningTests(NirengiApiFactory factory)
     {
         var email = AuthApi.NewEmail();
         (await _api.Post("/v1/auth/register", AuthApi.Registration(email))).StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        var victimCode = factory.Mail.LatestCode(email);
+        var victimCode = await factory.Mail.WaitForCode(email);
 
         // Inside the resend cooldown: no new code goes out, the victim's code stays the one in the mailbox.
         (await _api.Post("/v1/auth/register", AuthApi.Registration(email, password: AttackerPassword))).StatusCode.ShouldBe(HttpStatusCode.Accepted);
@@ -61,7 +61,7 @@ public sealed class IdentityHardeningTests(NirengiApiFactory factory)
         await _api.Post("/v1/auth/register", AuthApi.Registration(email));
 
         await AuthApi.ShouldBeProblem(
-            await _api.Post("/v1/auth/email/verify", new { email, code = factory.Mail.LatestCode(email), password = AttackerPassword }),
+            await _api.Post("/v1/auth/email/verify", new { email, code = await factory.Mail.WaitForCode(email), password = AttackerPassword }),
             HttpStatusCode.Unauthorized,
             "identity.invalid_credentials");
     }
@@ -126,7 +126,9 @@ public sealed class IdentityHardeningTests(NirengiApiFactory factory)
             (await Post(client, "/v1/auth/password/forgot", new { email })).StatusCode.ShouldBe(HttpStatusCode.Accepted);
         }
 
-        factory.Mail.To(email).Count(m => m.Subject.Any(char.IsDigit)).ShouldBe(7); // verification code + six reset codes
+        // Mails go out through the outbox; one for a code that a later request already replaced is not sent.
+        await factory.WaitForIdentityMailDelivered();
+        factory.Mail.To(email).Count(m => m.Subject.Any(char.IsDigit)).ShouldBeInRange(2, 7); // verification code + the reset codes still current
         const string newPassword = "yeniSifre456";
         (await Post(client, "/v1/auth/password/reset", new { email, code = factory.Mail.LatestCode(email), newPassword }))
             .StatusCode.ShouldBe(HttpStatusCode.NoContent);
@@ -145,8 +147,9 @@ public sealed class IdentityHardeningTests(NirengiApiFactory factory)
         // 5 codes x 5 wrong guesses = the whole day's budget.
         for (var round = 0; round < 5; round++)
         {
+            var mailsBefore = factory.Mail.To(email).Count;
             (await Post(client, "/v1/auth/password/forgot", new { email })).StatusCode.ShouldBe(HttpStatusCode.Accepted);
-            var real = factory.Mail.LatestCode(email);
+            var real = await factory.Mail.WaitForCode(email, mailsBefore);
             var wrong = real == "000000" ? "000001" : "000000";
             for (var guess = 0; guess < 5; guess++)
             {
@@ -154,9 +157,10 @@ public sealed class IdentityHardeningTests(NirengiApiFactory factory)
             }
         }
 
+        var lastMailsBefore = factory.Mail.To(email).Count;
         (await Post(client, "/v1/auth/password/forgot", new { email })).StatusCode.ShouldBe(HttpStatusCode.Accepted);
         await AuthApi.ShouldBeProblem(
-            await Post(client, "/v1/auth/password/reset", new { email, code = factory.Mail.LatestCode(email), newPassword }),
+            await Post(client, "/v1/auth/password/reset", new { email, code = await factory.Mail.WaitForCode(email, lastMailsBefore), newPassword }),
             HttpStatusCode.BadRequest,
             "identity.code_expired");
     }
@@ -192,7 +196,7 @@ public sealed class IdentityHardeningTests(NirengiApiFactory factory)
 
         (await Post(adminClient, "/v1/auth/register", AuthApi.Registration(email))).StatusCode.ShouldBe(HttpStatusCode.Accepted);
         var verified = await AuthApi.Read<AuthApi.SignIn>(
-            await Post(adminClient, "/v1/auth/email/verify", new { email, code = factory.Mail.LatestCode(email), password = AuthApi.Password }));
+            await Post(adminClient, "/v1/auth/email/verify", new { email, code = await factory.Mail.WaitForCode(email), password = AuthApi.Password }));
         verified.Mfa!.Step.ShouldBe("TotpSetup");
         var setup = await AuthApi.Read<TotpSetup>(await Post(adminClient, "/v1/auth/mfa/totp/setup", new { mfaToken = verified.Mfa.MfaToken }));
         var code = new Totp(Base32Encoding.ToBytes(setup.Secret)).ComputeTotp();

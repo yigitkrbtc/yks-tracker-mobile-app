@@ -1,9 +1,39 @@
+using Nirengi.BuildingBlocks.Application.Events;
+using Nirengi.Modules.Identity.Domain.Codes;
+
 namespace Nirengi.Modules.Identity.Application.Abstractions;
 
 public sealed record EmailMessage(string To, string Subject, string Body);
 
 public interface IEmailSender
 {
-    /// <summary>Best effort: failures are logged, not thrown; the user can ask for a new code.</summary>
+    /// <summary>
+    /// Hands the mail to the relay. Throws when that fails (the Identity outbox retries with backoff, ADR-0021);
+    /// only a failure that can never succeed, such as an address the relay refuses, is logged and swallowed.
+    /// </summary>
     Task Send(EmailMessage message, CancellationToken cancellationToken);
+}
+
+/// <summary>
+/// Identity's own outbox event for "mail this to the user" (ADR-0021, PR 2). The mail itself, which can hold a plain
+/// code, travels only in <see cref="ProtectedPayload"/> (Data Protection); the outbox row keeps nothing readable.
+/// </summary>
+/// <param name="ValidUntil">After this instant the mail is pointless (the code expired) and is dropped unsent.</param>
+public sealed record IdentityEmailRequested(Guid Id, DateTimeOffset OccurredAt, DateTimeOffset ValidUntil, string ProtectedPayload) : IIntegrationEvent;
+
+/// <summary>What <see cref="IdentityEmailRequested.ProtectedPayload"/> holds once unprotected.</summary>
+public sealed record IdentityEmailPayload(EmailMessage Message, EmailCodeBinding? Code);
+
+/// <summary>
+/// Ties a mail to the code it carries. The mail is sent only while that code is still the live, unused one, so a
+/// delayed mail cannot put a replaced code in the mailbox after the newer one.
+/// </summary>
+public sealed record EmailCodeBinding(Guid UserId, CodePurpose Purpose, string CodeHash);
+
+/// <summary>Encrypts the mail payload while it waits in the outbox table.</summary>
+public interface IEmailPayloadProtector
+{
+    string Protect(string plaintext);
+
+    string Unprotect(string protectedValue);
 }

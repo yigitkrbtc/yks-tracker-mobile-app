@@ -5,6 +5,7 @@ using Nirengi.Modules.Identity.Domain.Codes;
 using Nirengi.Modules.Identity.Domain.Consents;
 using Nirengi.Modules.Identity.Domain.Tokens;
 using Nirengi.Modules.Identity.Domain.Users;
+using Nirengi.Modules.Identity.Infrastructure.Persistence.Configurations;
 
 namespace Nirengi.Modules.Identity.Infrastructure;
 
@@ -21,6 +22,8 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public DbSet<RecoveryCode> RecoveryCodes => Set<RecoveryCode>();
 
     public DbSet<ConsentRecord> ConsentRecords => Set<ConsentRecord>();
+
+    internal DbSet<SentEmail> SentEmails => Set<SentEmail>();
 
     /// <summary>ASP.NET Core Data Protection key ring (encrypts TOTP secrets).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();

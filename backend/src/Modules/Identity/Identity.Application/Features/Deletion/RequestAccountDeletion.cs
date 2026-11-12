@@ -24,7 +24,7 @@ internal sealed class RequestAccountDeletionHandler(
     IUserRepository users,
     IPasswordHasher hasher,
     SignInService signIn,
-    IEmailSender email,
+    IdentityMailQueue mail,
     IIdentityUnitOfWork unitOfWork,
     IClock clock,
     IdentityOptions options) : ICommandHandler<RequestAccountDeletionCommand, DeletionScheduled>
@@ -53,10 +53,10 @@ internal sealed class RequestAccountDeletionHandler(
 
         user.RequestDeletion(now);
         await signIn.RevokeAll(user.Id, RevokeReason.AccountDeletion, now, cancellationToken);
-        await unitOfWork.SaveChanges(cancellationToken);
 
         var purgeAt = user.PurgeAt(options.DeletionGracePeriod)!.Value;
-        await email.Send(IdentityEmails.DeletionScheduled(user.Email, user.FirstName, purgeAt), cancellationToken);
+        mail.Enqueue(IdentityEmails.DeletionScheduled(user.Email, user.FirstName, purgeAt), IdentityMailQueue.NoticeValidity);
+        await unitOfWork.SaveChanges(cancellationToken);
         return new DeletionScheduled(purgeAt);
     }
 }
