@@ -49,6 +49,9 @@ internal sealed class RefreshTokenRepository(IdentityDbContext db) : IRefreshTok
     public Task<RefreshToken?> GetByHash(string tokenHash, CancellationToken cancellationToken) =>
         db.RefreshTokens.SingleOrDefaultAsync(t => t.TokenHash == tokenHash, cancellationToken);
 
+    public Task<RefreshToken?> GetById(Guid id, CancellationToken cancellationToken) =>
+        db.RefreshTokens.SingleOrDefaultAsync(t => t.Id == id, cancellationToken);
+
     public async Task<IReadOnlyList<RefreshToken>> GetUnrevokedByFamily(Guid familyId, CancellationToken cancellationToken) =>
         await db.RefreshTokens.Where(t => t.FamilyId == familyId && t.RevokedAt == null).ToListAsync(cancellationToken);
 

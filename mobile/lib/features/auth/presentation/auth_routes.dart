@@ -15,6 +15,7 @@ abstract final class AuthRoutes {
   static const forgotPassword = '/forgot-password';
   static const deleteAccount = '/account/delete';
 
+  /// The password goes as the route's `extra`, never in the URL; without it the page asks for it.
   static String verify(String email) =>
       Uri(path: '/verify', queryParameters: {'email': email}).toString();
 
@@ -42,8 +43,10 @@ abstract final class AuthRoutes {
     GoRoute(path: register, builder: (context, state) => const RegisterPage()),
     GoRoute(
       path: '/verify',
-      builder: (context, state) =>
-          VerifyEmailPage(email: state.uri.queryParameters['email'] ?? ''),
+      builder: (context, state) => VerifyEmailPage(
+        email: state.uri.queryParameters['email'] ?? '',
+        password: state.extra is String ? state.extra! as String : null,
+      ),
     ),
     GoRoute(
       path: forgotPassword,

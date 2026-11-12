@@ -9,9 +9,12 @@ import '../domain/auth_failure.dart';
 import 'auth_widgets.dart';
 
 class VerifyEmailPage extends ConsumerStatefulWidget {
-  const VerifyEmailPage({super.key, required this.email});
+  const VerifyEmailPage({super.key, required this.email, this.password});
 
   final String email;
+
+  /// The password just typed at sign-up or sign-in; null after an app restart, then the page asks for it.
+  final String? password;
 
   @override
   ConsumerState<VerifyEmailPage> createState() => _VerifyEmailPageState();
@@ -22,6 +25,7 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
 
   final _form = GlobalKey<FormState>();
   final _code = TextEditingController();
+  final _password = TextEditingController();
   Timer? _timer;
   var _secondsLeft = _cooldown;
   var _busy = false;
@@ -36,6 +40,7 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
   void dispose() {
     _timer?.cancel();
     _code.dispose();
+    _password.dispose();
     super.dispose();
   }
 
@@ -59,10 +64,19 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
       // Success flips the session; the router then leaves this page.
       await ref
           .read(sessionControllerProvider.notifier)
-          .verifyEmail(widget.email, _code.text.trim());
+          .verifyEmail(
+            widget.email,
+            _code.text.trim(),
+            widget.password ?? _password.text,
+          );
     } on AuthException catch (e) {
       if (mounted) {
-        showAuthError(context, e);
+        showAuthError(
+          context,
+          e.failure == AuthFailure.invalidCredentials
+              ? const AuthException(AuthFailure.registrationChanged)
+              : e,
+        );
       }
     } finally {
       if (mounted) {
@@ -95,16 +109,27 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
         const SizedBox(height: 16),
         Form(
           key: _form,
-          child: TextFormField(
-            controller: _code,
-            keyboardType: TextInputType.number,
-            autofillHints: const [AutofillHints.oneTimeCode],
-            maxLength: 6,
-            validator: AuthValidators.code,
-            decoration: const InputDecoration(
-              labelText: 'Doğrulama kodu',
-              counterText: '',
-            ),
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _code,
+                keyboardType: TextInputType.number,
+                autofillHints: const [AutofillHints.oneTimeCode],
+                maxLength: 6,
+                validator: AuthValidators.code,
+                decoration: const InputDecoration(
+                  labelText: 'Doğrulama kodu',
+                  counterText: '',
+                ),
+              ),
+              if (widget.password == null) ...[
+                const SizedBox(height: 16),
+                PasswordField(
+                  controller: _password,
+                  label: 'Kayıtta seçtiğin şifre',
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(height: 24),

@@ -33,6 +33,7 @@ internal sealed class RegisterValidator : AbstractValidator<RegisterCommand>
         RuleFor(c => c.LastName).NotEmpty().MaximumLength(User.NameMaxLength);
         RuleFor(c => c.Email).NotEmpty().MaximumLength(Domain.Users.Email.MaxLength);
         RuleFor(c => c.Password).StrongPassword()
+            .NotCommonPassword(c => c.FirstName, c => c.LastName)
             .Must((c, password) => !string.Equals(password, c.Email?.Trim(), StringComparison.OrdinalIgnoreCase))
             .WithMessage("Şifre e-posta adresinle aynı olamaz.");
         RuleFor(c => c.BirthYear).InclusiveBetween(AgePolicy.EarliestBirthYear, 2100);
@@ -87,8 +88,7 @@ internal sealed class RegisterHandler(
 
         if (user is null)
         {
-            var role = options.AdminEmails.Any(a => Email.Normalize(a) == address.Value.Normalized) ? UserRole.Admin : UserRole.Student;
-            user = User.Register(address.Value, command.FirstName, command.LastName, passwordHash, command.BirthYear, command.MarketingConsent, role, now);
+            user = User.Register(address.Value, command.FirstName, command.LastName, passwordHash, command.BirthYear, command.MarketingConsent, options.RoleFor(address.Value.Normalized), now);
             users.Add(user);
         }
         else

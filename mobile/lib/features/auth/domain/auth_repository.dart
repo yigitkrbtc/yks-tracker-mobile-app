@@ -4,7 +4,9 @@ import 'auth_models.dart';
 abstract interface class AuthRepository {
   Future<void> register(Registration registration);
 
-  Future<SignInOutcome> verifyEmail(String email, String code);
+  /// [password] is the one chosen at sign-up: a later sign-up for the same address replaces it, and the code
+  /// must not activate the account with someone else's password.
+  Future<SignInOutcome> verifyEmail(String email, String code, String password);
 
   Future<void> resendVerificationCode(String email);
 

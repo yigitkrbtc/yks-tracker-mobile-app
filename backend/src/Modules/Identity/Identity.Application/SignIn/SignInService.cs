@@ -11,8 +11,10 @@ internal sealed class SignInService(
     IRefreshTokenRepository refreshTokens,
     IdentityOptions options)
 {
+    /// <summary>Ends a password sign-in. The role follows <see cref="IdentityOptions.AdminEmails"/> from here on.</summary>
     public SignInResult Complete(User user, DateTimeOffset now)
     {
+        user.ChangeRole(options.RoleFor(user.NormalizedEmail));
         if (!user.IsAdmin)
         {
             return new SignInResult(IssueTokens(user, now), null);
@@ -26,15 +28,16 @@ internal sealed class SignInService(
     public AuthTokens IssueTokens(User user, DateTimeOffset now)
     {
         var raw = secrets.NewOpaqueToken();
-        var refresh = RefreshToken.Issue(user.Id, secrets.Hash(raw), now, options.RefreshTokenLifetime);
+        var lifetime = user.IsAdmin ? options.AdminRefreshTokenLifetime : options.RefreshTokenLifetime;
+        var refresh = RefreshToken.Issue(user.Id, secrets.Hash(raw), now, lifetime);
         refreshTokens.Add(refresh);
         return Tokens(user, refresh, raw, now);
     }
 
-    public AuthTokens Rotate(User user, RefreshToken current, DateTimeOffset now)
+    public AuthTokens Rotate(User user, RefreshToken current, DateTimeOffset now, RevokeReason reason = RevokeReason.Rotated)
     {
         var raw = secrets.NewOpaqueToken();
-        var next = current.Rotate(secrets.Hash(raw), now);
+        var next = current.Rotate(secrets.Hash(raw), now, reason);
         refreshTokens.Add(next);
         return Tokens(user, next, raw, now);
     }

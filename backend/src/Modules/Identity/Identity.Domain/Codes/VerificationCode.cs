@@ -11,9 +11,17 @@ public enum CodePurpose
     PasswordReset = 1,
 }
 
-/// <summary>One live 6-digit code per user and purpose; issuing a new one replaces the old.</summary>
+/// <summary>
+/// One live 6-digit code per user and purpose; issuing a new one replaces the old. At most
+/// <see cref="MaxIssuesPerWindow"/> codes per <see cref="IssueWindow"/>, so fresh codes cannot be used to keep
+/// guessing (each code allows a few attempts): 5 codes x 5 attempts = 25 guesses a day out of a million.
+/// </summary>
 public sealed class VerificationCode : Entity<Guid>
 {
+    public const int MaxIssuesPerWindow = 5;
+
+    public static readonly TimeSpan IssueWindow = TimeSpan.FromHours(24);
+
     private VerificationCode()
     {
     }
@@ -32,6 +40,11 @@ public sealed class VerificationCode : Entity<Guid>
 
     public DateTimeOffset? ConsumedAt { get; private set; }
 
+    /// <summary>Start of the current issue window; null before the first issue counted (rows older than ADR-0021).</summary>
+    public DateTimeOffset? IssueWindowStartedAt { get; private set; }
+
+    public int IssuesInWindow { get; private set; }
+
     public static VerificationCode Issue(Guid userId, CodePurpose purpose, string codeHash, DateTimeOffset now, TimeSpan lifetime)
     {
         var code = new VerificationCode { Id = Guid.CreateVersion7(now), UserId = userId, Purpose = purpose };
@@ -41,6 +54,13 @@ public sealed class VerificationCode : Entity<Guid>
 
     public void Reissue(string codeHash, DateTimeOffset now, TimeSpan lifetime)
     {
+        if (IssueWindowStartedAt is null || now - IssueWindowStartedAt >= IssueWindow)
+        {
+            IssueWindowStartedAt = now;
+            IssuesInWindow = 0;
+        }
+
+        IssuesInWindow++;
         CodeHash = codeHash;
         SentAt = now;
         ExpiresAt = now + lifetime;
@@ -48,7 +68,11 @@ public sealed class VerificationCode : Entity<Guid>
         ConsumedAt = null;
     }
 
-    public bool CanResend(DateTimeOffset now, TimeSpan cooldown) => ConsumedAt is not null || now - SentAt >= cooldown;
+    public bool CanResend(DateTimeOffset now, TimeSpan cooldown) =>
+        (ConsumedAt is not null || now - SentAt >= cooldown) && !IsIssueCapReached(now);
+
+    private bool IsIssueCapReached(DateTimeOffset now) =>
+        IssueWindowStartedAt is { } start && now - start < IssueWindow && IssuesInWindow >= MaxIssuesPerWindow;
 
     public Result Verify(string candidateHash, DateTimeOffset now, int maxAttempts)
     {

@@ -115,6 +115,14 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at");
 
+                    b.Property<DateTimeOffset?>("IssueWindowStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("issue_window_started_at");
+
+                    b.Property<int>("IssuesInWindow")
+                        .HasColumnType("integer")
+                        .HasColumnName("issues_in_window");
+
                     b.Property<string>("Purpose")
                         .IsRequired()
                         .HasMaxLength(30)

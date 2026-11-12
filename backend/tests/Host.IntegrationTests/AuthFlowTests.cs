@@ -60,7 +60,7 @@ public sealed class AuthFlowTests(NirengiApiFactory factory)
 
         var email = AuthApi.NewEmail();
         (await _api.Post("/v1/auth/register", AuthApi.Registration(email, birthYear: minorYear))).StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        var verified = await _api.Post("/v1/auth/email/verify", new { email, code = factory.Mail.LatestCode(email) });
+        var verified = await _api.Post("/v1/auth/email/verify", new { email, code = factory.Mail.LatestCode(email), password = AuthApi.Password });
         var profile = await AuthApi.Read<AuthApi.Profile>(await _api.GetMe((await AuthApi.Read<AuthApi.SignIn>(verified)).Tokens!.AccessToken));
         profile.CanGiveMarketingConsent.ShouldBeFalse();
     }
@@ -122,7 +122,7 @@ public sealed class AuthFlowTests(NirengiApiFactory factory)
 
         var wrong = factory.Mail.LatestCode(email) == "000000" ? "111111" : "000000";
         await AuthApi.ShouldBeProblem(
-            await _api.Post("/v1/auth/email/verify", new { email, code = wrong }),
+            await _api.Post("/v1/auth/email/verify", new { email, code = wrong, password = AuthApi.Password }),
             HttpStatusCode.BadRequest,
             "identity.invalid_code");
     }
@@ -149,11 +149,14 @@ public sealed class AuthFlowTests(NirengiApiFactory factory)
         second.RefreshToken.ShouldNotBe(first.RefreshToken);
         second.RefreshTokenExpiresAt.ShouldBe(first.RefreshTokenExpiresAt, TimeSpan.FromMilliseconds(1));
 
+        // Once its successor has been used, the old token coming back is theft even inside the grace period.
+        var third = await AuthApi.Read<AuthApi.Tokens>(await _api.Post("/v1/auth/refresh", new { refreshToken = second.RefreshToken }));
+
         await AuthApi.ShouldBeProblem(
             await _api.Post("/v1/auth/refresh", new { refreshToken = first.RefreshToken }),
             HttpStatusCode.Unauthorized,
             "identity.invalid_refresh_token");
-        (await _api.Post("/v1/auth/refresh", new { refreshToken = second.RefreshToken })).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        (await _api.Post("/v1/auth/refresh", new { refreshToken = third.RefreshToken })).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]

@@ -57,9 +57,12 @@ class SessionController extends AsyncNotifier<SessionState> {
   Future<void> login(String email, String password) async =>
       _complete(await ref.read(authRepositoryProvider).login(email, password));
 
-  Future<void> verifyEmail(String email, String code) async => _complete(
-    await ref.read(authRepositoryProvider).verifyEmail(email, code),
-  );
+  Future<void> verifyEmail(String email, String code, String password) async =>
+      _complete(
+        await ref
+            .read(authRepositoryProvider)
+            .verifyEmail(email, code, password),
+      );
 
   Future<void> restoreAccount(String email, String password) async => _complete(
     await ref.read(authRepositoryProvider).restoreAccount(email, password),

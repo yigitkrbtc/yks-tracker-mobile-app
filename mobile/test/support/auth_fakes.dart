@@ -35,8 +35,12 @@ class FakeAuthRepository implements AuthRepository {
       calls.add('register:${registration.email}:${registration.birthYear}');
 
   @override
-  Future<SignInOutcome> verifyEmail(String email, String code) async {
-    calls.add('verify:$email:$code');
+  Future<SignInOutcome> verifyEmail(
+    String email,
+    String code,
+    String password,
+  ) async {
+    calls.add('verify:$email:$code:$password');
     return SignedIn(testTokens('verify'));
   }
 

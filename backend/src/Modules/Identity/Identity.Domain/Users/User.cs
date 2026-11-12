@@ -134,6 +134,18 @@ public sealed class User : AggregateRoot<Guid>
         }
     }
 
+    /// <summary>Sets the role from configuration (ADR-0021); true when it changed.</summary>
+    public bool ChangeRole(UserRole role)
+    {
+        if (Role == role)
+        {
+            return false;
+        }
+
+        Role = role;
+        return true;
+    }
+
     public void RecordSuccessfulLogin()
     {
         FailedLoginCount = 0;

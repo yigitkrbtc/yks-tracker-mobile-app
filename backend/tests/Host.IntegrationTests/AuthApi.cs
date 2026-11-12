@@ -18,12 +18,12 @@ public sealed class AuthApi(NirengiApiFactory factory)
 
     public static string NewEmail() => $"{Guid.NewGuid():N}@example.com";
 
-    public static object Registration(string email, int birthYear = 2000, bool marketing = false, string terms = "1") => new
+    public static object Registration(string email, int birthYear = 2000, bool marketing = false, string terms = "1", string password = Password) => new
     {
         firstName = "Ada",
         lastName = "Yılmaz",
         email,
-        password = Password,
+        password,
         birthYear,
         termsVersion = terms,
         privacyNoticeVersion = "1",
@@ -36,7 +36,7 @@ public sealed class AuthApi(NirengiApiFactory factory)
     public async Task<Tokens> RegisterAndVerify(string email)
     {
         (await Post("/v1/auth/register", Registration(email))).StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        var verified = await Post("/v1/auth/email/verify", new { email, code = factory.Mail.LatestCode(email) });
+        var verified = await Post("/v1/auth/email/verify", new { email, code = factory.Mail.LatestCode(email), password = Password });
         verified.StatusCode.ShouldBe(HttpStatusCode.OK);
         return (await Read<SignIn>(verified)).Tokens!;
     }

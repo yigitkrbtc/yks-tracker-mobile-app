@@ -1,3 +1,5 @@
+using Nirengi.Modules.Identity.Domain.Users;
+
 namespace Nirengi.Modules.Identity.Application;
 
 /// <summary>Identity policy values, bound from the "Identity" configuration section.</summary>
@@ -5,7 +7,10 @@ public sealed class IdentityOptions
 {
     public const string SectionName = "Identity";
 
-    /// <summary>Accounts registered with these addresses get the admin role (and must enrol TOTP).</summary>
+    /// <summary>
+    /// Accounts with these addresses are admins (and must enrol TOTP). Read at every sign-in, so removing an address
+    /// demotes the account at its next sign-in or refresh (ADR-0021).
+    /// </summary>
     public IReadOnlyList<string> AdminEmails { get; set; } = [];
 
     /// <summary>Versions of the texts the client must have shown; older versions are refused at registration.</summary>
@@ -16,6 +21,15 @@ public sealed class IdentityOptions
     public string MarketingConsentVersion { get; set; } = "1";
 
     public TimeSpan RefreshTokenLifetime { get; set; } = TimeSpan.FromDays(30);
+
+    /// <summary>Admin sessions end sooner: the second factor is asked again at least this often (ADR-0021).</summary>
+    public TimeSpan AdminRefreshTokenLifetime { get; set; } = TimeSpan.FromHours(12);
+
+    /// <summary>
+    /// A rotated refresh token presented again this soon is a lost response being retried, not theft: the caller gets
+    /// the successor's rotation instead of losing the session (ADR-0021).
+    /// </summary>
+    public TimeSpan RefreshReuseGrace { get; set; } = TimeSpan.FromSeconds(60);
 
     public TimeSpan MfaTokenLifetime { get; set; } = TimeSpan.FromMinutes(5);
 
@@ -33,4 +47,7 @@ public sealed class IdentityOptions
 
     /// <summary>Unverified sign-ups are removed after this (privacy notice: 7 days).</summary>
     public TimeSpan UnverifiedRetention { get; set; } = TimeSpan.FromDays(7);
+
+    public UserRole RoleFor(string normalizedEmail) =>
+        AdminEmails.Any(a => Email.Normalize(a) == normalizedEmail) ? UserRole.Admin : UserRole.Student;
 }

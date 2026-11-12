@@ -24,7 +24,8 @@ internal sealed class RefreshSessionHandler(
     IOneTimeSecrets secrets,
     SignInService signIn,
     IIdentityUnitOfWork unitOfWork,
-    IClock clock) : ICommandHandler<RefreshSessionCommand, AuthTokens>
+    IClock clock,
+    IdentityOptions options) : ICommandHandler<RefreshSessionCommand, AuthTokens>
 {
     public async Task<Result<AuthTokens>> Handle(RefreshSessionCommand command, CancellationToken cancellationToken)
     {
@@ -35,11 +36,22 @@ internal sealed class RefreshSessionHandler(
             return IdentityErrors.InvalidRefreshToken;
         }
 
-        if (token.RevokeReason == RevokeReason.Rotated)
+        var reason = RevokeReason.Rotated;
+        if (token.RevokeReason is RevokeReason.Rotated or RevokeReason.Superseded)
         {
-            await signIn.RevokeFamily(token.FamilyId, RevokeReason.ReuseDetected, now, cancellationToken);
-            await unitOfWork.TrySaveChanges(cancellationToken);
-            return IdentityErrors.InvalidRefreshToken;
+            var successor = token.RevokeReason == RevokeReason.Rotated
+                ? await UnusedSuccessorInGrace(token, now, cancellationToken)
+                : null;
+            if (successor is null)
+            {
+                await signIn.RevokeFamily(token.FamilyId, RevokeReason.ReuseDetected, now, cancellationToken);
+                await unitOfWork.TrySaveChanges(cancellationToken);
+                return IdentityErrors.InvalidRefreshToken;
+            }
+
+            // The answer to the rotation was lost on the way: rotate the token the caller never received.
+            token = successor;
+            reason = RevokeReason.Superseded;
         }
 
         if (!token.IsActive(now))
@@ -55,9 +67,33 @@ internal sealed class RefreshSessionHandler(
             return IdentityErrors.InvalidRefreshToken;
         }
 
-        var tokens = signIn.Rotate(user, token, now);
+        // Removed from AdminEmails: the admin session ends; the next sign-in issues a student session (ADR-0021).
+        if (user.IsAdmin && options.RoleFor(user.NormalizedEmail) != UserRole.Admin)
+        {
+            user.ChangeRole(UserRole.Student);
+            await signIn.RevokeAll(user.Id, RevokeReason.RoleChanged, now, cancellationToken);
+            await unitOfWork.TrySaveChanges(cancellationToken);
+            return IdentityErrors.InvalidRefreshToken;
+        }
+
+        var tokens = signIn.Rotate(user, token, now, reason);
 
         // Another request rotated or revoked this token in the meantime: it is spent for this caller.
         return await unitOfWork.TrySaveChanges(cancellationToken) ? tokens : IdentityErrors.InvalidRefreshToken;
+        }
+
+    /// <summary>
+    /// The token that replaced <paramref name="rotated"/>, when the rotation is within the grace period and the
+    /// replacement was never presented (the caller never received it). Anything else is reuse.
+    /// </summary>
+    private async Task<RefreshToken?> UnusedSuccessorInGrace(RefreshToken rotated, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        if (rotated.RevokedAt is not { } revokedAt || now - revokedAt > options.RefreshReuseGrace || rotated.ReplacedById is not { } nextId)
+        {
+            return null;
+        }
+
+        var next = await refreshTokens.GetById(nextId, cancellationToken);
+        return next is not null && next.IsActive(now) ? next : null;
     }
 }

@@ -78,7 +78,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
           );
       if (mounted) {
-        context.pushReplacement(AuthRoutes.verify(email));
+        context.pushReplacement(
+          AuthRoutes.verify(email),
+          extra: _password.text,
+        );
       }
     } on AuthException catch (e) {
       if (mounted) {
