@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20261112122508_VerificationCodeIssueWindow")]
-    partial class VerificationCodeIssueWindow
+    [Migration("20261112123809_VerificationCodeAttemptWindow")]
+    partial class VerificationCodeAttemptWindow
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -104,6 +104,10 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("attempt_count");
 
+                    b.Property<DateTimeOffset?>("AttemptWindowStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("attempt_window_started_at");
+
                     b.Property<string>("CodeHash")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -118,13 +122,9 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at");
 
-                    b.Property<DateTimeOffset?>("IssueWindowStartedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("issue_window_started_at");
-
-                    b.Property<int>("IssuesInWindow")
+                    b.Property<int>("FailedAttemptsInWindow")
                         .HasColumnType("integer")
-                        .HasColumnName("issues_in_window");
+                        .HasColumnName("failed_attempts_in_window");
 
                     b.Property<string>("Purpose")
                         .IsRequired()
@@ -250,6 +250,10 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("FamilyId")
                         .HasColumnType("uuid")
                         .HasColumnName("family_id");
+
+                    b.Property<bool>("IssuedWithMfa")
+                        .HasColumnType("boolean")
+                        .HasColumnName("issued_with_mfa");
 
                     b.Property<Guid?>("ReplacedById")
                         .HasColumnType("uuid")

@@ -107,6 +107,10 @@ public sealed class User : AggregateRoot<Guid>
         BirthYear = birthYear;
         MarketingConsent = marketingConsent;
         CreatedAt = now;
+
+        // Whoever signs up again owns the account now; the previous attempts' lockout is not theirs to inherit.
+        FailedLoginCount = 0;
+        LockoutUntil = null;
         return Result.Success();
     }
 

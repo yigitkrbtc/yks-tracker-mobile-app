@@ -11,7 +11,7 @@ public sealed class RefreshTokenTests
     [Fact]
     public void Rotation_keeps_family_and_expiry()
     {
-        var first = RefreshToken.Issue(Guid.CreateVersion7(), "h1", Now, Lifetime);
+        var first = RefreshToken.Issue(Guid.CreateVersion7(), "h1", Now, Lifetime, issuedWithMfa: false);
 
         var second = first.Rotate("h2", Now.AddDays(10));
 
@@ -23,10 +23,20 @@ public sealed class RefreshTokenTests
         first.ReplacedById.ShouldBe(second.Id);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Rotation_inherits_the_second_factor_flag(bool issuedWithMfa)
+    {
+        var first = RefreshToken.Issue(Guid.CreateVersion7(), "h1", Now, Lifetime, issuedWithMfa);
+
+        first.Rotate("h2", Now.AddMinutes(1)).IssuedWithMfa.ShouldBe(issuedWithMfa);
+    }
+
     [Fact]
     public void Family_ends_after_lifetime_regardless_of_rotation()
     {
-        var token = RefreshToken.Issue(Guid.CreateVersion7(), "h1", Now, Lifetime).Rotate("h2", Now.AddDays(29));
+        var token = RefreshToken.Issue(Guid.CreateVersion7(), "h1", Now, Lifetime, issuedWithMfa: false).Rotate("h2", Now.AddDays(29));
 
         token.IsActive(Now + Lifetime).ShouldBeFalse();
     }
@@ -34,7 +44,7 @@ public sealed class RefreshTokenTests
     [Fact]
     public void First_revocation_reason_wins()
     {
-        var token = RefreshToken.Issue(Guid.CreateVersion7(), "h1", Now, Lifetime);
+        var token = RefreshToken.Issue(Guid.CreateVersion7(), "h1", Now, Lifetime, issuedWithMfa: false);
         token.Revoke(Now, RevokeReason.Logout);
         token.Revoke(Now.AddMinutes(1), RevokeReason.ReuseDetected);
 

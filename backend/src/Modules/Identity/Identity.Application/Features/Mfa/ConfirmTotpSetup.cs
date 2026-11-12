@@ -67,7 +67,7 @@ internal sealed class ConfirmTotpSetupHandler(
         }
 
         user.RecordSuccessfulLogin();
-        var tokens = signIn.IssueTokens(user, now);
+        var tokens = signIn.IssueTokens(user, now, issuedWithMfa: true);
         await unitOfWork.SaveChanges(cancellationToken);
         return new TotpEnrollment(tokens, codes);
     }

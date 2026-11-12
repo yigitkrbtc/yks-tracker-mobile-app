@@ -55,29 +55,70 @@ public sealed class VerificationCodeTests
     }
 
     [Fact]
-    public void At_most_five_codes_a_day_then_resend_waits_for_the_window()
+    public void Requesting_codes_is_not_capped_so_the_owner_always_gets_one()
     {
         var code = NewCode();
         var cooldown = TimeSpan.FromSeconds(60);
         var at = Now;
-        for (var i = 1; i < VerificationCode.MaxIssuesPerWindow; i++)
+        for (var i = 0; i < 12; i++)
         {
             at = at.AddMinutes(2);
             code.CanResend(at, cooldown).ShouldBeTrue();
-            code.Reissue($"hash-{i + 1}", at, Lifetime);
+            code.Reissue($"hash-{i + 2}", at, Lifetime);
         }
-
-        code.CanResend(at.AddMinutes(2), cooldown).ShouldBeFalse();
-        code.CanResend(Now + VerificationCode.IssueWindow, cooldown).ShouldBeTrue();
     }
 
     [Fact]
-    public void A_new_window_starts_the_count_again()
+    public void Failed_attempts_are_budgeted_across_codes_and_a_new_code_does_not_reset_it()
     {
         var code = NewCode();
-        code.Reissue("hash-2", Now + VerificationCode.IssueWindow, Lifetime);
+        var at = Now;
+        for (var i = 0; i < VerificationCode.MaxFailedAttemptsPerWindow; i++)
+        {
+            at = at.AddSeconds(1);
+            if (i > 0 && i % 5 == 0)
+            {
+                code.Reissue($"hash-{i}", at, Lifetime);
+            }
 
-        code.IssuesInWindow.ShouldBe(1);
-        code.IssueWindowStartedAt.ShouldBe(Now + VerificationCode.IssueWindow);
+            var result = code.Verify("wrong", at, maxAttempts: 5);
+            result.IsFailure.ShouldBeTrue();
+        }
+
+        code.FailedAttemptsInWindow.ShouldBe(VerificationCode.MaxFailedAttemptsPerWindow);
+
+        // Fresh code, right guess: still refused until the window ends.
+        code.Reissue("hash-fresh", at.AddMinutes(1), Lifetime);
+        code.CanResend(at.AddMinutes(5), TimeSpan.FromSeconds(60)).ShouldBeTrue();
+        code.Verify("hash-fresh", at.AddMinutes(2), maxAttempts: 5).Error.ShouldBe(IdentityErrors.CodeExpired);
+    }
+
+    [Fact]
+    public void The_attempt_budget_comes_back_when_the_window_ends()
+    {
+        var code = NewCode();
+        for (var i = 0; i < 5; i++)
+        {
+            code.Verify("wrong", Now, maxAttempts: 5);
+        }
+
+        code.FailedAttemptsInWindow.ShouldBe(5);
+
+        var later = Now + VerificationCode.AttemptWindow;
+        code.Reissue("hash-2", later, Lifetime);
+        code.Verify("hash-2", later.AddMinutes(1), maxAttempts: 5).IsSuccess.ShouldBeTrue();
+        code.FailedAttemptsInWindow.ShouldBe(0);
+        code.AttemptWindowStartedAt.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Failed_attempts_start_the_window_once()
+    {
+        var code = NewCode();
+        code.Verify("wrong", Now.AddMinutes(1), maxAttempts: 5);
+        code.Verify("wrong", Now.AddMinutes(2), maxAttempts: 5);
+
+        code.AttemptWindowStartedAt.ShouldBe(Now.AddMinutes(1));
+        code.FailedAttemptsInWindow.ShouldBe(2);
     }
 }

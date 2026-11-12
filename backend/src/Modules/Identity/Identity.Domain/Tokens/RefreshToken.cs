@@ -42,10 +42,22 @@ public sealed class RefreshToken : Entity<Guid>
 
     public Guid? ReplacedById { get; private set; }
 
-    public static RefreshToken Issue(Guid userId, string tokenHash, DateTimeOffset now, TimeSpan lifetime)
+    /// <summary>The sign-in that started this family passed the second factor; rotations inherit it (ADR-0021).</summary>
+    public bool IssuedWithMfa { get; private set; }
+
+    public static RefreshToken Issue(Guid userId, string tokenHash, DateTimeOffset now, TimeSpan lifetime, bool issuedWithMfa)
     {
         var id = Guid.CreateVersion7(now);
-        return new RefreshToken { Id = id, UserId = userId, FamilyId = id, TokenHash = tokenHash, CreatedAt = now, ExpiresAt = now + lifetime };
+        return new RefreshToken
+        {
+            Id = id,
+            UserId = userId,
+            FamilyId = id,
+            TokenHash = tokenHash,
+            CreatedAt = now,
+            ExpiresAt = now + lifetime,
+            IssuedWithMfa = issuedWithMfa,
+        };
     }
 
     public bool IsActive(DateTimeOffset now) => RevokedAt is null && now < ExpiresAt;
@@ -60,6 +72,7 @@ public sealed class RefreshToken : Entity<Guid>
             TokenHash = newTokenHash,
             CreatedAt = now,
             ExpiresAt = ExpiresAt,
+            IssuedWithMfa = IssuedWithMfa,
         };
         Revoke(now, reason);
         ReplacedById = next.Id;

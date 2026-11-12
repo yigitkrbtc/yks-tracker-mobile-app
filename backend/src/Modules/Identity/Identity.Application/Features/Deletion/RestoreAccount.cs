@@ -43,7 +43,7 @@ internal sealed class RestoreAccountHandler(
         }
 
         user.CancelDeletion();
-        var result = signIn.Complete(user, now);
+        var result = await signIn.Complete(user, now, cancellationToken);
         await unitOfWork.SaveChanges(cancellationToken);
         return result;
     }

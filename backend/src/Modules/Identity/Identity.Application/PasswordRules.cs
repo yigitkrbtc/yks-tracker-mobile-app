@@ -25,6 +25,9 @@ internal static class PasswordRules
     // Typed runs: the keyboard rows and the digit row, also reversed.
     private static readonly string[] Runs = ["qwertyuiop", "asdfghjkl", "zxcvbnm", "1234567890", "1q2w3e4r5t6y7u8i9o0p", "abcdefghijklmnopqrstuvwxyz"];
 
+    /// <summary>The characters people put around a word: digits and common symbols.</summary>
+    private static readonly char[] Peelable = [.. "0123456789!@#$%^&*.,-_+=?/ "];
+
     public static IRuleBuilderOptions<T, string> StrongPassword<T>(this IRuleBuilder<T, string> rule) => rule
         .NotEmpty()
         .Length(MinLength, MaxLength)
@@ -49,22 +52,61 @@ internal static class PasswordRules
             return true;
         }
 
-        // The word left after peeling digits and symbols off both ends ("Galatasaray1905!" -> "galatasaray").
-        var core = folded.Trim("0123456789!@#$%^&*.,-_+=?/ ".ToCharArray());
-        if (core.Length == 0 || CommonWords.Contains(core) || IsRun(core))
+        // The word left after peeling digits and symbols off both ends ("Galatasaray1905!" -> "galatasaray"), read the
+        // way people leet-spell it ("P@ssw0rd1" -> "password"). A digit at an end may be part of the word ("S1fr3-2024"),
+        // so every amount of peeling is tried. Leet folding is for word matching only.
+        var names = personal is null
+            ? []
+            : personal
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Select(p => LeetFold(Fold(p!).Replace(" ", string.Empty, StringComparison.Ordinal)))
+                .Where(p => p.Length >= 3)
+                .ToList();
+
+        var nothingButPeel = folded.Trim(Peelable).Length == 0;
+        return nothingButPeel || Cores(folded).Any(core =>
+            CommonWords.Contains(core)
+            || IsRun(core)
+            || names.Any(p => core == p || (core.Contains(p, StringComparison.Ordinal) && core.Length - p.Length <= 2)));
+    }
+
+    /// <summary>Leet-folded cores of <paramref name="folded"/>: the word between 0..n peeled characters at each end.</summary>
+    private static IEnumerable<string> Cores(string folded)
+    {
+        var lead = folded.Length - folded.TrimStart(Peelable).Length;
+        var trail = folded.Length - folded.TrimEnd(Peelable).Length;
+        var wordLength = folded.Length - lead - trail;
+        if (wordLength <= 0)
         {
-            return true;
+            yield break;
         }
 
-        return personal is not null && personal
-            .Where(p => !string.IsNullOrWhiteSpace(p))
-            .Select(p => Fold(p!).Replace(" ", string.Empty, StringComparison.Ordinal))
-            .Any(p => p.Length >= 3 && (core == p || core.Contains(p, StringComparison.Ordinal) && core.Length - p.Length <= 2));
+        for (var start = 0; start <= lead; start++)
+        {
+            for (var end = folded.Length - trail; end <= folded.Length; end++)
+            {
+                yield return LeetFold(folded[start..end]);
+            }
+        }
     }
 
     private static bool IsRun(string value) =>
         value.Length >= 6 && Runs.Any(r => r.Contains(value, StringComparison.Ordinal)
             || new string([.. r.Reverse()]).Contains(value, StringComparison.Ordinal));
+
+    private static string LeetFold(string value) =>
+        new([.. value.Select(c => c switch
+        {
+            '0' => 'o',
+            '1' => 'i',
+            '3' => 'e',
+            '4' => 'a',
+            '5' => 's',
+            '7' => 't',
+            '@' => 'a',
+            '$' => 's',
+            _ => c,
+        })]);
 
     /// <summary>
     /// Lower case without Turkish letters, so "Şifre", "sifre" and "ŞİFRE" are one word. Culture-free: the host runs

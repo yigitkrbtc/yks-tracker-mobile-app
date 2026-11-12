@@ -12,15 +12,17 @@ public enum CodePurpose
 }
 
 /// <summary>
-/// One live 6-digit code per user and purpose; issuing a new one replaces the old. At most
-/// <see cref="MaxIssuesPerWindow"/> codes per <see cref="IssueWindow"/>, so fresh codes cannot be used to keep
-/// guessing (each code allows a few attempts): 5 codes x 5 attempts = 25 guesses a day out of a million.
+/// One live 6-digit code per user and purpose; issuing a new one replaces the old. Each code allows a few attempts,
+/// so fresh codes could be used to keep guessing: failed attempts are therefore also counted across codes, at most
+/// <see cref="MaxFailedAttemptsPerWindow"/> per <see cref="AttemptWindow"/> (25 guesses a day out of a million).
+/// Issuing is never capped, so someone else asking for codes cannot keep the owner from getting one; once the budget
+/// is spent, verification fails until the window ends, whichever code is live.
 /// </summary>
 public sealed class VerificationCode : Entity<Guid>
 {
-    public const int MaxIssuesPerWindow = 5;
+    public const int MaxFailedAttemptsPerWindow = 25;
 
-    public static readonly TimeSpan IssueWindow = TimeSpan.FromHours(24);
+    public static readonly TimeSpan AttemptWindow = TimeSpan.FromHours(24);
 
     private VerificationCode()
     {
@@ -40,10 +42,10 @@ public sealed class VerificationCode : Entity<Guid>
 
     public DateTimeOffset? ConsumedAt { get; private set; }
 
-    /// <summary>Start of the current issue window; null before the first issue counted (rows older than ADR-0021).</summary>
-    public DateTimeOffset? IssueWindowStartedAt { get; private set; }
+    /// <summary>Start of the current attempt window; null until the first failed attempt.</summary>
+    public DateTimeOffset? AttemptWindowStartedAt { get; private set; }
 
-    public int IssuesInWindow { get; private set; }
+    public int FailedAttemptsInWindow { get; private set; }
 
     public static VerificationCode Issue(Guid userId, CodePurpose purpose, string codeHash, DateTimeOffset now, TimeSpan lifetime)
     {
@@ -54,13 +56,7 @@ public sealed class VerificationCode : Entity<Guid>
 
     public void Reissue(string codeHash, DateTimeOffset now, TimeSpan lifetime)
     {
-        if (IssueWindowStartedAt is null || now - IssueWindowStartedAt >= IssueWindow)
-        {
-            IssueWindowStartedAt = now;
-            IssuesInWindow = 0;
-        }
-
-        IssuesInWindow++;
+        // The attempt budget is deliberately kept: asking for a new code does not buy new guesses.
         CodeHash = codeHash;
         SentAt = now;
         ExpiresAt = now + lifetime;
@@ -68,23 +64,29 @@ public sealed class VerificationCode : Entity<Guid>
         ConsumedAt = null;
     }
 
-    public bool CanResend(DateTimeOffset now, TimeSpan cooldown) =>
-        (ConsumedAt is not null || now - SentAt >= cooldown) && !IsIssueCapReached(now);
-
-    private bool IsIssueCapReached(DateTimeOffset now) =>
-        IssueWindowStartedAt is { } start && now - start < IssueWindow && IssuesInWindow >= MaxIssuesPerWindow;
+    public bool CanResend(DateTimeOffset now, TimeSpan cooldown) => ConsumedAt is not null || now - SentAt >= cooldown;
 
     public Result Verify(string candidateHash, DateTimeOffset now, int maxAttempts)
     {
-        if (ConsumedAt is not null || now >= ExpiresAt || AttemptCount >= maxAttempts)
+        if (AttemptWindowStartedAt is { } start && now - start >= AttemptWindow)
+        {
+            AttemptWindowStartedAt = null;
+            FailedAttemptsInWindow = 0;
+        }
+
+        if (ConsumedAt is not null || now >= ExpiresAt || AttemptCount >= maxAttempts || FailedAttemptsInWindow >= MaxFailedAttemptsPerWindow)
         {
             return IdentityErrors.CodeExpired;
         }
 
         if (!CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(CodeHash), Encoding.UTF8.GetBytes(candidateHash)))
         {
+            AttemptWindowStartedAt ??= now;
+            FailedAttemptsInWindow++;
             AttemptCount++;
-            return AttemptCount >= maxAttempts ? IdentityErrors.CodeExpired : IdentityErrors.InvalidCode;
+            return AttemptCount >= maxAttempts || FailedAttemptsInWindow >= MaxFailedAttemptsPerWindow
+                ? IdentityErrors.CodeExpired
+                : IdentityErrors.InvalidCode;
         }
 
         ConsumedAt = now;

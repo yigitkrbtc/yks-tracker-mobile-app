@@ -11,13 +11,20 @@ internal sealed class SignInService(
     IRefreshTokenRepository refreshTokens,
     IdentityOptions options)
 {
-    /// <summary>Ends a password sign-in. The role follows <see cref="IdentityOptions.AdminEmails"/> from here on.</summary>
-    public SignInResult Complete(User user, DateTimeOffset now)
+    /// <summary>
+    /// Ends a password sign-in. The role follows <see cref="IdentityOptions.AdminEmails"/> from here on; a promotion
+    /// ends every session the account already had, since none of them passed the second factor (ADR-0021).
+    /// </summary>
+    public async Task<SignInResult> Complete(User user, DateTimeOffset now, CancellationToken cancellationToken)
     {
-        user.ChangeRole(options.RoleFor(user.NormalizedEmail));
+        if (user.ChangeRole(options.RoleFor(user.NormalizedEmail)) && user.IsAdmin)
+        {
+            await RevokeAll(user.Id, RevokeReason.RoleChanged, now, cancellationToken);
+        }
+
         if (!user.IsAdmin)
         {
-            return new SignInResult(IssueTokens(user, now), null);
+            return new SignInResult(IssueTokens(user, now, issuedWithMfa: false), null);
         }
 
         var step = user.TotpEnabled ? MfaStep.Totp : MfaStep.TotpSetup;
@@ -25,11 +32,11 @@ internal sealed class SignInService(
         return new SignInResult(null, new MfaChallenge(step, mfa.Token, mfa.ExpiresAt));
     }
 
-    public AuthTokens IssueTokens(User user, DateTimeOffset now)
+    public AuthTokens IssueTokens(User user, DateTimeOffset now, bool issuedWithMfa)
     {
         var raw = secrets.NewOpaqueToken();
         var lifetime = user.IsAdmin ? options.AdminRefreshTokenLifetime : options.RefreshTokenLifetime;
-        var refresh = RefreshToken.Issue(user.Id, secrets.Hash(raw), now, lifetime);
+        var refresh = RefreshToken.Issue(user.Id, secrets.Hash(raw), now, lifetime, issuedWithMfa);
         refreshTokens.Add(refresh);
         return Tokens(user, refresh, raw, now);
     }

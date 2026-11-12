@@ -59,7 +59,7 @@ internal sealed class VerifyEmailHandler(
         }
 
         user.VerifyEmail(now);
-        var result = signIn.Complete(user, now);
+        var result = await signIn.Complete(user, now, cancellationToken);
         await unitOfWork.SaveChanges(cancellationToken);
         return result;
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nirengi/features/auth/domain/auth_failure.dart';
 import 'package:nirengi/features/auth/presentation/verify_email_page.dart';
 
 import '../../support/auth_fakes.dart';
@@ -51,5 +52,22 @@ void main() {
       repository.calls,
       contains('verify:ada@example.com:123456:dogruSifre123'),
     );
+  });
+
+  testWidgets('wrong password on verification says the registration changed', (
+    tester,
+  ) async {
+    await pumpVerify(tester, password: 'dogruSifre123');
+    repository.verifyError = const AuthException(
+      AuthFailure.invalidCredentials,
+    );
+
+    await tester.enterText(find.byType(TextFormField).first, '123456');
+    await tester.tap(find.text('Doğrula'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(AuthFailure.registrationChanged.message), findsOneWidget);
+    expect(find.text(AuthFailure.invalidCredentials.message), findsNothing);
   });
 }

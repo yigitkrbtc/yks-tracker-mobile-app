@@ -10,5 +10,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Modules/Identity/Identity.Domain/Identity.Domain.csproj" />
+    <ProjectReference Include="../../src/Modules/Identity/Identity.Application/Identity.Application.csproj" />
   </ItemGroup>
 </Project>
