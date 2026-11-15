@@ -84,10 +84,20 @@ public sealed class IdentityMailOutboxTests(NirengiApiFactory factory)
         await using (var scope = factory.Services.CreateAsyncScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
-            var reset = await db.OutboxMessages
+            var protector = scope.ServiceProvider.GetRequiredService<IEmailPayloadProtector>();
+            // The database is shared with other test classes, so pick this test's row by opening the payloads.
+            var candidates = await db.OutboxMessages
                 .Where(m => m.Type.Contains("IdentityEmailRequested") && m.OccurredAt >= started)
-                .ExecuteUpdateAsync(s => s.SetProperty(m => m.ProcessedAt, (DateTimeOffset?)null), ct);
-            reset.ShouldBe(1);
+                .ToListAsync(ct);
+            var mine = candidates.Where(m =>
+            {
+                var e = JsonSerializer.Deserialize<IdentityEmailRequested>(m.Payload)!;
+                return protector.Unprotect(e.ProtectedPayload, IdentityEmailRequested.AssociatedData(e.Id, e.ValidUntil))
+                    .Contains(email, StringComparison.OrdinalIgnoreCase);
+            }).ToList();
+            mine.Count.ShouldBe(1);
+            mine[0].ProcessedAt = null;
+            await db.SaveChangesAsync(ct);
         }
 
         await factory.WaitForIdentityMailDelivered();
