@@ -53,6 +53,7 @@ app.UseNirengiSecurityHeaders();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseSerilogRequestLogging();
+app.UseNirengiClientVersion();
 app.UseNirengiSecurity();
 
 app.MapOpenApi("/openapi/{documentName}.json");
