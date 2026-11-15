@@ -16,7 +16,7 @@ internal sealed class VerificationCodes(
 {
     public const int Digits = 8;
 
-    /// <summary>Returns the code to mail, or null while the resend cooldown is running.</summary>
+    /// <summary>Returns the code to mail, or null while the resend wait is running (it grows with the codes of the last hour; the caller answers as if a code had gone out).</summary>
     public async Task<IssuedCode?> Issue(User user, CodePurpose purpose, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var code = secrets.NewNumericCode(Digits);
@@ -28,12 +28,12 @@ internal sealed class VerificationCodes(
             return new IssuedCode(code, new EmailCodeBinding(user.Id, purpose, hash));
         }
 
-        if (!existing.CanResend(now, options.CodeResendCooldown))
+        if (!existing.CanResend(now, options.CodeResend))
         {
             return null;
         }
 
-        existing.Reissue(hash, now, options.CodeLifetime);
+        existing.Reissue(hash, now, options.CodeLifetime, options.CodeResend);
         return new IssuedCode(code, new EmailCodeBinding(user.Id, purpose, hash));
     }
 

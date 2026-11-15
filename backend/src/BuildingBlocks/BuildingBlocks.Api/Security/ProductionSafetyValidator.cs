@@ -8,7 +8,8 @@ namespace Nirengi.BuildingBlocks.Api.Security;
 public sealed class ProductionSafetyOptions;
 
 /// <summary>
-/// Production start-up guard (security audit G12). A production host fails fast, before it serves a request, when
+/// Production start-up guard (security audit G12). A production-like host (any environment but Development and Testing, see
+/// <see cref="RuntimeEnvironment"/>) fails fast, before it serves a request, when
 /// (1) no proxy or network is listed under <c>ForwardedHeaders</c>: client IPs, and so every per-IP rate limit, would be the
 /// proxy's own address or spoofable through X-Forwarded-For, and (2) a secret is one of the development keys that are
 /// public in the repository. Messages name the setting, never the value.
@@ -17,7 +18,7 @@ internal sealed class ProductionSafetyValidator(IHostEnvironment environment, IC
 {
     public ValidateOptionsResult Validate(string? name, ProductionSafetyOptions options)
     {
-        if (!environment.IsProduction())
+        if (!environment.IsProductionLike())
         {
             return ValidateOptionsResult.Success;
         }

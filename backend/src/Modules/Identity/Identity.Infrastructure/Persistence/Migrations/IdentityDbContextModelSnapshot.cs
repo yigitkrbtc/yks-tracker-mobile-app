@@ -113,6 +113,10 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("code_hash");
 
+                    b.Property<int>("CodesInWindow")
+                        .HasColumnType("integer")
+                        .HasColumnName("codes_in_window");
+
                     b.Property<DateTimeOffset?>("ConsumedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("consumed_at");
@@ -140,6 +144,10 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
+
+                    b.Property<DateTimeOffset>("WindowStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("window_started_at");
 
                     b.HasKey("Id")
                         .HasName("pk_verification_codes");

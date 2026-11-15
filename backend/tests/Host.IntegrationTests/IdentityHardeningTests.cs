@@ -1,6 +1,12 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Nirengi.BuildingBlocks.Application.Abstractions;
+using Nirengi.Modules.Identity.Domain.Codes;
+using Nirengi.Modules.Identity.Infrastructure;
 using OtpNet;
 using Shouldly;
 
@@ -135,6 +141,52 @@ public sealed class IdentityHardeningTests(NirengiApiFactory factory)
     }
 
     /// <summary>
+    /// G4: the wait before a new code doubles after three codes in an hour, and a request inside the wait looks the same as
+    /// one that sent a code (no 429, no difference an outsider could use to learn about the account), but sends nothing.
+    /// </summary>
+    [Fact]
+    public async Task The_wait_between_reset_codes_grows_within_an_hour_without_changing_the_answer()
+    {
+        var email = AuthApi.NewEmail();
+        await _api.RegisterAndVerify(email);
+        var clock = new SettableClock(DateTimeOffset.UtcNow);
+        using var host = factory.WithWebHostBuilder(b => b.ConfigureTestServices(services => services.AddSingleton<IClock>(clock)));
+        var client = host.CreateClient();
+
+        async Task<(HttpStatusCode Status, string Hash)> Forgot()
+        {
+            var response = await Post(client, "/v1/auth/password/forgot", new { email });
+            await using var scope = host.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+            var userId = await db.Users.Where(u => u.NormalizedEmail == Nirengi.Modules.Identity.Domain.Users.Email.Normalize(email)).Select(u => u.Id).SingleAsync(TestContext.Current.CancellationToken);
+            var row = await db.VerificationCodes.AsNoTracking().SingleAsync(c => c.UserId == userId && c.Purpose == CodePurpose.PasswordReset, TestContext.Current.CancellationToken);
+            return (response.StatusCode, row.CodeHash);
+        }
+
+        var (status, hash) = await Forgot();
+        status.ShouldBe(HttpStatusCode.Accepted);
+
+        // Codes 1-3 are 60 s apart, then 120, 240: a request one second early is answered the same way but sends nothing.
+        foreach (var wait in new[] { 60, 60, 60, 120, 240 })
+        {
+            clock.UtcNow += TimeSpan.FromSeconds(wait - 1);
+            var early = await Forgot();
+            early.Status.ShouldBe(HttpStatusCode.Accepted);
+            early.Hash.ShouldBe(hash, $"a code went out {wait - 1} s after the last one");
+
+            clock.UtcNow += TimeSpan.FromSeconds(1);
+            var due = await Forgot();
+            due.Status.ShouldBe(HttpStatusCode.Accepted);
+            due.Hash.ShouldNotBe(hash, $"no code went out {wait} s after the last one");
+            hash = due.Hash;
+        }
+
+        // The owner is never locked out: an hour later the window is over and the wait is short again.
+        clock.UtcNow += TimeSpan.FromHours(1);
+        (await Forgot()).Hash.ShouldNotBe(hash);
+    }
+
+    /// <summary>
     /// G4: a code dies after 5 wrong guesses, even for the right code afterwards; a fresh code works at once, because
     /// there is no account-level budget an attacker could burn to lock the owner out.
     /// </summary>
@@ -235,6 +287,11 @@ public sealed class IdentityHardeningTests(NirengiApiFactory factory)
 
     private static Task<HttpResponseMessage> Post(HttpClient client, string path, object body) =>
         client.PostAsJsonAsync(path, body, AuthApi.Json, TestContext.Current.CancellationToken);
+
+    private sealed class SettableClock(DateTimeOffset start) : IClock
+    {
+        public DateTimeOffset UtcNow { get; set; } = start;
+    }
 
     private sealed record TotpSetup(string Secret, string OtpAuthUri);
 

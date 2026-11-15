@@ -30,7 +30,7 @@ S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S
 - Kişisel veri tutan her modül `IPersonalDataExporter` uygular ve kaydeder; `/v1/me/export` bunları toplar (ADR-0018).
 - Müfredat değişikliği yalnız taslak → yayın yolundan (`CurriculumPublisher`, ADR-0019); seed içe aktarma da aynı yol. Konu/kaynak silinmez, kodlar tekrar kullanılmaz. Yeni işlem türü: domain + `DraftApplier` + `ContentDiff` + panel `describe()`.
 - Versiyonlu kural seti olan modül `IRuleSetDescriptor` kaydeder (`/v1/admin/rule-sets`). Admin uçları `RequireAuthorization(Policies.Admin)` + `RateLimitPolicies.Admin`.
-- Rate limit: e-posta alan kimlik uçları `auth` politikası + `EmailRateLimitFilter` (IP + e-posta hash'i); `/v1` geneli kullanıcı başına `api` politikası; gövde 64 KB. Production'da `ForwardedHeaders:KnownProxies`/`KnownNetworks` zorunlu, geliştirme anahtarlarıyla açılmaz, OpenAPI ucu kapalı (ADR-0021).
+- Rate limit: e-posta alan kimlik uçları `auth` politikası + `EmailRateLimitFilter` (IP + e-posta hash'i); `/v1` geneli kullanıcı başına `api` politikası; gövde 64 KB (admin taslak kaydı uç meta verisiyle `AllowBodyUpTo`, 1 MB). Development ve Testing dışındaki her ortam adı production sayılır: `ForwardedHeaders:KnownProxies`/`KnownNetworks` zorunlu, geliştirme anahtarlarıyla açılmaz, OpenAPI ucu kapalı (ADR-0021).
 - Yumuşak silmede (tombstone) serbest metin alanları (not, kaynak adı, başlık) temizlenir.
 - Uyarılar hata sayılır (`TreatWarningsAsErrors`). Paket sürümleri yalnız `Directory.Packages.props`'ta.
 

@@ -6,6 +6,10 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
+using Nirengi.BuildingBlocks.Application.Security;
 using Nirengi.BuildingBlocks.Api.Security;
 using Nirengi.Modules.Tracking.Api.Endpoints;
 using Shouldly;
@@ -18,6 +22,8 @@ namespace Nirengi.Host.IntegrationTests;
 public sealed class ApiBoundaryTests(NirengiApiFactory factory)
 {
     private const string DevJwtKey = "PL5SvfS4nbW/tV69TxvZ2UCr04nEMZTY/dCg5DKqRjM=";
+
+    private static readonly JsonSerializerOptions BrowserJson = new(AuthApi.Json) { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     private readonly AuthApi _api = new(factory);
 
@@ -115,6 +121,56 @@ public sealed class ApiBoundaryTests(NirengiApiFactory factory)
     }
 
     /// <summary>
+    /// G7: saving a curriculum draft sends the whole operation list (up to 500), far over 64 KB; the draft endpoint has its own
+    /// 1 MB cap from endpoint metadata, while the default cap and the draft cap's own ceiling still answer 413.
+    /// </summary>
+    [Fact]
+    public async Task A_full_curriculum_draft_can_be_saved_and_only_that_endpoint_has_the_higher_cap()
+    {
+        var admin = AdminToken();
+        var draft = await AuthApi.Read<DraftHandle>(await _api.Send(HttpMethod.Post, "/v1/admin/curriculum/drafts", admin, new { }));
+
+        // 500 operations, each with an 80-character name, 8 subtopics of 40 and a 200-character description, two-byte letters.
+        var subtopics = Enumerable.Range(0, 8).Select(i => new string('ş', 39) + i).ToArray();
+        var operations = Enumerable.Range(0, 500)
+            .Select(_ => new { type = "topic.add", subjectCode = "TYT.TMAT", name = new string('ç', 80), subtopics, gradeMin = 9, gradeMax = 12, description = new string('ğ', 200) })
+            .ToArray();
+        var body = new { revision = draft.Revision, title = "Büyük taslak", operations };
+
+        // Serialized like the admin panel's JSON.stringify: letters stay UTF-8, not \\uXXXX escapes.
+        var json = JsonSerializer.Serialize(body, BrowserJson);
+        var size = Encoding.UTF8.GetByteCount(json);
+        size.ShouldBeGreaterThan(RequestLimits.MaxBodyBytes * 10, "the draft must be far over the default cap to prove the override");
+        size.ShouldBeLessThan(RequestLimits.MaxDraftBodyBytes, $"draft is {size} bytes");
+
+        var save = new HttpRequestMessage(HttpMethod.Put, $"/v1/admin/curriculum/drafts/{draft.Id}") { Content = new StringContent(json, Encoding.UTF8, "application/json") };
+        save.Headers.Authorization = new AuthenticationHeaderValue("Bearer", admin);
+        var saved = await _api.Client.SendAsync(save, TestContext.Current.CancellationToken);
+        saved.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Declared and chunked bodies above the draft's own cap are still cut off.
+        var tooBig = new { revision = draft.Revision, title = new string('x', RequestLimits.MaxDraftBodyBytes) };
+        (await _api.Send(HttpMethod.Put, $"/v1/admin/curriculum/drafts/{draft.Id}", admin, tooBig)).StatusCode.ShouldBe(HttpStatusCode.RequestEntityTooLarge);
+        var chunked = new HttpRequestMessage(HttpMethod.Put, $"/v1/admin/curriculum/drafts/{draft.Id}")
+        {
+            Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(new string('x', RequestLimits.MaxDraftBodyBytes + 1)))) { Headers = { ContentType = new("application/json") } },
+        };
+        chunked.Headers.Authorization = new AuthenticationHeaderValue("Bearer", admin);
+        chunked.Headers.TransferEncodingChunked = true;
+        var chunkedResponse = await _api.Client.SendAsync(chunked, TestContext.Current.CancellationToken);
+        chunkedResponse.StatusCode.ShouldBeOneOf(HttpStatusCode.RequestEntityTooLarge, HttpStatusCode.BadRequest);
+        (await chunkedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldNotContain("Büyük");
+
+        // Everything else keeps 64 KB, admin endpoints included.
+        (await _api.Send(HttpMethod.Post, "/v1/admin/curriculum/drafts", admin, new { fromVersion = 1, pad = new string('x', RequestLimits.MaxBodyBytes) }))
+            .StatusCode.ShouldBe(HttpStatusCode.RequestEntityTooLarge);
+        (await _api.Send(HttpMethod.Post, $"/v1/admin/curriculum/drafts/{draft.Id}/publish", admin, new { revision = 1, summary = new string('x', RequestLimits.MaxBodyBytes) }))
+            .StatusCode.ShouldBe(HttpStatusCode.RequestEntityTooLarge);
+
+        (await _api.Send(HttpMethod.Delete, $"/v1/admin/curriculum/drafts/{draft.Id}", admin)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+    }
+
+    /// <summary>
     /// G7: the 64 KB cap is measured against the biggest body the API itself accepts: a mock exam with the maximum 300 topic
     /// marks (30 sections, 20-character codes, every optional field, counts at their ceiling, notes at their limit with two-byte letters).
     /// </summary>
@@ -169,6 +225,26 @@ public sealed class ApiBoundaryTests(NirengiApiFactory factory)
         (await _api.Client.GetAsync("/openapi/v1.json", ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
+    /// <summary>
+    /// G12: only Development and the test environment may run relaxed; "Staging" (or a mistyped name) gets the production
+    /// start-up checks and serves no OpenAPI document.
+    /// </summary>
+    [Theory]
+    [InlineData("Staging")]
+    [InlineData("production")]
+    [InlineData("Prod")]
+    public async Task Any_environment_but_development_and_testing_is_treated_as_production(string environment)
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        Should.Throw<Exception>(() => Production(environment).CreateClient()).ToString().ShouldContain("ForwardedHeaders");
+        var devJwt = Should.Throw<Exception>(() => Production(environment, ("ForwardedHeaders:KnownProxies:0", "10.0.0.7"), ("Jwt:SigningKey", DevJwtKey)).CreateClient());
+        devJwt.ToString().ShouldContain("Jwt:SigningKey");
+
+        using var host = Production(environment, ("ForwardedHeaders:KnownProxies:0", "10.0.0.7"));
+        (await host.CreateClient().GetAsync("/openapi/v1.json", ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
     /// <summary>The dev keys that the production guard refuses are exactly the ones checked into appsettings.Development.json.</summary>
     [Fact]
     public void Every_secret_in_the_development_settings_is_on_the_production_blocklist()
@@ -194,15 +270,40 @@ public sealed class ApiBoundaryTests(NirengiApiFactory factory)
             }
         });
 
-    private WebApplicationFactory<Program> Production(params (string Key, string Value)[] settings) =>
+    private WebApplicationFactory<Program> Production(params (string Key, string Value)[] settings) => Production("Production", settings);
+
+    private WebApplicationFactory<Program> Production(string environment, params (string Key, string Value)[] settings) =>
         factory.WithWebHostBuilder(b =>
         {
-            b.UseEnvironment("Production");
+            b.UseEnvironment(environment);
             foreach (var (key, value) in settings)
             {
                 b.UseSetting(key, value);
             }
         });
+
+    /// <summary>An access token as Identity issues it after TOTP (the MFA flow itself is covered by AdminMfaTests).</summary>
+    private string AdminToken()
+    {
+        var jwt = factory.Services.GetRequiredService<IOptions<JwtOptions>>().Value;
+        var now = DateTime.UtcNow;
+        return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = jwt.Issuer,
+            Audience = jwt.Audience,
+            IssuedAt = now,
+            NotBefore = now,
+            Expires = now.AddMinutes(10),
+            Claims = new Dictionary<string, object>
+            {
+                [NirengiClaims.Subject] = Guid.NewGuid().ToString(),
+                [NirengiClaims.Role] = NirengiRoles.Admin,
+            },
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(jwt.SigningKeyBytes()), SecurityAlgorithms.HmacSha256),
+        });
+    }
+
+    private sealed record DraftHandle(Guid Id, int Revision);
 
     private static Task<HttpResponseMessage> Login(HttpClient client, string email) =>
         client.PostAsJsonAsync("/v1/auth/login", new { email, password = "yanlisSifre123" }, AuthApi.Json, TestContext.Current.CancellationToken);

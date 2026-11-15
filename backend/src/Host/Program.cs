@@ -56,7 +56,7 @@ app.UseSerilogRequestLogging();
 app.UseNirengiClientVersion();
 app.UseNirengiSecurity();
 
-if (!app.Environment.IsProduction())
+if (!app.Environment.IsProductionLike())
 {
     // The contract is committed (contracts/openapi) and generated at build time; production does not serve it.
     app.MapOpenApi("/openapi/{documentName}.json");

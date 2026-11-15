@@ -1,3 +1,4 @@
+using Nirengi.Modules.Identity.Domain.Codes;
 using Nirengi.Modules.Identity.Domain.Users;
 
 namespace Nirengi.Modules.Identity.Application;
@@ -35,7 +36,16 @@ public sealed class IdentityOptions
 
     public TimeSpan CodeLifetime { get; set; } = TimeSpan.FromMinutes(10);
 
+    /// <summary>Wait between codes; doubles after <see cref="CodeResendFreeCodes"/> codes within <see cref="CodeResendWindow"/> (ADR-0021 G4).</summary>
     public TimeSpan CodeResendCooldown { get; set; } = TimeSpan.FromSeconds(60);
+
+    public int CodeResendFreeCodes { get; set; } = 3;
+
+    public TimeSpan CodeResendWindow { get; set; } = TimeSpan.FromHours(1);
+
+    public TimeSpan CodeResendMaxWait { get; set; } = TimeSpan.FromHours(1);
+
+    public ResendPolicy CodeResend => new(CodeResendCooldown, CodeResendFreeCodes, CodeResendWindow, CodeResendMaxWait);
 
     public int MaxCodeAttempts { get; set; } = 5;
 
