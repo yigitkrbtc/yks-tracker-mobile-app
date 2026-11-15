@@ -14,3 +14,6 @@ key.properties
 **/*.jks
 # Shared debug key (not secret): every CI/local debug APK has the same signature, so a new build installs as an update.
 !app/preview-debug.keystore
+
+# The repo-wide "Debug/" rule would hide the debug source set (cleartext network config, ADR-0021 İ8).
+!/app/src/debug/
