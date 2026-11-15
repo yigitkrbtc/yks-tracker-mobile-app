@@ -86,6 +86,8 @@ public sealed class NirengiApiFactory : WebApplicationFactory<Program>, IAsyncLi
         builder.UseSetting("AdminPanel:Path", AdminPanelPath);
         builder.UseSetting("Curriculum:AutoPublishSeed", "true");
         builder.UseSetting("RateLimiting:Auth:PermitLimit", "10000");
+        builder.UseSetting("RateLimiting:Auth:PerIpPermitLimit", "10000");
+        builder.UseSetting("RateLimiting:Api:PermitLimit", "10000");
         builder.UseSetting("RateLimiting:Session:PermitLimit", "10000");
         builder.UseSetting("Identity:Security:HashKey", TestHashKey);
         builder.UseSetting("Identity:AdminEmails:0", AdminEmail);

@@ -15,7 +15,7 @@ internal static class AuthEndpoints
 {
     public static void MapAuthEndpoints(this IEndpointRouteBuilder v1)
     {
-        var auth = v1.MapGroup("/auth").AllowAnonymous().RequireRateLimiting(RateLimitPolicies.Auth);
+        var auth = v1.MapGroup("/auth").AllowAnonymous().RequireRateLimiting(RateLimitPolicies.Auth).AddEndpointFilter<EmailRateLimitFilter>();
 
         auth.MapPost("/register", async (RegisterCommand command, IDispatcher dispatcher, CancellationToken ct) =>
                 (await dispatcher.Send(command, ct)).Match(_ => Results.Accepted()))

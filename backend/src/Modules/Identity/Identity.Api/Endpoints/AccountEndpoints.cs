@@ -14,7 +14,7 @@ internal static class AccountEndpoints
 {
     public static void MapAccountEndpoints(this IEndpointRouteBuilder v1)
     {
-        var auth = v1.MapGroup("/auth").AllowAnonymous().RequireRateLimiting(RateLimitPolicies.Auth);
+        var auth = v1.MapGroup("/auth").AllowAnonymous().RequireRateLimiting(RateLimitPolicies.Auth).AddEndpointFilter<EmailRateLimitFilter>();
 
         auth.MapPost("/password/forgot", async (ForgotPasswordCommand command, IDispatcher dispatcher, CancellationToken ct) =>
                 (await dispatcher.Send(command, ct)).Match(_ => Results.Accepted()))

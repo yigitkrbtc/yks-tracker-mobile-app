@@ -12,6 +12,7 @@ internal static class OpenApiBuildSecrets
     {
         ["Jwt:SigningKey"] = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),
         ["Identity:Security:HashKey"] = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),
+        ["ForwardedHeaders:KnownProxies:0"] = "127.0.0.1",
         ["Smtp:Host"] = "localhost",
         ["Smtp:FromAddress"] = "openapi@localhost",
         ["Database:MigrateOnStartup"] = "false",
