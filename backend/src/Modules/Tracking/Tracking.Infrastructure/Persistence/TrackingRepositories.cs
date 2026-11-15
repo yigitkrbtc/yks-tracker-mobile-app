@@ -23,8 +23,11 @@ internal sealed class StudyProfileRepository(TrackingDbContext db) : IStudyProfi
 
 internal sealed class TopicTestRepository(TrackingDbContext db) : ITopicTestRepository
 {
-    public Task<TopicTest?> Get(Guid id, CancellationToken cancellationToken) =>
-        db.TopicTests.Include(t => t.Results).SingleOrDefaultAsync(t => t.Id == id, cancellationToken);
+    public Task<TopicTest?> Get(Guid userId, Guid id, CancellationToken cancellationToken) =>
+        db.TopicTests.Include(t => t.Results).SingleOrDefaultAsync(t => t.Id == id && t.UserId == userId, cancellationToken);
+
+    public Task<bool> IsOwnedByAnotherUser(Guid userId, Guid id, CancellationToken cancellationToken) =>
+        db.TopicTests.AsNoTracking().AnyAsync(t => t.Id == id && t.UserId != userId, cancellationToken);
 
     public void Add(TopicTest test) => db.TopicTests.Add(test);
 
@@ -44,8 +47,12 @@ internal sealed class TopicTestRepository(TrackingDbContext db) : ITopicTestRepo
 
 internal sealed class MockExamRepository(TrackingDbContext db) : IMockExamRepository
 {
-    public Task<MockExam?> Get(Guid id, CancellationToken cancellationToken) =>
-        db.MockExams.Include(e => e.Sections).Include(e => e.Marks).AsSplitQuery().SingleOrDefaultAsync(e => e.Id == id, cancellationToken);
+    public Task<MockExam?> Get(Guid userId, Guid id, CancellationToken cancellationToken) =>
+        db.MockExams.Include(e => e.Sections).Include(e => e.Marks).AsSplitQuery()
+            .SingleOrDefaultAsync(e => e.Id == id && e.UserId == userId, cancellationToken);
+
+    public Task<bool> IsOwnedByAnotherUser(Guid userId, Guid id, CancellationToken cancellationToken) =>
+        db.MockExams.AsNoTracking().AnyAsync(e => e.Id == id && e.UserId != userId, cancellationToken);
 
     public void Add(MockExam exam) => db.MockExams.Add(exam);
 

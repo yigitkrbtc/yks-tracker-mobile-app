@@ -175,11 +175,8 @@ internal sealed class SaveMockExamHandler(
 {
     public async Task<Result<MockExamResponse>> Handle(SaveMockExamCommand command, CancellationToken cancellationToken)
     {
-        var exam = await exams.Get(command.Id, cancellationToken);
-        if (exam is not null && exam.UserId != command.UserId)
-        {
-            return TrackingErrors.MockExamNotFound;
-        }
+        var exam = await exams.Get(command.UserId, command.Id, cancellationToken);
+        var isNew = exam is null;
 
         var template = (await catalog.GetMockSections(cancellationToken)).ToDictionary(
             s => s.Code,
@@ -219,9 +216,15 @@ internal sealed class SaveMockExamHandler(
             [.. sectionsBefore.Union(exam.Sections.Select(s => s.SectionCode), StringComparer.Ordinal)],
             [.. topicsBefore.Union(exam.Marks.Select(m => m.TopicId))]));
 
-        // Two devices pushing the same id at once: the loser gets 409 and its retry lands as an ordinary edit.
-        return await unitOfWork.TrySaveChanges(cancellationToken)
-            ? MockExamResponse.From(exam)
+        if (await unitOfWork.TrySaveChanges(cancellationToken))
+        {
+            return MockExamResponse.From(exam);
+        }
+
+        // A new id that collides is either another student's (it reads as absent to us, so say 404) or two of this
+        // student's devices pushing the same id at once: the loser gets 409 and its retry lands as an ordinary edit.
+        return isNew && await exams.IsOwnedByAnotherUser(command.UserId, command.Id, cancellationToken)
+            ? TrackingErrors.MockExamNotFound
             : TrackingErrors.MockExamConflict;
     }
 

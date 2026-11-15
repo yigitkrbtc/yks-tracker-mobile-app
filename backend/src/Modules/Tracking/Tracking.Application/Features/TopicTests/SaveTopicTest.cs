@@ -104,11 +104,8 @@ internal sealed class SaveTopicTestHandler(
 {
     public async Task<Result<TopicTestResponse>> Handle(SaveTopicTestCommand command, CancellationToken cancellationToken)
     {
-        var test = await tests.Get(command.Id, cancellationToken);
-        if (test is not null && test.UserId != command.UserId)
-        {
-            return TrackingErrors.TopicTestNotFound;
-        }
+        var test = await tests.Get(command.UserId, command.Id, cancellationToken);
+        var isNew = test is null;
 
         var data = ToData(command);
         var error = await CheckReferences(data, test, cancellationToken);
@@ -132,9 +129,15 @@ internal sealed class SaveTopicTestHandler(
         unitOfWork.Enqueue(new TopicTestChanged(
             Guid.CreateVersion7(now), now, command.UserId, test.Id, [.. before.Union(test.Results.Select(r => r.TopicId))]));
 
-        // Two devices pushing the same id at once: the loser gets 409 and its retry lands as an ordinary edit.
-        return await unitOfWork.TrySaveChanges(cancellationToken)
-            ? TopicTestResponse.From(test)
+        if (await unitOfWork.TrySaveChanges(cancellationToken))
+        {
+            return TopicTestResponse.From(test);
+        }
+
+        // A new id that collides is either another student's (it reads as absent to us, so say 404) or two of this
+        // student's devices pushing the same id at once: the loser gets 409 and its retry lands as an ordinary edit.
+        return isNew && await tests.IsOwnedByAnotherUser(command.UserId, command.Id, cancellationToken)
+            ? TrackingErrors.TopicTestNotFound
             : TrackingErrors.TopicTestConflict;
     }
 

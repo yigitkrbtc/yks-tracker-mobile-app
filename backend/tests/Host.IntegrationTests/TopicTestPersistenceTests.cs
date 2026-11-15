@@ -39,7 +39,7 @@ public sealed class TopicTestPersistenceTests(NirengiApiFactory factory)
 
         await using (var scope = factory.Services.CreateAsyncScope())
         {
-            var test = (await scope.ServiceProvider.GetRequiredService<ITopicTestRepository>().Get(id, ct)).ShouldNotBeNull();
+            var test = (await scope.ServiceProvider.GetRequiredService<ITopicTestRepository>().Get(user, id, ct)).ShouldNotBeNull();
             test.Apply(Data(new TopicResultData(TopicA, 12, 10, 2, 0)), Now.AddMinutes(1), Now.AddMinutes(1)).ShouldBeTrue();
             (await scope.ServiceProvider.GetRequiredService<ITrackingUnitOfWork>().TrySaveChanges(ct)).ShouldBeTrue();
             test.ChangeSeq.ShouldBeGreaterThan(firstSeq);
