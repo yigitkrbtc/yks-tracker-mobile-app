@@ -57,11 +57,11 @@ public sealed partial class FakeEmailSender : IEmailSender
     }
 
     public async Task<string> WaitForCode(string address, int after = 0) =>
-        SixDigits().Match((await WaitForMail(address, after)).Subject).Value;
+        EightDigits().Match((await WaitForMail(address, after)).Subject).Value;
 
     /// <summary>Newest code mailed to the address; only valid once the outbox has delivered everything.</summary>
-    public string LatestCode(string address) => SixDigits().Match(To(address)[^1].Subject).Value;
+    public string LatestCode(string address) => EightDigits().Match(To(address)[^1].Subject).Value;
 
-    [GeneratedRegex(@"\d{6}")]
-    private static partial Regex SixDigits();
+    [GeneratedRegex(@"\d{8}")]
+    private static partial Regex EightDigits();
 }

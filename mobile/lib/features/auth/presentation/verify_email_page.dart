@@ -104,7 +104,7 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
       title: 'E-postanı doğrula',
       children: [
         Text(
-          '${widget.email} adresine 6 haneli bir kod gönderdik. Kod 10 dakika geçerli.',
+          '${widget.email} adresine 8 haneli bir kod gönderdik. Kod 10 dakika geçerli.',
         ),
         const SizedBox(height: 16),
         Form(
@@ -115,7 +115,7 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
                 controller: _code,
                 keyboardType: TextInputType.number,
                 autofillHints: const [AutofillHints.oneTimeCode],
-                maxLength: 6,
+                maxLength: 8,
                 validator: AuthValidators.code,
                 decoration: const InputDecoration(
                   labelText: 'Doğrulama kodu',

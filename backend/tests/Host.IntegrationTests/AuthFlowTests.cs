@@ -121,7 +121,7 @@ public sealed class AuthFlowTests(NirengiApiFactory factory)
             HttpStatusCode.Forbidden,
             "identity.email_not_verified");
 
-        var wrong = await factory.Mail.WaitForCode(email) == "000000" ? "111111" : "000000";
+        var wrong = await factory.Mail.WaitForCode(email) == "00000000" ? "11111111" : "00000000";
         await AuthApi.ShouldBeProblem(
             await _api.Post("/v1/auth/email/verify", new { email, code = wrong, password = AuthApi.Password }),
             HttpStatusCode.BadRequest,

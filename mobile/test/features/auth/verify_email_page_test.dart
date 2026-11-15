@@ -27,20 +27,20 @@ void main() {
     await pumpVerify(tester, password: 'dogruSifre123');
 
     expect(find.text('Kayıtta seçtiğin şifre'), findsNothing);
-    await tester.enterText(find.byType(TextFormField).first, '123456');
+    await tester.enterText(find.byType(TextFormField).first, '12345678');
     await tester.tap(find.text('Doğrula'));
     await tester.pump();
 
     expect(
       repository.calls,
-      contains('verify:ada@example.com:123456:dogruSifre123'),
+      contains('verify:ada@example.com:12345678:dogruSifre123'),
     );
   });
 
   testWidgets('asks for the password when it is not at hand', (tester) async {
     await pumpVerify(tester);
 
-    await tester.enterText(find.byType(TextFormField).first, '123456');
+    await tester.enterText(find.byType(TextFormField).first, '12345678');
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Kayıtta seçtiğin şifre'),
       'dogruSifre123',
@@ -50,7 +50,7 @@ void main() {
 
     expect(
       repository.calls,
-      contains('verify:ada@example.com:123456:dogruSifre123'),
+      contains('verify:ada@example.com:12345678:dogruSifre123'),
     );
   });
 
@@ -62,12 +62,23 @@ void main() {
       AuthFailure.invalidCredentials,
     );
 
-    await tester.enterText(find.byType(TextFormField).first, '123456');
+    await tester.enterText(find.byType(TextFormField).first, '12345678');
     await tester.tap(find.text('Doğrula'));
     await tester.pump();
     await tester.pump();
 
     expect(find.text(AuthFailure.registrationChanged.message), findsOneWidget);
     expect(find.text(AuthFailure.invalidCredentials.message), findsNothing);
+  });
+
+  testWidgets('a code must be exactly eight digits', (tester) async {
+    await pumpVerify(tester, password: 'dogruSifre123');
+
+    await tester.enterText(find.byType(TextFormField).first, '123456');
+    await tester.tap(find.text('Doğrula'));
+    await tester.pump();
+
+    expect(find.text('8 haneli kodu gir.'), findsOneWidget);
+    expect(repository.calls.where((c) => c.startsWith('verify:')), isEmpty);
   });
 }

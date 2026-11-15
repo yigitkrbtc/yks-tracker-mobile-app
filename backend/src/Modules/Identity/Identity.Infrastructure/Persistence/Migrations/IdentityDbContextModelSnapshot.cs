@@ -107,10 +107,6 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("attempt_count");
 
-                    b.Property<DateTimeOffset?>("AttemptWindowStartedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("attempt_window_started_at");
-
                     b.Property<string>("CodeHash")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -124,10 +120,6 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at");
-
-                    b.Property<int>("FailedAttemptsInWindow")
-                        .HasColumnType("integer")
-                        .HasColumnName("failed_attempts_in_window");
 
                     b.Property<string>("Purpose")
                         .IsRequired()

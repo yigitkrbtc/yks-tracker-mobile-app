@@ -8,13 +8,13 @@ namespace Nirengi.Modules.Identity.Application.SignIn;
 /// <summary>A freshly issued code: the plain value to mail and what ties that mail to this very code.</summary>
 internal sealed record IssuedCode(string Code, EmailCodeBinding Binding);
 
-/// <summary>Issues and checks 6-digit codes. The hash binds user and purpose, so a code never works elsewhere.</summary>
+/// <summary>Issues and checks 8-digit codes. The hash binds user and purpose, so a code never works elsewhere.</summary>
 internal sealed class VerificationCodes(
     IVerificationCodeRepository codes,
     IOneTimeSecrets secrets,
     IdentityOptions options)
 {
-    public const int Digits = 6;
+    public const int Digits = 8;
 
     /// <summary>Returns the code to mail, or null while the resend cooldown is running.</summary>
     public async Task<IssuedCode?> Issue(User user, CodePurpose purpose, DateTimeOffset now, CancellationToken cancellationToken)

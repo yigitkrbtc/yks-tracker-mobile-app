@@ -12,18 +12,13 @@ public enum CodePurpose
 }
 
 /// <summary>
-/// One live 6-digit code per user and purpose; issuing a new one replaces the old. Each code allows a few attempts,
-/// so fresh codes could be used to keep guessing: failed attempts are therefore also counted across codes, at most
-/// <see cref="MaxFailedAttemptsPerWindow"/> per <see cref="AttemptWindow"/> (25 guesses a day out of a million).
-/// Issuing is never capped, so someone else asking for codes cannot keep the owner from getting one; once the budget
-/// is spent, verification fails until the window ends, whichever code is live.
+/// One live 8-digit code per user and purpose; issuing a new one replaces the old. Each code allows a few attempts
+/// (<c>maxAttempts</c>) and then dies. There is deliberately no account-level attempt budget: such a budget would let
+/// anyone burn it with wrong guesses and lock the owner out. Eight digits with a few attempts per code keeps guessing
+/// improbable (10^8 space) without that lever.
 /// </summary>
 public sealed class VerificationCode : Entity<Guid>
 {
-    public const int MaxFailedAttemptsPerWindow = 25;
-
-    public static readonly TimeSpan AttemptWindow = TimeSpan.FromHours(24);
-
     private VerificationCode()
     {
     }
@@ -42,11 +37,6 @@ public sealed class VerificationCode : Entity<Guid>
 
     public DateTimeOffset? ConsumedAt { get; private set; }
 
-    /// <summary>Start of the current attempt window; null until the first failed attempt.</summary>
-    public DateTimeOffset? AttemptWindowStartedAt { get; private set; }
-
-    public int FailedAttemptsInWindow { get; private set; }
-
     public static VerificationCode Issue(Guid userId, CodePurpose purpose, string codeHash, DateTimeOffset now, TimeSpan lifetime)
     {
         var code = new VerificationCode { Id = Guid.CreateVersion7(now), UserId = userId, Purpose = purpose };
@@ -56,7 +46,6 @@ public sealed class VerificationCode : Entity<Guid>
 
     public void Reissue(string codeHash, DateTimeOffset now, TimeSpan lifetime)
     {
-        // The attempt budget is deliberately kept: asking for a new code does not buy new guesses.
         CodeHash = codeHash;
         SentAt = now;
         ExpiresAt = now + lifetime;
@@ -68,23 +57,15 @@ public sealed class VerificationCode : Entity<Guid>
 
     public Result Verify(string candidateHash, DateTimeOffset now, int maxAttempts)
     {
-        if (AttemptWindowStartedAt is { } start && now - start >= AttemptWindow)
-        {
-            AttemptWindowStartedAt = null;
-            FailedAttemptsInWindow = 0;
-        }
-
-        if (ConsumedAt is not null || now >= ExpiresAt || AttemptCount >= maxAttempts || FailedAttemptsInWindow >= MaxFailedAttemptsPerWindow)
+        if (ConsumedAt is not null || now >= ExpiresAt || AttemptCount >= maxAttempts)
         {
             return IdentityErrors.CodeExpired;
         }
 
         if (!CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(CodeHash), Encoding.UTF8.GetBytes(candidateHash)))
         {
-            AttemptWindowStartedAt ??= now;
-            FailedAttemptsInWindow++;
             AttemptCount++;
-            return AttemptCount >= maxAttempts || FailedAttemptsInWindow >= MaxFailedAttemptsPerWindow
+            return AttemptCount >= maxAttempts
                 ? IdentityErrors.CodeExpired
                 : IdentityErrors.InvalidCode;
         }

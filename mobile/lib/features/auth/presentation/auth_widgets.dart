@@ -98,9 +98,9 @@ abstract final class AuthValidators {
   }
 
   static String? code(String? value) =>
-      RegExp(r'^\d{6}$').hasMatch(value?.trim() ?? '')
+      RegExp(r'^\d{8}$').hasMatch(value?.trim() ?? '')
       ? null
-      : '6 haneli kodu gir.';
+      : '8 haneli kodu gir.';
 }
 
 /// Shows an auth error the way every screen does: a snackbar with the server's or our message.

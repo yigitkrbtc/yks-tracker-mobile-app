@@ -134,9 +134,12 @@ public sealed class IdentityHardeningTests(NirengiApiFactory factory)
             .StatusCode.ShouldBe(HttpStatusCode.NoContent);
     }
 
-    /// <summary>G4: guesses are budgeted per day across codes; asking for a fresh code does not buy new ones.</summary>
+    /// <summary>
+    /// G4: a code dies after 5 wrong guesses, even for the right code afterwards; a fresh code works at once, because
+    /// there is no account-level budget an attacker could burn to lock the owner out.
+    /// </summary>
     [Fact]
-    public async Task Failed_guesses_are_budgeted_across_fresh_codes()
+    public async Task A_code_dies_after_five_wrong_guesses_and_a_fresh_one_still_works()
     {
         var email = AuthApi.NewEmail();
         await _api.RegisterAndVerify(email);
@@ -144,25 +147,37 @@ public sealed class IdentityHardeningTests(NirengiApiFactory factory)
         var client = host.CreateClient();
         const string newPassword = "yeniSifre456";
 
-        // 5 codes x 5 wrong guesses = the whole day's budget.
-        for (var round = 0; round < 5; round++)
+        // Burn several codes in a row; each one is spent after its own 5 guesses.
+        for (var round = 0; round < 3; round++)
         {
             var mailsBefore = factory.Mail.To(email).Count;
             (await Post(client, "/v1/auth/password/forgot", new { email })).StatusCode.ShouldBe(HttpStatusCode.Accepted);
             var real = await factory.Mail.WaitForCode(email, mailsBefore);
-            var wrong = real == "000000" ? "000001" : "000000";
-            for (var guess = 0; guess < 5; guess++)
+            var wrong = real == "00000000" ? "00000001" : "00000000";
+            for (var guess = 0; guess < 4; guess++)
             {
-                (await Post(client, "/v1/auth/password/reset", new { email, code = wrong, newPassword })).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+                await AuthApi.ShouldBeProblem(
+                    await Post(client, "/v1/auth/password/reset", new { email, code = wrong, newPassword }),
+                    HttpStatusCode.BadRequest,
+                    "identity.invalid_code");
             }
+
+            await AuthApi.ShouldBeProblem(
+                await Post(client, "/v1/auth/password/reset", new { email, code = wrong, newPassword }),
+                HttpStatusCode.BadRequest,
+                "identity.code_expired");
+
+            // The right code no longer works on the dead one.
+            await AuthApi.ShouldBeProblem(
+                await Post(client, "/v1/auth/password/reset", new { email, code = real, newPassword }),
+                HttpStatusCode.BadRequest,
+                "identity.code_expired");
         }
 
         var lastMailsBefore = factory.Mail.To(email).Count;
         (await Post(client, "/v1/auth/password/forgot", new { email })).StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        await AuthApi.ShouldBeProblem(
-            await Post(client, "/v1/auth/password/reset", new { email, code = await factory.Mail.WaitForCode(email, lastMailsBefore), newPassword }),
-            HttpStatusCode.BadRequest,
-            "identity.code_expired");
+        (await Post(client, "/v1/auth/password/reset", new { email, code = await factory.Mail.WaitForCode(email, lastMailsBefore), newPassword }))
+            .StatusCode.ShouldBe(HttpStatusCode.NoContent);
     }
 
     /// <summary>

@@ -11,7 +11,7 @@ using Nirengi.Modules.Identity.Domain.Users;
 namespace Nirengi.Modules.Identity.Application.Features.Registration;
 
 /// <summary>
-/// Confirms the mailbox with the 6-digit code and signs the user in. The password chosen at sign-up must come along:
+/// Confirms the mailbox with the 8-digit code and signs the user in. The password chosen at sign-up must come along:
 /// a later sign-up for the same address replaces it, and the code in the mailbox must not then activate the account
 /// with someone else's password (ADR-0021, audit G1).
 /// </summary>

@@ -66,7 +66,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
       title: 'Yeni şifre',
       children: [
         Text(
-          'Bu adrese kayıtlı bir hesap varsa ${widget.email} adresine 6 haneli bir kod gönderdik.',
+          'Bu adrese kayıtlı bir hesap varsa ${widget.email} adresine 8 haneli bir kod gönderdik.',
         ),
         const SizedBox(height: 16),
         Form(
@@ -78,7 +78,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
                 controller: _code,
                 keyboardType: TextInputType.number,
                 autofillHints: const [AutofillHints.oneTimeCode],
-                maxLength: 6,
+                maxLength: 8,
                 validator: AuthValidators.code,
                 decoration: const InputDecoration(
                   labelText: 'Kod',
