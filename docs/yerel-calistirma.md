@@ -40,6 +40,38 @@ Tüm debug APK'lar repodaki ortak anahtarla (`mobile/android/app/preview-debug.k
 
 PR dışında APK lazımsa: **Actions** → **Android APK (preview)** → **Run workflow** (adres kutusu boşsa değişken kullanılır); dosya çalışmanın altındaki **nirengi-test-apk** ZIP'inde.
 
+## Release APK (Play iç test) ve sürüm uyumu
+
+Yukarıdaki önizleme APK'ları debug'dır. Release derlemesi (`flutter build apk --release` / `appbundle`) ADR-0021 gereği üç koşul arar.
+
+**İmza anahtarı (G3).** Release asla debug anahtarıyla imzalanmaz; anahtar yoksa Gradle açık bir hatayla durur. Gerçek keystore repoda yoktur ve commit'lenmez. Bir kere üret (`keytool` JDK ile gelir) ve güvenli bir yerde (parola yöneticisi + yedek) sakla; kaybedersen mağazadaki uygulamayı güncelleyemezsin:
+
+```bash
+keytool -genkeypair -v -keystore nirengi-release.jks -alias nirengi -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Anahtarı iki yoldan biriyle ver:
+
+1. **Yerel:** `mobile/android/key.properties` dosyası (`.gitignore`'da, commit'lenmez):
+
+   ```properties
+   storeFile=/tam/yol/nirengi-release.jks
+   storePassword=...
+   keyAlias=nirengi
+   keyPassword=...
+   ```
+
+   `storeFile` göreliyse `mobile/android/` klasörüne göredir.
+2. **CI / ortam değişkeni:** `NIRENGI_KEYSTORE_FILE`, `NIRENGI_KEYSTORE_PASSWORD`, `NIRENGI_KEY_ALIAS`, `NIRENGI_KEY_PASSWORD`. GitHub Actions'ta keystore'u base64 secret olarak tutup adımda dosyaya aç. `key.properties` varsa öncelik onundur.
+
+**Yalnız HTTPS (İ8).** Release'te `API_BASE_URL` `https://` olmalı, yoksa uygulama açılışta hata verip durur; ağ güvenlik yapılandırması da yalnız debug kaynak setinde (`android/app/src/debug`) düz HTTP'ye izin verir:
+
+```bash
+flutter build apk --release --dart-define=API_BASE_URL=https://api.ornek.com
+```
+
+**Sürüm uyumu (M4).** Mobil her istekte `X-Client-Version` (uygulamanın `pubspec.yaml` sürümü) gönderir. Sunucuda `Clients:MinimumVersion` (ortam değişkeni `Clients__MinimumVersion`, örn. `1.2.0`) verilirse bundan eski sürüm 426 alır ve uygulama "Güncelleme gerekli" ekranına geçer. Boşsa kapalıdır; başlıksız istekler (admin paneli, sağlık denetimi) etkilenmez. Eski sürümü zorla bırakmadan önce yeni sürümün mağazada yayında olduğundan emin ol.
+
 ## Admin paneli (müfredat yönetimi)
 
 1. Sunucu açıkken telefondaki uygulamadan (veya `http://localhost:8080/v1/auth/register` ile) **admin@nirengi.local** adresiyle kayıt ol; kodu Mailpit'ten al. Başka adres için sunucuyu `set NIRENGI_ADMIN_EMAIL=senin@adresin` ile başlat.
