@@ -45,7 +45,12 @@ public abstract class ModuleDbContext(DbContextOptions options) : DbContext(opti
             b.HasKey(m => m.Id);
             b.Property(m => m.Type).HasMaxLength(500);
             b.Property(m => m.Payload).HasColumnType("jsonb");
-            b.HasIndex(m => m.OccurredAt).HasFilter("processed_at IS NULL").HasDatabaseName("ix_outbox_messages_unprocessed");
+
+            // Serves the processor's poll: oldest unprocessed first, due-time filter answered from the index.
+            b.HasIndex(m => m.OccurredAt)
+                .IncludeProperties(m => m.NextAttemptAt)
+                .HasFilter("processed_at IS NULL")
+                .HasDatabaseName("ix_outbox_messages_unprocessed");
         });
 
         modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);

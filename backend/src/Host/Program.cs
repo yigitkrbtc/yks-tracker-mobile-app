@@ -53,13 +53,19 @@ app.UseNirengiSecurityHeaders();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseSerilogRequestLogging();
+app.UseNirengiClientVersion();
 app.UseNirengiSecurity();
 
-app.MapOpenApi("/openapi/{documentName}.json");
+if (!app.Environment.IsProductionLike())
+{
+    // The contract is committed (contracts/openapi) and generated at build time; production does not serve it.
+    app.MapOpenApi("/openapi/{documentName}.json");
+}
+
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
 
-var v1 = app.MapGroup("/v1");
+var v1 = app.MapGroup("/v1").RequireRateLimiting(RateLimitPolicies.Api);
 foreach (var module in ModuleCatalog.All)
 {
     module.MapEndpoints(v1.MapGroup(string.Empty).WithTags(module.Name));

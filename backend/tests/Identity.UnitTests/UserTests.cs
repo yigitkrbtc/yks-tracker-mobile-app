@@ -35,6 +35,25 @@ public sealed class UserTests
     }
 
     [Fact]
+    public void Repeated_sign_up_clears_the_previous_lockout()
+    {
+        var user = NewUser();
+        for (var i = 0; i < 13; i++)
+        {
+            user.RecordFailedLogin(Now, threshold: 10, TimeSpan.FromMinutes(15));
+        }
+
+        user.IsLockedOut(Now).ShouldBeTrue();
+        user.FailedLoginCount.ShouldBe(3);
+
+        user.ReplacePendingRegistration("Ada", "Yılmaz", "hash2", 2008, marketingConsent: false, Now.AddMinutes(1)).IsSuccess.ShouldBeTrue();
+
+        user.FailedLoginCount.ShouldBe(0);
+        user.LockoutUntil.ShouldBeNull();
+        user.IsLockedOut(Now.AddMinutes(1)).ShouldBeFalse();
+    }
+
+    [Fact]
     public void Locks_out_after_threshold_failures()
     {
         var user = NewUser();

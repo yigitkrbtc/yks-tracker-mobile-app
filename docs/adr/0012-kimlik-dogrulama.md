@@ -5,7 +5,7 @@
 
 ## Bağlam
 
-Giriş yalnız e-posta + şifre; 6 haneli e-posta kodu, şifre sıfırlama, 30 gün geri alınabilir silme, admin için TOTP gerekiyor. Mobil istemci uzun oturum ister; harici kimlik sağlayıcısı (Google/Apple) v2'de gelecek.
+Giriş yalnız e-posta + şifre; 6 haneli e-posta kodu (ADR-0021 ile 8 haneye çıktı), şifre sıfırlama, 30 gün geri alınabilir silme, admin için TOTP gerekiyor. Mobil istemci uzun oturum ister; harici kimlik sağlayıcısı (Google/Apple) v2'de gelecek.
 
 ## Karar
 

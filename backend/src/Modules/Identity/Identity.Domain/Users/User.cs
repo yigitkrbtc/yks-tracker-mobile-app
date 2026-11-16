@@ -107,6 +107,10 @@ public sealed class User : AggregateRoot<Guid>
         BirthYear = birthYear;
         MarketingConsent = marketingConsent;
         CreatedAt = now;
+
+        // Whoever signs up again owns the account now; the previous attempts' lockout is not theirs to inherit.
+        FailedLoginCount = 0;
+        LockoutUntil = null;
         return Result.Success();
     }
 
@@ -132,6 +136,18 @@ public sealed class User : AggregateRoot<Guid>
             LockoutUntil = now + lockout;
             FailedLoginCount = 0;
         }
+    }
+
+    /// <summary>Sets the role from configuration (ADR-0021); true when it changed.</summary>
+    public bool ChangeRole(UserRole role)
+    {
+        if (Role == role)
+        {
+            return false;
+        }
+
+        Role = role;
+        return true;
     }
 
     public void RecordSuccessfulLogin()

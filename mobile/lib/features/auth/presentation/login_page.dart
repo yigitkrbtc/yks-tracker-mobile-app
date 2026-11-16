@@ -46,7 +46,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
       switch (e.failure) {
         case AuthFailure.emailNotVerified:
-          await _resendAndVerify(email);
+          await _resendAndVerify(email, _password.text);
         case AuthFailure.deletionPending:
           await _offerRestore(email);
         default:
@@ -61,7 +61,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   /// A failed resend still opens the verify page: the earlier code may be valid, and the
   /// page can resend again.
-  Future<void> _resendAndVerify(String email) async {
+  Future<void> _resendAndVerify(String email, String password) async {
     AuthException? resendError;
     try {
       await ref.read(authRepositoryProvider).resendVerificationCode(email);
@@ -74,7 +74,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (resendError != null) {
       showAuthError(context, resendError);
     }
-    unawaited(context.push(AuthRoutes.verify(email)));
+    unawaited(context.push(AuthRoutes.verify(email), extra: password));
   }
 
   Future<void> _offerRestore(String email) async {

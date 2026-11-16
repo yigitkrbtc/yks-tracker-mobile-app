@@ -61,6 +61,10 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("last_error");
 
+                    b.Property<DateTimeOffset?>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
                     b.Property<DateTimeOffset>("OccurredAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("occurred_at");
@@ -87,6 +91,8 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_outbox_messages_unprocessed")
                         .HasFilter("processed_at IS NULL");
 
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("OccurredAt"), new[] { "NextAttemptAt" });
+
                     b.ToTable("outbox_messages", "identity");
                 });
 
@@ -106,6 +112,10 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("code_hash");
+
+                    b.Property<int>("CodesInWindow")
+                        .HasColumnType("integer")
+                        .HasColumnName("codes_in_window");
 
                     b.Property<DateTimeOffset?>("ConsumedAt")
                         .HasColumnType("timestamp with time zone")
@@ -134,6 +144,10 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
+
+                    b.Property<DateTimeOffset>("WindowStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("window_started_at");
 
                     b.HasKey("Id")
                         .HasName("pk_verification_codes");
@@ -239,6 +253,10 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("FamilyId")
                         .HasColumnType("uuid")
                         .HasColumnName("family_id");
+
+                    b.Property<bool>("IssuedWithMfa")
+                        .HasColumnType("boolean")
+                        .HasColumnName("issued_with_mfa");
 
                     b.Property<Guid?>("ReplacedById")
                         .HasColumnType("uuid")
@@ -402,6 +420,26 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_users_normalized_email");
 
                     b.ToTable("users", "identity");
+                });
+
+            modelBuilder.Entity("Nirengi.Modules.Identity.Infrastructure.Persistence.Configurations.SentEmail", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.HasKey("EventId")
+                        .HasName("pk_sent_emails");
+
+                    b.HasIndex("SentAt")
+                        .HasDatabaseName("ix_sent_emails_sent_at");
+
+                    b.ToTable("sent_emails", "identity");
                 });
 
             modelBuilder.Entity("Nirengi.Modules.Identity.Domain.Codes.VerificationCode", b =>

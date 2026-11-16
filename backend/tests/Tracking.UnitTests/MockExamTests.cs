@@ -110,6 +110,19 @@ public sealed class MockExamTests
     }
 
     [Fact]
+    public void Delete_wipes_free_text_but_keeps_the_tombstone_shape()
+    {
+        var exam = MockExam.Create(Guid.CreateVersion7(), User, Tyt() with { Note = "özel not", Title = "Okul denemesi" }, Now.AddMinutes(-5), Now.AddMinutes(-5));
+
+        exam.Delete(Now.AddMinutes(-1), Now).ShouldBeTrue();
+
+        exam.Note.ShouldBeNull();
+        exam.Title.ShouldBeNull();
+        exam.SourceName.ShouldBeNull();
+        exam.IsDeleted.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Future_client_time_is_capped_at_server_time()
     {
         var exam = MockExam.Create(Guid.CreateVersion7(), User, Tyt(), Now.AddDays(3), Now);

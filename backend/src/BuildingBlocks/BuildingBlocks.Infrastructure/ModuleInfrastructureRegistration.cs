@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Nirengi.BuildingBlocks.Application.Abstractions;
 using Nirengi.BuildingBlocks.Application.Events;
 using Nirengi.BuildingBlocks.Application.Messaging;
@@ -32,11 +34,15 @@ public static class ModuleInfrastructureRegistration
             .UseNpgsql(connectionString, npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", schema))
             .UseSnakeCaseNamingConvention());
 
-        services.AddScoped<IEventOutbox>(sp => sp.GetRequiredService<TContext>());
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<IClock, SystemClock>();
-        services.AddOptions<OutboxOptions>().BindConfiguration("Outbox");
+        services.AddOptions<OutboxOptions>().BindConfiguration("Outbox").ValidateOnStart();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<OutboxOptions>, OutboxOptionsValidator>());
         services.AddHostedService<OutboxProcessor<TContext>>();
+        services.AddHealthChecks().AddCheck<OutboxHealthCheck<TContext>>(
+            $"outbox-{typeof(TContext).Name}",
+            failureStatus: HealthStatus.Degraded,
+            tags: ["ready"]);
         services.AddApplicationHandlers(applicationAssembly);
         return services;
     }

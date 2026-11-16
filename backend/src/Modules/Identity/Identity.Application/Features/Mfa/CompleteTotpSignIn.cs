@@ -59,7 +59,7 @@ internal sealed class CompleteTotpSignInHandler(
         }
 
         user.RecordSuccessfulLogin();
-        var tokens = signIn.IssueTokens(user, now);
+        var tokens = signIn.IssueTokens(user, now, issuedWithMfa: true);
         await unitOfWork.SaveChanges(cancellationToken);
         return tokens;
     }

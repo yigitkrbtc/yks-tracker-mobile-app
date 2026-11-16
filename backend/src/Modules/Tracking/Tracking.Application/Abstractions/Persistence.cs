@@ -18,8 +18,14 @@ public interface IStudyProfileRepository
 
 public interface ITopicTestRepository
 {
-    /// <summary>Any user's test, deleted ones included; the caller checks ownership.</summary>
-    Task<TopicTest?> Get(Guid id, CancellationToken cancellationToken);
+    /// <summary>The user's own test, deleted ones included. Someone else's id reads as absent (ADR-0004).</summary>
+    Task<TopicTest?> Get(Guid userId, Guid id, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// True when the id exists and belongs to someone else. Only for answering 404 (not 409) to a write that collided with
+    /// another student's client-generated id; the row itself is never loaded.
+    /// </summary>
+    Task<bool> IsOwnedByAnotherUser(Guid userId, Guid id, CancellationToken cancellationToken);
 
     void Add(TopicTest test);
 
@@ -32,8 +38,11 @@ public interface ITopicTestRepository
 
 public interface IMockExamRepository
 {
-    /// <summary>Any user's exam, deleted ones included; the caller checks ownership.</summary>
-    Task<MockExam?> Get(Guid id, CancellationToken cancellationToken);
+    /// <summary>The user's own exam, deleted ones included. Someone else's id reads as absent (ADR-0004).</summary>
+    Task<MockExam?> Get(Guid userId, Guid id, CancellationToken cancellationToken);
+
+    /// <summary>See <see cref="ITopicTestRepository.IsOwnedByAnotherUser"/>.</summary>
+    Task<bool> IsOwnedByAnotherUser(Guid userId, Guid id, CancellationToken cancellationToken);
 
     void Add(MockExam exam);
 

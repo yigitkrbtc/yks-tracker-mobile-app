@@ -5890,7 +5890,8 @@
       "VerifyEmailCommand": {
         "required": [
           "email",
-          "code"
+          "code",
+          "password"
         ],
         "type": "object",
         "properties": {
@@ -5898,6 +5899,9 @@
             "type": "string"
           },
           "code": {
+            "type": "string"
+          },
+          "password": {
             "type": "string"
           }
         }

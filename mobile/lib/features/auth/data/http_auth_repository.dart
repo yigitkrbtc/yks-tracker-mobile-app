@@ -25,8 +25,16 @@ class HttpAuthRepository implements AuthRepository {
   });
 
   @override
-  Future<SignInOutcome> verifyEmail(String email, String code) async => _signIn(
-    await _post('/v1/auth/email/verify', {'email': email, 'code': code}),
+  Future<SignInOutcome> verifyEmail(
+    String email,
+    String code,
+    String password,
+  ) async => _signIn(
+    await _post('/v1/auth/email/verify', {
+      'email': email,
+      'code': code,
+      'password': password,
+    }),
   );
 
   @override

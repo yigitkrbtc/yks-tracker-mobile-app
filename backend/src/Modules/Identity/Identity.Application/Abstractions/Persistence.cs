@@ -33,6 +33,8 @@ public interface IRefreshTokenRepository
 {
     Task<RefreshToken?> GetByHash(string tokenHash, CancellationToken cancellationToken);
 
+    Task<RefreshToken?> GetById(Guid id, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<RefreshToken>> GetUnrevokedByFamily(Guid familyId, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<RefreshToken>> GetUnrevokedByUser(Guid userId, CancellationToken cancellationToken);

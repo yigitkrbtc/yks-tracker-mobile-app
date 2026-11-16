@@ -4,7 +4,7 @@ YKS (TYT/AYT) konu testi ve deneme takibi + açıklanabilir analiz. Gereksinim v
 
 ## Durum
 
-S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S4 deneme + yanlış etiketleme, S5 analiz motoru + panel + konu kartı, S6 öneri motoru + Bugün sekmesi + konu işareti + hedef/seri + yerel hatırlatma + sınav takvimi + veri dışa aktarma, S7 puan türüne göre `q` + müfredat sürümleri (taslak/yayın/geri dönüş, soy bağı) + Refine admin paneli `/admin` + güvenlik başlıkları (ADR-0012…0019). Sıradaki: **yayın hazırlığı** (denetim kaydı, KVKK yeniden onay, barındırma, SMTP, Play iç test); ürünün yönü netleşince.
+S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S4 deneme + yanlış etiketleme, S5 analiz motoru + panel + konu kartı, S6 öneri motoru + Bugün sekmesi + konu işareti + hedef/seri + yerel hatırlatma + sınav takvimi + veri dışa aktarma, S7 puan türüne göre `q` + müfredat sürümleri (taslak/yayın/geri dönüş, soy bağı) + Refine admin paneli `/admin` + güvenlik başlıkları (ADR-0012…0019). Güvenlik denetimi sertleştirmesi dört PR'da (ADR-0021; PR 1 kimlik, PR 2 outbox, PR 3 API sınırları işlendi, PR 4 mobil + CI). Sıradaki: **yayın hazırlığı** (denetim kaydı, KVKK yeniden onay, barındırma, SMTP, Play iç test); ürünün yönü netleşince.
 
 ## Yapı
 
@@ -21,14 +21,17 @@ S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S
 
 - Modül projeleri: `Domain` (Analytics'te `Engine`), `Application`, `Infrastructure`, `Api`, `Contracts`. Bağımlılık içe akar; `ArchitectureTests` kırılırsa kural değil kod düzeltilir.
 - Modüller arası erişim yalnız `<Modül>.Contracts` (sorgu arayüzü, integration event DTO'su). Başka modülün DbContext'i, tablosu veya iç tipi kullanılmaz.
+- Kullanıcı verisi tutan modülün (Tracking, Analytics, Recommendation) depo/okuma yöntemleri `userId` alır; başkasının id'si "yok" okunur (global query filter yok; ADR-0004, `OwnershipTests`). Yeni uç için `DataIsolationTests`'e satır eklenir.
 - Her modül kendi şemasına yazar (`<Modül>DbContext.SchemaName`). Kolon adları snake_case (otomatik).
 - Komut/sorgu: `ICommand<T>`/`IQuery<T>` + `internal sealed` handler, `IDispatcher` ile çağrılır. Doğrulama FluentValidation validator'ında. Hata `Result`/`Error` ile döner; iş akışı için exception atılmaz.
-- Modüller arası yan etki: handler `IEventOutbox.Enqueue(event)` çağırır, olay aynı `SaveChanges` ile yazılır. Event handler'lar idempotent olmalı.
+- Modüller arası yan etki: handler modülünün unit of work'ünü (`IIdentityUnitOfWork`, `ITrackingUnitOfWork`…) enjekte edip `Enqueue(event)` çağırır; olay aynı `SaveChanges` ile modülün kendi outbox'ına yazılır. Kapsayıcıda genel `IEventOutbox` kaydı yoktur (son kayıt kazanır, olay yanlış modüle yazılır; `OutboxRegistrationTests` zorlar). Event handler'lar idempotent olmalı.
 - Endpoint'ler modülün `MapEndpoints(v1)` metodunda, `/v1` altında. Hata yanıtı `ToProblem()` ile ProblemDetails.
 - Saat için `IClock`; `DateTime.Now` kullanılmaz. Analytics Engine saati parametre olarak alır, I/O yapmaz.
 - Kişisel veri tutan her modül `IPersonalDataExporter` uygular ve kaydeder; `/v1/me/export` bunları toplar (ADR-0018).
 - Müfredat değişikliği yalnız taslak → yayın yolundan (`CurriculumPublisher`, ADR-0019); seed içe aktarma da aynı yol. Konu/kaynak silinmez, kodlar tekrar kullanılmaz. Yeni işlem türü: domain + `DraftApplier` + `ContentDiff` + panel `describe()`.
 - Versiyonlu kural seti olan modül `IRuleSetDescriptor` kaydeder (`/v1/admin/rule-sets`). Admin uçları `RequireAuthorization(Policies.Admin)` + `RateLimitPolicies.Admin`.
+- Rate limit: e-posta alan kimlik uçları `auth` politikası + `EmailRateLimitFilter` (IP + e-posta hash'i); `/v1` geneli kullanıcı başına `api` politikası; gövde 64 KB (admin taslak kaydı uç meta verisiyle `AllowBodyUpTo`, 1 MB). Development ve Testing dışındaki her ortam adı production sayılır: `ForwardedHeaders:KnownProxies`/`KnownNetworks` zorunlu, geliştirme anahtarlarıyla açılmaz, OpenAPI ucu kapalı (ADR-0021).
+- Yumuşak silmede (tombstone) serbest metin alanları (not, kaynak adı, başlık) temizlenir.
 - Uyarılar hata sayılır (`TreatWarningsAsErrors`). Paket sürümleri yalnız `Directory.Packages.props`'ta.
 
 ## Sık komutlar

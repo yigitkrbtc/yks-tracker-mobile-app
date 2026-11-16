@@ -26,6 +26,7 @@ class FakeAuthRepository implements AuthRepository {
   final calls = <String>[];
   SignInOutcome loginOutcome = SignedIn(testTokens('login'));
   AuthException? loginError;
+  AuthException? verifyError;
   AuthException? refreshError;
   AuthException? meError;
   var refreshCount = 0;
@@ -35,8 +36,15 @@ class FakeAuthRepository implements AuthRepository {
       calls.add('register:${registration.email}:${registration.birthYear}');
 
   @override
-  Future<SignInOutcome> verifyEmail(String email, String code) async {
-    calls.add('verify:$email:$code');
+  Future<SignInOutcome> verifyEmail(
+    String email,
+    String code,
+    String password,
+  ) async {
+    calls.add('verify:$email:$code:$password');
+    if (verifyError != null) {
+      throw verifyError!;
+    }
     return SignedIn(testTokens('verify'));
   }
 

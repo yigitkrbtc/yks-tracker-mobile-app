@@ -11,11 +11,20 @@ internal sealed class SignInService(
     IRefreshTokenRepository refreshTokens,
     IdentityOptions options)
 {
-    public SignInResult Complete(User user, DateTimeOffset now)
+    /// <summary>
+    /// Ends a password sign-in. The role follows <see cref="IdentityOptions.AdminEmails"/> from here on; a promotion
+    /// ends every session the account already had, since none of them passed the second factor (ADR-0021).
+    /// </summary>
+    public async Task<SignInResult> Complete(User user, DateTimeOffset now, CancellationToken cancellationToken)
     {
+        if (user.ChangeRole(options.RoleFor(user.NormalizedEmail)) && user.IsAdmin)
+        {
+            await RevokeAll(user.Id, RevokeReason.RoleChanged, now, cancellationToken);
+        }
+
         if (!user.IsAdmin)
         {
-            return new SignInResult(IssueTokens(user, now), null);
+            return new SignInResult(IssueTokens(user, now, issuedWithMfa: false), null);
         }
 
         var step = user.TotpEnabled ? MfaStep.Totp : MfaStep.TotpSetup;
@@ -23,18 +32,19 @@ internal sealed class SignInService(
         return new SignInResult(null, new MfaChallenge(step, mfa.Token, mfa.ExpiresAt));
     }
 
-    public AuthTokens IssueTokens(User user, DateTimeOffset now)
+    public AuthTokens IssueTokens(User user, DateTimeOffset now, bool issuedWithMfa)
     {
         var raw = secrets.NewOpaqueToken();
-        var refresh = RefreshToken.Issue(user.Id, secrets.Hash(raw), now, options.RefreshTokenLifetime);
+        var lifetime = user.IsAdmin ? options.AdminRefreshTokenLifetime : options.RefreshTokenLifetime;
+        var refresh = RefreshToken.Issue(user.Id, secrets.Hash(raw), now, lifetime, issuedWithMfa);
         refreshTokens.Add(refresh);
         return Tokens(user, refresh, raw, now);
     }
 
-    public AuthTokens Rotate(User user, RefreshToken current, DateTimeOffset now)
+    public AuthTokens Rotate(User user, RefreshToken current, DateTimeOffset now, RevokeReason reason = RevokeReason.Rotated)
     {
         var raw = secrets.NewOpaqueToken();
-        var next = current.Rotate(secrets.Hash(raw), now);
+        var next = current.Rotate(secrets.Hash(raw), now, reason);
         refreshTokens.Add(next);
         return Tokens(user, next, raw, now);
     }

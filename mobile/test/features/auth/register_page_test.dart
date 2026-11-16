@@ -21,8 +21,9 @@ void main() {
         ),
         GoRoute(
           path: '/verify',
-          builder: (context, state) =>
-              Text('verify ${state.uri.queryParameters['email']}'),
+          builder: (context, state) => Text(
+            'verify ${state.uri.queryParameters['email']} ${state.extra}',
+          ),
         ),
         GoRoute(
           path: '/legal/:doc',
@@ -100,7 +101,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(repository.calls, ['register:ada@example.com:2008']);
-      expect(find.text('verify ada@example.com'), findsOneWidget);
+      expect(find.text('verify ada@example.com dogruSifre123'), findsOneWidget);
     },
   );
 }

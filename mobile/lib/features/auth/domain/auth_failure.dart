@@ -4,6 +4,9 @@ enum AuthFailure {
   emailNotVerified('E-posta adresin henüz doğrulanmadı.'),
   deletionPending('Hesabın silinmek üzere.'),
   invalidCode('Kod hatalı.'),
+  registrationChanged(
+    'Şifre bu kayıtla eşleşmiyor. Bu adresle sonradan başka bir kayıt yapılmış olabilir; yeniden kayıt ol.',
+  ),
   codeExpired('Kodun süresi doldu; yeni kod iste.'),
   underage('Kayıt için en az 13 yaşında olmalısın.'),
   outdatedTerms('Koşullar güncellendi; uygulamayı güncelleyip tekrar dene.'),

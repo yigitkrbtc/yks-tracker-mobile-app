@@ -82,6 +82,29 @@ public sealed class TopicTestTests
     }
 
     [Fact]
+    public void Delete_wipes_free_text_but_keeps_the_tombstone_shape()
+    {
+        var test = TopicTest.Create(Guid.CreateVersion7(), User, Data() with { Note = "özel not", SourceName = "Kitabım" }, Now.AddMinutes(-5), Now.AddMinutes(-5));
+
+        test.Delete(Now.AddMinutes(-1), Now).ShouldBeTrue();
+
+        test.Note.ShouldBeNull();
+        test.SourceName.ShouldBeNull();
+        test.IsDeleted.ShouldBeTrue();
+        test.ClientModifiedAt.ShouldBe(Now.AddMinutes(-1));
+    }
+
+    [Fact]
+    public void Stale_delete_keeps_the_free_text()
+    {
+        var test = TopicTest.Create(Guid.CreateVersion7(), User, Data() with { Note = "özel not" }, Now.AddMinutes(-5), Now);
+
+        test.Delete(Now.AddMinutes(-6), Now).ShouldBeFalse();
+
+        test.Note.ShouldBe("özel not");
+    }
+
+    [Fact]
     public void Edit_made_after_a_delete_restores_the_test()
     {
         var test = TopicTest.Create(Guid.CreateVersion7(), User, Data(), Now.AddMinutes(-5), Now);

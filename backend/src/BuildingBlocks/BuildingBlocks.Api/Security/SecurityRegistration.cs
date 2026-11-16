@@ -20,7 +20,10 @@ public static class Policies
 
 public static class RateLimitPolicies
 {
-    /// <summary>Credential and code endpoints (password guessing), partitioned by client IP.</summary>
+    /// <summary>
+    /// Credential and code endpoints (password guessing): a ceiling per client IP. Endpoints that take an e-mail address also
+    /// carry <see cref="EmailRateLimitFilter"/>, which budgets each IP and address pair (G6).
+    /// </summary>
     public const string Auth = "auth";
 
     /// <summary>Token refresh and logout: routine traffic, so its own looser budget, partitioned by client IP.</summary>
@@ -31,6 +34,24 @@ public static class RateLimitPolicies
 
     /// <summary>Admin panel endpoints, partitioned by user.</summary>
     public const string Admin = "admin";
+
+    /// <summary>
+    /// General budget for the signed-in student's data endpoints, partitioned by user id (G7). Applied to the whole <c>/v1</c>
+    /// group; endpoints with a policy of their own keep it, and anonymous requests are not limited by it (public, cacheable reads;
+    /// credential endpoints have <see cref="Auth"/>).
+    /// </summary>
+    public const string Api = "api";
+}
+
+public sealed class ApiRateLimitOptions
+{
+    /// <summary>
+    /// A busy day of use is a few dozen calls: sync pages, a record write per saved test, the panel, the plan. 300 a minute is
+    /// far above that and far below scraping or flooding the database.
+    /// </summary>
+    public int PermitLimit { get; set; } = 300;
+
+    public TimeSpan Window { get; set; } = TimeSpan.FromMinutes(1);
 }
 
 public sealed class AdminRateLimitOptions
@@ -49,7 +70,11 @@ public sealed class ExportRateLimitOptions
 
 public sealed class AuthRateLimitOptions
 {
+    /// <summary>Attempts per client IP and e-mail address together, per window.</summary>
     public int PermitLimit { get; set; } = 10;
+
+    /// <summary>Attempts per client IP over all addresses, per window: loose enough for a classroom behind one NAT.</summary>
+    public int PerIpPermitLimit { get; set; } = 60;
 
     public TimeSpan Window { get; set; } = TimeSpan.FromMinutes(1);
 }
@@ -96,17 +121,30 @@ public static class SecurityRegistration
         services.AddScoped<ICurrentUser, HttpCurrentUser>();
 
         // Rate limits partition by client IP, so behind a reverse proxy its X-Forwarded-For must be honoured.
-        // Only listed proxies (plus loopback) are trusted; anyone else could spoof the header.
+        // Only listed proxies and networks (plus loopback) are trusted; anyone else could spoof the header. Production
+        // refuses to start with neither listed (ProductionSafetyValidator).
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-            foreach (var proxy in configuration.GetSection("ForwardedHeaders:KnownProxies").Get<string[]>() ?? [])
+            foreach (var proxy in ForwardedHeadersSettings.Proxies(configuration))
             {
                 options.KnownProxies.Add(IPAddress.Parse(proxy));
             }
+
+            foreach (var network in ForwardedHeadersSettings.Networks(configuration))
+            {
+                options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(network));
+            }
         });
 
+        services.AddSingleton<IValidateOptions<ProductionSafetyOptions>, ProductionSafetyValidator>();
+        services.AddOptions<ProductionSafetyOptions>().ValidateOnStart();
+        RequestLimits.Configure(services);
+
         var auth = configuration.GetSection("RateLimiting:Auth").Get<AuthRateLimitOptions>() ?? new AuthRateLimitOptions();
+        var api = configuration.GetSection("RateLimiting:Api").Get<ApiRateLimitOptions>() ?? new ApiRateLimitOptions();
+        services.AddSingleton<IOptions<AuthRateLimitOptions>>(Options.Create(auth));
+        services.AddSingleton<IAuthRateLimiter, AuthRateLimiter>();
         var session = configuration.GetSection("RateLimiting:Session").Get<SessionRateLimitOptions>() ?? new SessionRateLimitOptions();
         var export = configuration.GetSection("RateLimiting:Export").Get<ExportRateLimitOptions>() ?? new ExportRateLimitOptions();
         var admin = configuration.GetSection("RateLimiting:Admin").Get<AdminRateLimitOptions>() ?? new AdminRateLimitOptions();
@@ -115,7 +153,10 @@ public static class SecurityRegistration
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.AddPolicy(RateLimitPolicies.Auth, context => RateLimitPartition.GetFixedWindowLimiter(
                 ClientIp(context),
-                _ => new FixedWindowRateLimiterOptions { PermitLimit = auth.PermitLimit, Window = auth.Window }));
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = auth.PerIpPermitLimit, Window = auth.Window }));
+            options.AddPolicy(RateLimitPolicies.Api, context => context.User.FindFirst(NirengiClaims.Subject)?.Value is { } userId
+                ? RateLimitPartition.GetFixedWindowLimiter(userId, _ => new FixedWindowRateLimiterOptions { PermitLimit = api.PermitLimit, Window = api.Window })
+                : RateLimitPartition.GetNoLimiter("anonymous"));
             options.AddPolicy(RateLimitPolicies.Session, context => RateLimitPartition.GetFixedWindowLimiter(
                 ClientIp(context),
                 _ => new FixedWindowRateLimiterOptions { PermitLimit = session.PermitLimit, Window = session.Window }));
@@ -139,13 +180,14 @@ public static class SecurityRegistration
 
     public static WebApplication UseNirengiSecurity(this WebApplication app)
     {
+        RequestLimits.Use(app);
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseRateLimiter();
         return app;
     }
 
-    private static string ClientIp(HttpContext context) => context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    private static string ClientIp(HttpContext context) => Security.ClientIp.Of(context);
 
     private static int SigningKeyLength(string key)
     {

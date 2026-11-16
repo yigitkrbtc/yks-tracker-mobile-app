@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+# Least privilege for every job; none of them writes to the repository.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -13,12 +17,18 @@ jobs:
   secrets:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
       - name: Secret scan (gitleaks)
+        env:
+          GITLEAKS_VERSION: 8.28.0
+          # SHA-256 of gitleaks_8.28.0_linux_x64.tar.gz from the release's checksums file. Update both together.
+          GITLEAKS_SHA256: a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb
         run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz | tar xz gitleaks
+          curl -sSfL -o gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum --check --strict
+          tar xzf gitleaks.tar.gz gitleaks
           ./gitleaks git . --no-banner --redact
 
   backend:
@@ -27,12 +37,21 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           global-json-file: backend/global.json
       - name: Restore
         run: dotnet restore Nirengi.slnx
+      - name: Vulnerable packages (direct and transitive)
+        # `dotnet list package --vulnerable` exits 0 even when it finds something, so read its output.
+        run: |
+          report=$(dotnet list Nirengi.slnx package --vulnerable --include-transitive 2>&1) || { echo "$report"; exit 1; }
+          echo "$report"
+          if echo "$report" | grep -q "has the following vulnerable packages"; then
+            echo "::error::Vulnerable NuGet packages found (see the list above)."
+            exit 1
+          fi
       - name: Build (warnings are errors)
         run: dotnet build Nirengi.slnx --no-restore -c Release
       - name: OpenAPI contract is up to date
@@ -53,7 +72,7 @@ jobs:
   backend-image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Build API image
         run: docker build -f backend/src/Host/Dockerfile -t nirengi-api:ci .
 
@@ -63,8 +82,8 @@ jobs:
       run:
         working-directory: mobile
     steps:
-      - uses: actions/checkout@v5
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           flutter-version: 3.47.8
@@ -86,13 +105,15 @@ jobs:
       run:
         working-directory: admin
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: admin/package-lock.json
       - run: npm ci
+      - name: Dependency vulnerabilities (high and above fail)
+        run: npm audit --audit-level=high
       - run: npm run lint
       - name: API types match the contract
         run: npm run gen:api && git diff --exit-code src/api/schema.d.ts

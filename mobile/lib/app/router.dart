@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/design/gallery/design_gallery_page.dart';
+import '../core/network/client_version.dart';
 import '../features/analytics/presentation/topic_analysis_page.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/auth/presentation/auth_routes.dart';
@@ -15,12 +16,14 @@ import '../features/profile/presentation/profile_page.dart';
 import '../features/recommendations/presentation/plan_widgets.dart';
 import '../features/topic_tests/presentation/topic_test_form_page.dart';
 import 'home_shell.dart';
+import 'update_required_page.dart';
 
 const _splash = '/splash';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final changes = ValueNotifier<int>(0);
   ref.listen(sessionControllerProvider, (_, _) => changes.value++);
+  ref.listen(updateRequiredProvider, (_, _) => changes.value++);
   // Redirects look only at whether the profile is loading, failed or missing. Refreshing on every saved edit
   // would race a page that pops right after saving and put it back.
   ref.listen(studyProfileProvider, (previous, next) {
@@ -37,6 +40,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: _splash,
     refreshListenable: changes,
     redirect: (context, state) {
+      // The API refused this app version (426): nothing else is reachable until the app is updated.
+      if (ref.read(updateRequiredProvider)) {
+        return state.matchedLocation == UpdateRequiredPage.path
+            ? null
+            : UpdateRequiredPage.path;
+      }
       final session = ref.read(sessionControllerProvider);
       final location = state.matchedLocation;
       if (session.isLoading && !session.hasValue) {
@@ -69,6 +78,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: _splash, builder: (context, state) => const _SplashPage()),
+      GoRoute(
+        path: UpdateRequiredPage.path,
+        builder: (context, state) => const UpdateRequiredPage(),
+      ),
       GoRoute(path: '/', builder: (context, state) => const HomeShell()),
       GoRoute(
         path: ProfilePage.onboardingPath,

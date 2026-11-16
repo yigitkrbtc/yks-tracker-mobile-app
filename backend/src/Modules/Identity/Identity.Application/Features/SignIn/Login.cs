@@ -41,7 +41,7 @@ internal sealed class LoginHandler(
         {
             UserStatus.PendingVerification => IdentityErrors.EmailNotVerified,
             UserStatus.DeletionRequested => IdentityErrors.DeletionPending,
-            _ => signIn.Complete(user, now),
+            _ => await signIn.Complete(user, now, cancellationToken),
         };
 
         await unitOfWork.SaveChanges(cancellationToken);

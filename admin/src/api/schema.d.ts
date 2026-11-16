@@ -1435,6 +1435,7 @@ export interface components {
         VerifyEmailCommand: {
             email: string;
             code: string;
+            password: string;
         };
         VersionDetailDto: {
             version: components["schemas"]["VersionSummaryDto"];

@@ -3,3 +3,8 @@
 7ac1ca4433c495994000f784a30ee2301e73c325:backend/src/Host/appsettings.Development.json:generic-api-key:10
 1fe8a8074c069a66b2afb963794049d999369468:backend/src/Host/appsettings.Development.json:generic-api-key:6
 51f9b0b1f0046258eef9522724d8a343bc531e9b:backend/tests/Host.IntegrationTests/AccountLifecycleTests.cs:generic-api-key:34
+fb58b8be5d1bf6500e0bcb44ab7adff87a4152bb:backend/tests/Host.IntegrationTests/ApiBoundaryTests.cs:generic-api-key:20
+fb58b8be5d1bf6500e0bcb44ab7adff87a4152bb:backend/tests/Host.IntegrationTests/ApiBoundaryTests.cs:generic-api-key:208
+988c8d9a07689f4cf7daae09336d83684b8c9e17:mobile/test/features/auth/verify_email_page_test.dart:generic-api-key:75
+237c738baf857838618e546261cc91a3674f48f0:mobile/test/features/auth/verify_email_page_test.dart:generic-api-key:60
+428a820cd838c2a2ddae47881868728045ef4541:mobile/test/features/auth/verify_email_page_test.dart:generic-api-key:26

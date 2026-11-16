@@ -70,6 +70,7 @@ public sealed class TopicTest : AggregateRoot<Guid>, ISyncRecord
         return true;
     }
 
+    /// <summary>Soft delete: free text (note, source name) is wiped, the row stays as a tombstone for sync.</summary>
     /// <returns>False when already deleted or a newer edit is stored.</returns>
     public bool Delete(DateTimeOffset clientModifiedAt, DateTimeOffset now)
     {
@@ -79,7 +80,10 @@ public sealed class TopicTest : AggregateRoot<Guid>, ISyncRecord
             return false;
         }
 
+        // A tombstone only tells other devices the record is gone: the student's own words do not outlive the delete.
         _results.Clear();
+        SourceName = null;
+        Note = null;
         ClientModifiedAt = editTime;
         DeletedAt = now;
         UpdatedAt = now;

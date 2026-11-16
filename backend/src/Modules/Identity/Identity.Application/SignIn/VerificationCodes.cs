@@ -5,16 +5,19 @@ using Nirengi.Modules.Identity.Domain.Users;
 
 namespace Nirengi.Modules.Identity.Application.SignIn;
 
-/// <summary>Issues and checks 6-digit codes. The hash binds user and purpose, so a code never works elsewhere.</summary>
+/// <summary>A freshly issued code: the plain value to mail and what ties that mail to this very code.</summary>
+internal sealed record IssuedCode(string Code, EmailCodeBinding Binding);
+
+/// <summary>Issues and checks 8-digit codes. The hash binds user and purpose, so a code never works elsewhere.</summary>
 internal sealed class VerificationCodes(
     IVerificationCodeRepository codes,
     IOneTimeSecrets secrets,
     IdentityOptions options)
 {
-    public const int Digits = 6;
+    public const int Digits = 8;
 
-    /// <summary>Returns the plain code to mail, or null while the resend cooldown is running.</summary>
-    public async Task<string?> Issue(User user, CodePurpose purpose, DateTimeOffset now, CancellationToken cancellationToken)
+    /// <summary>Returns the code to mail, or null while the resend wait is running (it grows with the codes of the last hour; the caller answers as if a code had gone out).</summary>
+    public async Task<IssuedCode?> Issue(User user, CodePurpose purpose, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var code = secrets.NewNumericCode(Digits);
         var hash = Hash(user.Id, purpose, code);
@@ -22,16 +25,16 @@ internal sealed class VerificationCodes(
         if (existing is null)
         {
             codes.Add(VerificationCode.Issue(user.Id, purpose, hash, now, options.CodeLifetime));
-            return code;
+            return new IssuedCode(code, new EmailCodeBinding(user.Id, purpose, hash));
         }
 
-        if (!existing.CanResend(now, options.CodeResendCooldown))
+        if (!existing.CanResend(now, options.CodeResend))
         {
             return null;
         }
 
-        existing.Reissue(hash, now, options.CodeLifetime);
-        return code;
+        existing.Reissue(hash, now, options.CodeLifetime, options.CodeResend);
+        return new IssuedCode(code, new EmailCodeBinding(user.Id, purpose, hash));
     }
 
     /// <summary>Checks a code; failed attempts are counted on the entity, so callers save either way.</summary>

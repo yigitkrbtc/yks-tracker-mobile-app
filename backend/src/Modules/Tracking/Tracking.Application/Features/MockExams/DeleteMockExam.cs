@@ -19,15 +19,12 @@ internal sealed class DeleteMockExamHandler(IMockExamRepository exams, ITracking
 {
     public async Task<Result<MockExamResponse?>> Handle(DeleteMockExamCommand command, CancellationToken cancellationToken)
     {
-        var exam = await exams.Get(command.Id, cancellationToken);
+        var exam = await exams.Get(command.UserId, command.Id, cancellationToken);
         if (exam is null)
         {
-            return (MockExamResponse?)null;
-        }
-
-        if (exam.UserId != command.UserId)
-        {
-            return TrackingErrors.MockExamNotFound;
+            return await exams.IsOwnedByAnotherUser(command.UserId, command.Id, cancellationToken)
+                ? TrackingErrors.MockExamNotFound
+                : (MockExamResponse?)null;
         }
 
         var now = clock.UtcNow;

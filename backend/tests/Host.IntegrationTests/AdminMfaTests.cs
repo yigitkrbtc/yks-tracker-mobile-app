@@ -15,11 +15,12 @@ public sealed class AdminMfaTests(NirengiApiFactory factory)
     public async Task Admin_must_enrol_totp_then_sign_in_with_a_second_factor()
     {
         const string email = NirengiApiFactory.AdminEmail;
+        var mailsBefore = factory.Mail.To(email).Count;
         (await _api.Post("/v1/auth/register", AuthApi.Registration(email))).StatusCode.ShouldBe(HttpStatusCode.Accepted);
 
         // Verification proves the mailbox but an admin still gets no tokens without TOTP.
         var verified = await AuthApi.Read<AuthApi.SignIn>(
-            await _api.Post("/v1/auth/email/verify", new { email, code = factory.Mail.LatestCode(email) }));
+            await _api.Post("/v1/auth/email/verify", new { email, code = await factory.Mail.WaitForCode(email, mailsBefore), password = AuthApi.Password }));
         verified.Tokens.ShouldBeNull();
         verified.Mfa!.Step.ShouldBe("TotpSetup");
         var setupToken = verified.Mfa.MfaToken;
@@ -45,6 +46,9 @@ public sealed class AdminMfaTests(NirengiApiFactory factory)
         var enrollment = await AuthApi.Read<Enrollment>(enrolled);
         enrollment.RecoveryCodes.Count.ShouldBe(10);
         (await AuthApi.Read<AuthApi.Profile>(await _api.GetMe(enrollment.Tokens.AccessToken))).Role.ShouldBe("Admin");
+
+        // Admin sessions ask for the second factor again within 12 hours (ADR-0021).
+        enrollment.Tokens.RefreshTokenExpiresAt.ShouldBeLessThanOrEqualTo(DateTimeOffset.UtcNow.AddHours(12));
 
         // Next sign-in asks for the code; the code already used for enrolment is refused (no replay).
         var login = await AuthApi.Read<AuthApi.SignIn>(await _api.Post("/v1/auth/login", new { email, password = AuthApi.Password }));

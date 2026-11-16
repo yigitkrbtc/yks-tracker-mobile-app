@@ -19,15 +19,12 @@ internal sealed class DeleteTopicTestHandler(ITopicTestRepository tests, ITracki
 {
     public async Task<Result<TopicTestResponse?>> Handle(DeleteTopicTestCommand command, CancellationToken cancellationToken)
     {
-        var test = await tests.Get(command.Id, cancellationToken);
+        var test = await tests.Get(command.UserId, command.Id, cancellationToken);
         if (test is null)
         {
-            return (TopicTestResponse?)null;
-        }
-
-        if (test.UserId != command.UserId)
-        {
-            return TrackingErrors.TopicTestNotFound;
+            return await tests.IsOwnedByAnotherUser(command.UserId, command.Id, cancellationToken)
+                ? TrackingErrors.TopicTestNotFound
+                : (TopicTestResponse?)null;
         }
 
         var now = clock.UtcNow;

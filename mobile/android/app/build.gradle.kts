@@ -1,8 +1,34 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Release signing (ADR-0021 G3). The key never lives in the repo: it comes from android/key.properties
+// (git-ignored) or, in CI, from the NIRENGI_* environment variables. Without it a release build fails
+// instead of falling back to the debug key (see the task graph check below). docs/yerel-calistirma.md.
+val keyProperties = Properties().apply {
+    val file = rootProject.file("key.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+fun releaseSigningValue(property: String, env: String): String? =
+    (keyProperties.getProperty(property) ?: System.getenv(env))?.takeIf { it.isNotBlank() }
+
+val releaseStoreFile = releaseSigningValue("storeFile", "NIRENGI_KEYSTORE_FILE")
+val releaseStorePassword = releaseSigningValue("storePassword", "NIRENGI_KEYSTORE_PASSWORD")
+val releaseKeyAlias = releaseSigningValue("keyAlias", "NIRENGI_KEY_ALIAS")
+val releaseKeyPassword = releaseSigningValue("keyPassword", "NIRENGI_KEY_PASSWORD")
+val releaseSigningConfigured = listOf(
+    releaseStoreFile,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+).all { it != null }
 
 android {
     namespace = "app.nirengi.nirengi"
@@ -40,14 +66,35 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        if (releaseSigningConfigured) {
+            create("release") {
+                storeFile = rootProject.file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Never the debug key: unsigned unless the release key is given (and then the build is refused).
+            signingConfig = if (releaseSigningConfigured) signingConfigs.getByName("release") else null
         }
+    }
+}
+
+gradle.taskGraph.whenReady {
+    val releaseBuild = allTasks.any {
+        it.path.startsWith(":app:") && Regex("^(assemble|bundle|package).*Release$").matches(it.name)
+    }
+    if (releaseBuild && !releaseSigningConfigured) {
+        throw GradleException(
+            "Release signing is not configured. Provide android/key.properties (storeFile, storePassword, " +
+                "keyAlias, keyPassword) or the environment variables NIRENGI_KEYSTORE_FILE, " +
+                "NIRENGI_KEYSTORE_PASSWORD, NIRENGI_KEY_ALIAS, NIRENGI_KEY_PASSWORD. " +
+                "Release builds are never signed with the debug key; see docs/yerel-calistirma.md.",
+        )
     }
 }
 

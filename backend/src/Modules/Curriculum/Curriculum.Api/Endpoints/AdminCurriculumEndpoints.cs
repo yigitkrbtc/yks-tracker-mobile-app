@@ -66,6 +66,7 @@ internal static class AdminCurriculumEndpoints
 
         admin.MapPut("/drafts/{id:guid}", async (Guid id, SaveDraftRequest request, IDispatcher dispatcher, CancellationToken ct) =>
                 (await dispatcher.Send(new SaveDraftCommand(id, request.Revision, request.Title, request.Operations), ct)).Match(Results.Ok))
+            .AllowBodyUpTo(RequestLimits.MaxDraftBodyBytes)
             .WithName("SaveCurriculumDraft")
             .WithSummary("Replaces the operation list. Assigns codes to new topics and moves the draft onto the current version.")
             .Produces<DraftResponse>()

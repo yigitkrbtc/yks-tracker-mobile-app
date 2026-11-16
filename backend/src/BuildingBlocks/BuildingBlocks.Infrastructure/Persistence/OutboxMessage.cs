@@ -14,5 +14,8 @@ public sealed class OutboxMessage
 
     public int Attempts { get; set; }
 
+    /// <summary>Earliest time the next delivery attempt may run; null means immediately.</summary>
+    public DateTimeOffset? NextAttemptAt { get; set; }
+
     public string? LastError { get; set; }
 }

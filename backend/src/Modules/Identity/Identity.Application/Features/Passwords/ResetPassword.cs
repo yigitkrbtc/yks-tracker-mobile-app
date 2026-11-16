@@ -21,6 +21,7 @@ internal sealed class ResetPasswordValidator : AbstractValidator<ResetPasswordCo
         RuleFor(c => c.Email).NotEmpty().MaximumLength(Domain.Users.Email.MaxLength);
         RuleFor(c => c.Code).NotEmpty().Length(VerificationCodes.Digits).Matches("^[0-9]+$");
         RuleFor(c => c.NewPassword).StrongPassword()
+            .NotCommonPassword()
             .Must((c, password) => !string.Equals(password, c.Email?.Trim(), StringComparison.OrdinalIgnoreCase))
             .WithMessage("Şifre e-posta adresinle aynı olamaz.");
     }
