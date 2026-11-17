@@ -261,38 +261,26 @@ void main() {
     },
   );
 
-  test(
-    'an edit and a delete stay newer than a stored time ahead of the device clock',
-    () async {
-      await repository.save(sample());
-      final ahead = now.add(const Duration(days: 1)).microsecondsSinceEpoch;
-      await (db.update(db.mockExams)..where((r) => r.id.equals('e1'))).write(
-        MockExamsCompanion(clientModifiedAt: Value(ahead)),
-      );
+  test('edits and deletes stay newer than a stored time ahead', () async {
+    await repository.save(sample());
+    final ahead = now.add(const Duration(days: 1)).microsecondsSinceEpoch;
+    final change = MockExamsCompanion(clientModifiedAt: Value(ahead));
+    await db.update(db.mockExams).write(change);
 
-      await repository.save(sample());
-      final saved = await db.select(db.mockExams).getSingle();
-      expect(saved.clientModifiedAt, greaterThan(ahead));
-      final put =
-          jsonDecode((await outbox.find('mock_exam', 'e1'))!.payload!)
-              as Map<String, dynamic>;
-      expect(
-        DateTime.parse(
-          put['clientModifiedAt'] as String,
-        ).microsecondsSinceEpoch,
-        saved.clientModifiedAt,
-      );
+    await repository.save(sample());
+    final saved = await db.select(db.mockExams).getSingle();
+    expect(saved.clientModifiedAt, greaterThan(ahead));
+    final item = await outbox.find('mock_exam', 'e1');
+    final put = jsonDecode(item!.payload!) as Map<String, dynamic>;
+    final sent = DateTime.parse(put['clientModifiedAt'] as String);
+    expect(sent.microsecondsSinceEpoch, saved.clientModifiedAt);
 
-      await repository.delete('e1');
-      final deleted = await db.select(db.mockExams).getSingle();
-      expect(deleted.clientModifiedAt, greaterThan(saved.clientModifiedAt));
-      final del =
-          jsonDecode((await outbox.find('mock_exam', 'e1'))!.payload!)
-              as Map<String, dynamic>;
-      expect(
-        DateTime.parse(del['modifiedAt'] as String).microsecondsSinceEpoch,
-        deleted.clientModifiedAt,
-      );
-    },
-  );
+    await repository.delete('e1');
+    final deleted = await db.select(db.mockExams).getSingle();
+    expect(deleted.clientModifiedAt, greaterThan(saved.clientModifiedAt));
+    final queued = await outbox.find('mock_exam', 'e1');
+    final del = jsonDecode(queued!.payload!) as Map<String, dynamic>;
+    final sentDelete = DateTime.parse(del['modifiedAt'] as String);
+    expect(sentDelete.microsecondsSinceEpoch, deleted.clientModifiedAt);
+  });
 }

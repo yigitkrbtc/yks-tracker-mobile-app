@@ -314,30 +314,20 @@ void main() {
     },
   );
 
-  test(
-    'a mark stays newer than a stored time ahead of the device clock',
-    () async {
-      await repository.mark('t1', ProgressStatus.inProgress);
-      final ahead = now.add(const Duration(days: 1)).microsecondsSinceEpoch;
-      await (db.update(
-        db.topicProgressMarks,
-      )..where((r) => r.topicId.equals('t1'))).write(
-        TopicProgressMarksCompanion(clientModifiedAt: Value(ahead)),
-      );
+  test('a mark stays newer than a stored time ahead', () async {
+    await repository.mark('t1', ProgressStatus.inProgress);
+    final ahead = now.add(const Duration(days: 1)).microsecondsSinceEpoch;
+    final stamp = Value(ahead);
+    final change = TopicProgressMarksCompanion(clientModifiedAt: stamp);
+    await db.update(db.topicProgressMarks).write(change);
 
-      await repository.mark('t1', ProgressStatus.done);
+    await repository.mark('t1', ProgressStatus.done);
 
-      final row = await db.select(db.topicProgressMarks).getSingle();
-      expect(row.clientModifiedAt, greaterThan(ahead));
-      final put =
-          jsonDecode((await outbox.find('topic_progress', 't1'))!.payload!)
-              as Map<String, dynamic>;
-      expect(
-        DateTime.parse(
-          put['clientModifiedAt'] as String,
-        ).microsecondsSinceEpoch,
-        row.clientModifiedAt,
-      );
-    },
-  );
+    final row = await db.select(db.topicProgressMarks).getSingle();
+    expect(row.clientModifiedAt, greaterThan(ahead));
+    final item = await outbox.find('topic_progress', 't1');
+    final put = jsonDecode(item!.payload!) as Map<String, dynamic>;
+    final sent = DateTime.parse(put['clientModifiedAt'] as String);
+    expect(sent.microsecondsSinceEpoch, row.clientModifiedAt);
+  });
 }

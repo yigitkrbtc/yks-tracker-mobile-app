@@ -8,3 +8,9 @@ fb58b8be5d1bf6500e0bcb44ab7adff87a4152bb:backend/tests/Host.IntegrationTests/Api
 988c8d9a07689f4cf7daae09336d83684b8c9e17:mobile/test/features/auth/verify_email_page_test.dart:generic-api-key:75
 237c738baf857838618e546261cc91a3674f48f0:mobile/test/features/auth/verify_email_page_test.dart:generic-api-key:60
 428a820cd838c2a2ddae47881868728045ef4541:mobile/test/features/auth/verify_email_page_test.dart:generic-api-key:26
+# PR #32 squash ile a89cf13 olarak birleşti; yukarıdaki dal SHA'larındaki aynı test değerleri bu commit'te yeniden görünüyor.
+a89cf13e612b45589258a33a3a927f47f4e8bf97:backend/tests/Host.IntegrationTests/ApiBoundaryTests.cs:generic-api-key:24
+a89cf13e612b45589258a33a3a927f47f4e8bf97:backend/tests/Host.IntegrationTests/ApiBoundaryTests.cs:generic-api-key:309
+a89cf13e612b45589258a33a3a927f47f4e8bf97:mobile/test/features/auth/verify_email_page_test.dart:generic-api-key:27
+a89cf13e612b45589258a33a3a927f47f4e8bf97:mobile/test/features/auth/verify_email_page_test.dart:generic-api-key:60
+a89cf13e612b45589258a33a3a927f47f4e8bf97:mobile/test/features/auth/verify_email_page_test.dart:generic-api-key:75
