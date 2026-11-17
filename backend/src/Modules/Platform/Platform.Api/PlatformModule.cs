@@ -17,7 +17,8 @@ public sealed class PlatformModule : IModule
         services.AddModuleInfrastructure<PlatformDbContext>(
             configuration,
             PlatformDbContext.SchemaName,
-            Application.AssemblyReference.Assembly);
+            Application.AssemblyReference.Assembly,
+            publishesEvents: false);
     }
 
     public void MapEndpoints(IEndpointRouteBuilder v1)

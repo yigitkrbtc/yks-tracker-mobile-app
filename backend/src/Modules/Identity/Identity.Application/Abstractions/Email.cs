@@ -19,6 +19,7 @@ public interface IEmailSender
 /// code, travels only in <see cref="ProtectedPayload"/> (AES-GCM under a key derived from the HashKey); the outbox row keeps nothing readable.
 /// </summary>
 /// <param name="ValidUntil">After this instant the mail is pointless (the code expired) and is dropped unsent.</param>
+[IntegrationEventName("identity.email-requested")]
 public sealed record IdentityEmailRequested(Guid Id, DateTimeOffset OccurredAt, DateTimeOffset ValidUntil, string ProtectedPayload) : IIntegrationEvent
 {
     /// <summary>

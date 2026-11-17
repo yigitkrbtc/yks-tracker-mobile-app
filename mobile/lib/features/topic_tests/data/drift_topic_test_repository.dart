@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/sync/edit_clock.dart';
 import '../../../core/sync/outbox_store.dart';
 import '../domain/topic_test.dart';
 import '../domain/topic_test_repository.dart';
@@ -73,7 +74,7 @@ class DriftTopicTestRepository implements TopicTestRepository {
 
   @override
   Future<void> save(TopicTest test) => _db.transaction(() async {
-    final micros = _nowMicros();
+    final micros = await _editMicros(test.id);
     await TopicTestRecords.writeLocal(_db, test, modifiedMicros: micros);
     await _outbox.enqueue(
       entityType: topicTestEntity,
@@ -87,7 +88,7 @@ class DriftTopicTestRepository implements TopicTestRepository {
   /// the delete (answered 204), which keeps a single queued write per record.
   @override
   Future<void> delete(String id) => _db.transaction(() async {
-    final micros = _nowMicros();
+    final micros = await _editMicros(id);
     final changed =
         await (_db.update(_db.topicTests)..where((t) => t.id.equals(id))).write(
           TopicTestsCompanion(
@@ -117,5 +118,11 @@ class DriftTopicTestRepository implements TopicTestRepository {
     return row == null ? null : (id: row.sourceId, name: row.sourceName);
   }
 
-  int _nowMicros() => _now().toUtc().microsecondsSinceEpoch;
+  /// Read in the caller's transaction; see [nextEditMicros].
+  Future<int> _editMicros(String id) async {
+    final row = await (_db.select(
+      _db.topicTests,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    return nextEditMicros(_now(), row?.clientModifiedAt);
+  }
 }

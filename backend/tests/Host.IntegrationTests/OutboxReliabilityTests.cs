@@ -53,6 +53,36 @@ public sealed class OutboxReliabilityTests(NirengiApiFactory factory)
     }
 
     [Fact]
+    public async Task Message_is_stored_under_its_stable_name_and_delivered()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var harness = await Harness.Create(factory, Options);
+        var probe = await harness.Enqueue(ct);
+
+        (await harness.Find(probe, ct)).Type.ShouldBe("test.outbox-reliability-probe");
+        (await harness.Processor.ProcessBatch(ct)).ShouldBe(1);
+
+        (await harness.Find(probe, ct)).ProcessedAt.ShouldNotBeNull();
+        harness.Handler.Calls(probe).ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Row_written_with_a_type_name_before_stable_names_is_still_delivered()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var harness = await Harness.Create(factory, Options);
+        var legacy = await harness.EnqueueLegacy(ct);
+
+        (await harness.Find(legacy, ct)).Type.ShouldBe(typeof(ProbeEvent).AssemblyQualifiedName);
+        (await harness.Processor.ProcessBatch(ct)).ShouldBe(1);
+
+        var stored = await harness.Find(legacy, ct);
+        stored.ProcessedAt.ShouldNotBeNull();
+        stored.LastError.ShouldBeNull();
+        harness.Handler.Calls(legacy).ShouldBe(1);
+    }
+
+    [Fact]
     public async Task Failed_message_waits_out_its_backoff_before_the_next_attempt()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -201,6 +231,7 @@ public sealed class OutboxReliabilityTests(NirengiApiFactory factory)
         OutboxBackoff.Delay(attempts, Options).ShouldBe(TimeSpan.FromSeconds(expectedSeconds));
     }
 
+    [IntegrationEventName("test.outbox-reliability-probe")]
     public sealed record ProbeEvent(Guid Id, DateTimeOffset OccurredAt) : IIntegrationEvent;
 
     private sealed class TestClock : IClock
@@ -305,6 +336,23 @@ public sealed class OutboxReliabilityTests(NirengiApiFactory factory)
             var db = scope.ServiceProvider.GetRequiredService<ProbeDbContext>();
             var probe = new ProbeEvent(Guid.CreateVersion7(), Clock.UtcNow);
             db.Enqueue(probe);
+            await db.SaveChangesAsync(ct);
+            return probe.Id;
+        }
+
+        /// <summary>A row as written before stable names: the type column holds the AssemblyQualifiedName.</summary>
+        public async Task<Guid> EnqueueLegacy(CancellationToken ct)
+        {
+            await using var scope = Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<ProbeDbContext>();
+            var probe = new ProbeEvent(Guid.CreateVersion7(), Clock.UtcNow);
+            db.OutboxMessages.Add(new OutboxMessage
+            {
+                Id = probe.Id,
+                Type = typeof(ProbeEvent).AssemblyQualifiedName!,
+                Payload = System.Text.Json.JsonSerializer.Serialize(probe),
+                OccurredAt = probe.OccurredAt,
+            });
             await db.SaveChangesAsync(ct);
             return probe.Id;
         }

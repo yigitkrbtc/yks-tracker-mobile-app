@@ -1,4 +1,5 @@
 import '../../../core/database/app_database.dart';
+import '../../../core/sync/edit_clock.dart';
 import '../../../core/sync/outbox_store.dart';
 import '../domain/topic_progress.dart';
 import '../domain/topic_progress_repository.dart';
@@ -29,7 +30,10 @@ class DriftTopicProgressRepository implements TopicProgressRepository {
   @override
   Future<void> mark(String topicId, ProgressStatus status) =>
       _db.transaction(() async {
-        final micros = _now().toUtc().microsecondsSinceEpoch;
+        final stored = await (_db.select(
+          _db.topicProgressMarks,
+        )..where((m) => m.topicId.equals(topicId))).getSingleOrNull();
+        final micros = nextEditMicros(_now(), stored?.clientModifiedAt);
         await _db
             .into(_db.topicProgressMarks)
             .insertOnConflictUpdate(

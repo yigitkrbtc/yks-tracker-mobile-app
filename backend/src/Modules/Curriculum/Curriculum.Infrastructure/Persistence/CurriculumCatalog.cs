@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Nirengi.Modules.Curriculum.Contracts;
 using Nirengi.Modules.Curriculum.Domain;
 using Nirengi.Modules.Curriculum.Domain.Exams;
@@ -8,8 +9,13 @@ using Nirengi.Modules.Curriculum.Domain.Versions;
 
 namespace Nirengi.Modules.Curriculum.Infrastructure.Persistence;
 
-internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCatalog
+internal sealed class CurriculumCatalog(CurriculumDbContext db, IMemoryCache cache) : ICurriculumCatalog
 {
+    // One entry, replaced when the release version moves; the version is checked against the cached value, not part of the key.
+    private const string AnalysisCatalogKey = "curriculum:analysis-catalog";
+
+    private static readonly TimeSpan AnalysisCatalogLifetime = TimeSpan.FromHours(1);
+
     public async Task<IReadOnlyList<CatalogTopic>> GetTopics(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken) =>
         await db.Topics.AsNoTracking()
             .Where(t => ids.Contains(t.Id))
@@ -46,6 +52,20 @@ internal sealed class CurriculumCatalog(CurriculumDbContext db) : ICurriculumCat
             return null;
         }
 
+        // Every publish and every seed-structure change moves ContentHash (it folds in the seed hash), so a version match means identical data.
+        var version = Version(release);
+        if (cache.TryGetValue(AnalysisCatalogKey, out AnalysisCatalogData? cached) && cached!.Version == version)
+        {
+            return cached;
+        }
+
+        var loaded = await LoadAnalysisCatalog(release, cancellationToken);
+        cache.Set(AnalysisCatalogKey, loaded, AnalysisCatalogLifetime);
+        return loaded;
+    }
+
+    private async Task<AnalysisCatalogData> LoadAnalysisCatalog(CurriculumRelease release, CancellationToken cancellationToken)
+    {
         var subjects = await db.Subjects.AsNoTracking().OrderBy(s => s.SortOrder).ToListAsync(cancellationToken);
         var subjectOrder = subjects.Select((s, i) => (s.Id, i)).ToDictionary(x => x.Id, x => x.i);
         var weights = (await db.TopicWeights.AsNoTracking()

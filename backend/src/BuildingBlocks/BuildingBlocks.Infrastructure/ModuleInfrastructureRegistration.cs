@@ -20,11 +20,15 @@ public static class ModuleInfrastructureRegistration
     /// Wires a module's DbContext (own schema + migrations history), its outbox worker,
     /// and the handlers in its Application assembly.
     /// </summary>
+    /// <param name="publishesEvents">
+    /// False for a module that never enqueues an event: its outbox table stays, but no worker polls it and no health check reads it.
+    /// </param>
     public static IServiceCollection AddModuleInfrastructure<TContext>(
         this IServiceCollection services,
         IConfiguration configuration,
         string schema,
-        Assembly applicationAssembly)
+        Assembly applicationAssembly,
+        bool publishesEvents = true)
         where TContext : ModuleDbContext
     {
         var connectionString = configuration.GetConnectionString(ConnectionStringName)
@@ -38,11 +42,15 @@ public static class ModuleInfrastructureRegistration
         services.TryAddSingleton<IClock, SystemClock>();
         services.AddOptions<OutboxOptions>().BindConfiguration("Outbox").ValidateOnStart();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<OutboxOptions>, OutboxOptionsValidator>());
-        services.AddHostedService<OutboxProcessor<TContext>>();
-        services.AddHealthChecks().AddCheck<OutboxHealthCheck<TContext>>(
-            $"outbox-{typeof(TContext).Name}",
-            failureStatus: HealthStatus.Degraded,
-            tags: ["ready"]);
+        if (publishesEvents)
+        {
+            services.AddHostedService<OutboxProcessor<TContext>>();
+            services.AddHealthChecks().AddCheck<OutboxHealthCheck<TContext>>(
+                $"outbox-{typeof(TContext).Name}",
+                failureStatus: HealthStatus.Degraded,
+                tags: ["ready"]);
+        }
+
         services.AddApplicationHandlers(applicationAssembly);
         return services;
     }

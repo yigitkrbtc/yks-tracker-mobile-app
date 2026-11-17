@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Nirengi.BuildingBlocks.Application.Messaging;
 using Nirengi.Modules.Identity.Application.Features.Deletion;
-using Nirengi.Modules.Identity.Contracts;
+using Nirengi.Modules.Identity.Domain.Tokens;
 using Nirengi.Modules.Identity.Infrastructure;
 using Shouldly;
 
@@ -112,7 +112,7 @@ public sealed class AccountLifecycleTests(NirengiApiFactory factory)
         (await db.RefreshTokens.AnyAsync(t => t.UserId == userId, ct)).ShouldBeFalse();
         (await db.ConsentRecords.AnyAsync(c => c.UserId == userId, ct)).ShouldBeFalse();
         var announced = await db.OutboxMessages
-            .Where(m => m.Type.StartsWith(typeof(UserDeleted).FullName!))
+            .Where(m => m.Type == "identity.user-deleted")
             .Select(m => m.Payload)
             .ToListAsync(ct);
         announced.ShouldContain(p => p.Contains(userId.ToString(), StringComparison.Ordinal));
@@ -136,6 +136,47 @@ public sealed class AccountLifecycleTests(NirengiApiFactory factory)
 
         (await db.Users.AnyAsync(u => u.Email == stale, ct)).ShouldBeFalse();
         (await db.Users.AnyAsync(u => u.Email == fresh, ct)).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Purge_deletes_refresh_tokens_expired_over_a_week_ago_and_nothing_else()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var email = AuthApi.NewEmail();
+        await _api.RegisterAndVerify(email);
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        var userId = (await db.Users.AsNoTracking().SingleAsync(u => u.Email == email, ct)).Id;
+        var now = DateTimeOffset.UtcNow;
+
+        // Issue(.., now, lifetime): a past `now` plus a short lifetime gives a token that expired `expiredAgo` ago.
+        RefreshToken Expired(TimeSpan expiredAgo, bool revoked)
+        {
+            var token = RefreshToken.Issue(userId, Guid.NewGuid().ToString("N"), now - expiredAgo - TimeSpan.FromHours(1), TimeSpan.FromHours(1), issuedWithMfa: false);
+            if (revoked)
+            {
+                token.Revoke(now, RevokeReason.Logout);
+            }
+
+            return token;
+        }
+
+        var longExpired = Expired(TimeSpan.FromDays(8), revoked: false);
+        var longExpiredRevoked = Expired(TimeSpan.FromDays(8), revoked: true);
+        var recentlyExpired = Expired(TimeSpan.FromDays(6), revoked: false);
+        var revokedNotExpired = RefreshToken.Issue(userId, Guid.NewGuid().ToString("N"), now, TimeSpan.FromDays(30), issuedWithMfa: false);
+        revokedNotExpired.Revoke(now, RevokeReason.Rotated);
+        db.RefreshTokens.AddRange(longExpired, longExpiredRevoked, recentlyExpired, revokedNotExpired);
+        await db.SaveChangesAsync(ct);
+
+        (await scope.ServiceProvider.GetRequiredService<IDispatcher>().Send(new PurgeDeletedAccountsCommand(), ct)).IsSuccess.ShouldBeTrue();
+
+        var remaining = await db.RefreshTokens.AsNoTracking().Where(t => t.UserId == userId).Select(t => t.Id).ToListAsync(ct);
+        remaining.ShouldNotContain(longExpired.Id);
+        remaining.ShouldNotContain(longExpiredRevoked.Id);
+        remaining.ShouldContain(recentlyExpired.Id);
+        remaining.ShouldContain(revokedNotExpired.Id);
     }
 
     private Task<HttpResponseMessage> RequestDeletion(string accessToken, string password)

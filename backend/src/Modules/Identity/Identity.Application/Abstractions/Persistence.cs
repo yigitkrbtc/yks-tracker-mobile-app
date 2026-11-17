@@ -40,6 +40,9 @@ public interface IRefreshTokenRepository
     Task<IReadOnlyList<RefreshToken>> GetUnrevokedByUser(Guid userId, CancellationToken cancellationToken);
 
     void Add(RefreshToken token);
+
+    /// <summary>Deletes, outside the unit of work, every token whose <c>ExpiresAt</c> is before <paramref name="cutoff"/>, revoked or not.</summary>
+    Task<int> DeleteExpiredBefore(DateTimeOffset cutoff, CancellationToken cancellationToken);
 }
 
 public interface IRecoveryCodeRepository

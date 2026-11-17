@@ -172,6 +172,41 @@ public sealed class CurriculumTests(NirengiApiFactory factory)
             s => s.ParentCode.ShouldBe("AYT-SB2"));
     }
 
+    [Fact]
+    public async Task Analysis_catalog_is_served_from_memory_until_the_release_version_moves()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        async Task<AnalysisCatalogData?> Load()
+        {
+            await using var scope = factory.Services.CreateAsyncScope();
+            return await scope.ServiceProvider.GetRequiredService<ICurriculumCatalog>().GetAnalysisCatalog(ct);
+        }
+
+        var first = await Load();
+        first.ShouldNotBeNull();
+        (await Load()).ShouldBeSameAs(first); // a second scope gets the cached instance: nothing was reloaded
+
+        await using var dbScope = factory.Services.CreateAsyncScope();
+        var db = dbScope.ServiceProvider.GetRequiredService<CurriculumDbContext>();
+        var originalHash = await db.Releases.AsNoTracking().Where(r => r.ExamYear == first.ExamYear).Select(r => r.ContentHash).SingleAsync(ct);
+        var movedHash = new string(originalHash[0] == 'a' ? 'b' : 'a', originalHash.Length);
+        try
+        {
+            await db.Database.ExecuteSqlAsync($"UPDATE curriculum.releases SET content_hash = {movedHash} WHERE exam_year = {first.ExamYear}", ct);
+
+            var moved = await Load();
+            moved.ShouldNotBeNull();
+            moved.ShouldNotBeSameAs(first);
+            moved.Version.ShouldBe($"{first.ExamYear}:{movedHash}");
+            (await Load()).ShouldBeSameAs(moved);
+        }
+        finally
+        {
+            await db.Database.ExecuteSqlAsync($"UPDATE curriculum.releases SET content_hash = {originalHash} WHERE exam_year = {first.ExamYear}", ct);
+        }
+    }
+
     private sealed record Curriculum(
         string Version,
         int ExamYear,

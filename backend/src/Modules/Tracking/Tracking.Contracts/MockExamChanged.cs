@@ -7,6 +7,7 @@ namespace Nirengi.Modules.Tracking.Contracts;
 /// <paramref name="TopicIds"/> hold the sections and marked topics before and after the change, so a consumer
 /// (Analytics, S5) recomputes everything the change touched. Handlers must be idempotent.
 /// </summary>
+[IntegrationEventName("tracking.mock-exam-changed")]
 public sealed record MockExamChanged(
     Guid Id,
     DateTimeOffset OccurredAt,

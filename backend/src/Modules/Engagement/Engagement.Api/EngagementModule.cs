@@ -16,7 +16,8 @@ public sealed class EngagementModule : IModule
         services.AddModuleInfrastructure<EngagementDbContext>(
             configuration,
             EngagementDbContext.SchemaName,
-            Application.AssemblyReference.Assembly);
+            Application.AssemblyReference.Assembly,
+            publishesEvents: false);
     }
 
     public void MapEndpoints(IEndpointRouteBuilder v1)

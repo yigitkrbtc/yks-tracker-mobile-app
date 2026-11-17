@@ -13,6 +13,16 @@ public interface IIntegrationEvent
     DateTimeOffset OccurredAt { get; }
 }
 
+/// <summary>
+/// The stable name an event is stored under in the outbox, formatted <c>&lt;module&gt;.&lt;kebab-name&gt;</c>. Unlike a CLR type name it
+/// survives moving or renaming the class; never change it once events with that name may be waiting in an outbox.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+public sealed class IntegrationEventNameAttribute(string name) : Attribute
+{
+    public string Name { get; } = name;
+}
+
 [SuppressMessage("Naming", "CA1711", Justification = "Handler of an integration event, not a .NET event delegate.")]
 public interface IIntegrationEventHandler<in TEvent>
     where TEvent : IIntegrationEvent

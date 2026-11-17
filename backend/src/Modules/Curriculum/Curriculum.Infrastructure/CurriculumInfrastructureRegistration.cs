@@ -13,6 +13,7 @@ public static class CurriculumInfrastructureRegistration
     public static IServiceCollection AddCurriculumInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddModuleInfrastructure<CurriculumDbContext>(configuration, CurriculumDbContext.SchemaName, Application.AssemblyReference.Assembly);
+        services.AddMemoryCache();
         services.AddScoped<ICurriculumRepository, CurriculumRepository>();
         services.AddScoped<ICurriculumCatalog, CurriculumCatalog>();
         services.Configure<CurriculumOptions>(configuration.GetSection(CurriculumOptions.Section));
