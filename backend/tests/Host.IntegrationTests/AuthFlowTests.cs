@@ -1,4 +1,8 @@
 using System.Net;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Nirengi.Modules.Identity.Domain.Tokens;
+using Nirengi.Modules.Identity.Infrastructure;
 using Shouldly;
 
 namespace Nirengi.Host.IntegrationTests;
@@ -163,15 +167,29 @@ public sealed class AuthFlowTests(NirengiApiFactory factory)
     }
 
     [Fact]
-    public async Task Concurrent_refreshes_of_one_token_let_at_most_one_through()
+    public async Task Concurrent_refreshes_of_one_token_never_fork_the_family()
     {
-        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var ct = TestContext.Current.CancellationToken;
+        var email = AuthApi.NewEmail();
+        var tokens = await _api.RegisterAndVerify(email);
 
         var responses = await Task.WhenAll(Enumerable.Range(0, 5)
             .Select(_ => _api.Post("/v1/auth/refresh", new { refreshToken = tokens.RefreshToken })));
 
+        // A request that reads the token after another one's rotation committed takes the grace path (ADR-0021 M3) and
+        // supersedes the successor, so more than one 200 is allowed. What must hold: each 200 is one rotation in a
+        // single chain, exactly one token stays live, and no request is mistaken for reuse.
         responses.ShouldAllBe(r => r.StatusCode == HttpStatusCode.OK || r.StatusCode == HttpStatusCode.Unauthorized);
-        responses.Count(r => r.StatusCode == HttpStatusCode.OK).ShouldBeLessThanOrEqualTo(1);
+        var granted = responses.Count(r => r.StatusCode == HttpStatusCode.OK);
+        granted.ShouldBeGreaterThanOrEqualTo(1);
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        var userId = (await db.Users.AsNoTracking().SingleAsync(u => u.Email == email, ct)).Id;
+        var family = await db.RefreshTokens.AsNoTracking().Where(t => t.UserId == userId).ToListAsync(ct);
+        family.Count.ShouldBe(1 + granted);
+        family.Count(t => t.RevokedAt == null).ShouldBe(1);
+        family.ShouldNotContain(t => t.RevokeReason == RevokeReason.ReuseDetected);
     }
 
     [Fact]
