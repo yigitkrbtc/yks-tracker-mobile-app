@@ -290,6 +290,9 @@ namespace Nirengi.Modules.Identity.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_refresh_tokens");
 
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("ix_refresh_tokens_expires_at");
+
                     b.HasIndex("FamilyId")
                         .HasDatabaseName("ix_refresh_tokens_family_id");
 

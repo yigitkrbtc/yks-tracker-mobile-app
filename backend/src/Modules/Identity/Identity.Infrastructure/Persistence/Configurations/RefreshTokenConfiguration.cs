@@ -15,6 +15,7 @@ internal sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refre
         builder.HasIndex(t => t.TokenHash).IsUnique();
         builder.HasIndex(t => t.UserId);
         builder.HasIndex(t => t.FamilyId);
+        builder.HasIndex(t => t.ExpiresAt);
         builder.Property(t => t.RevokeReason).HasConversion<string>().HasMaxLength(30);
         builder.HasOne<User>().WithMany().HasForeignKey(t => t.UserId).OnDelete(DeleteBehavior.Cascade);
         builder.Property<uint>("Version").IsRowVersion();
