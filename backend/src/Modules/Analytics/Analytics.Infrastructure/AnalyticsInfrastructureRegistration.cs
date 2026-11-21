@@ -11,7 +11,7 @@ public static class AnalyticsInfrastructureRegistration
 {
     public static IServiceCollection AddAnalyticsInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddModuleInfrastructure<AnalyticsDbContext>(configuration, AnalyticsDbContext.SchemaName, Application.AssemblyReference.Assembly);
+        services.AddModuleInfrastructure<AnalyticsDbContext>(configuration, AnalyticsDbContext.SchemaName, Application.AssemblyReference.Assembly, publishesEvents: false);
         services.AddAnalyticsApplication();
         services.AddScoped<IAnalyticsStore, AnalyticsStore>();
         return services;

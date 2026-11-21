@@ -12,7 +12,7 @@ public static class RecommendationInfrastructureRegistration
 {
     public static IServiceCollection AddRecommendationInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddModuleInfrastructure<RecommendationDbContext>(configuration, RecommendationDbContext.SchemaName, Application.AssemblyReference.Assembly);
+        services.AddModuleInfrastructure<RecommendationDbContext>(configuration, RecommendationDbContext.SchemaName, Application.AssemblyReference.Assembly, publishesEvents: false);
         services.AddRecommendationApplication();
         services.AddScoped<IRecommendationStore, RecommendationStore>();
         services.AddScoped<IPersonalDataExporter, RecommendationDataExporter>();
