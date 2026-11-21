@@ -145,7 +145,7 @@ public sealed class MockExamApiTests(NirengiApiFactory factory)
 
         await using var scope = factory.Services.CreateAsyncScope();
         var payloads = await scope.ServiceProvider.GetRequiredService<TrackingDbContext>().OutboxMessages.AsNoTracking()
-            .Where(m => m.Type.Contains("MockExamChanged"))
+            .Where(m => m.Type == "tracking.mock-exam-changed")
             .Select(m => m.Payload)
             .ToListAsync(ct);
         var mine = payloads.Where(p => p.Contains(id.ToString(), StringComparison.Ordinal)).ToList();

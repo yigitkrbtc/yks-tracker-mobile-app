@@ -122,7 +122,7 @@ public sealed class TopicTestApiTests(NirengiApiFactory factory)
 
         await using var scope = factory.Services.CreateAsyncScope();
         var payloads = await scope.ServiceProvider.GetRequiredService<TrackingDbContext>().OutboxMessages.AsNoTracking()
-            .Where(m => m.Type.Contains("TopicTestChanged"))
+            .Where(m => m.Type == "tracking.topic-test-changed")
             .Select(m => m.Payload)
             .ToListAsync(ct);
         payloads.Count(p => p.Contains(id.ToString(), StringComparison.Ordinal)).ShouldBe(2); // recorded + deleted; the repeated delete changed nothing

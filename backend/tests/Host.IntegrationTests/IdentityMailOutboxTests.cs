@@ -87,7 +87,7 @@ public sealed class IdentityMailOutboxTests(NirengiApiFactory factory)
             var protector = scope.ServiceProvider.GetRequiredService<IEmailPayloadProtector>();
             // The database is shared with other test classes, so pick this test's row by opening the payloads.
             var candidates = await db.OutboxMessages
-                .Where(m => m.Type.Contains("IdentityEmailRequested") && m.OccurredAt >= started)
+                .Where(m => m.Type == "identity.email-requested" && m.OccurredAt >= started)
                 .ToListAsync(ct);
             var mine = candidates.Where(m =>
             {
@@ -293,7 +293,7 @@ public sealed class IdentityMailOutboxTests(NirengiApiFactory factory)
     {
         await using var scope = factory.Services.CreateAsyncScope();
         return await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().OutboxMessages.AsNoTracking()
-            .Where(m => m.Type.Contains("IdentityEmailRequested") && m.OccurredAt >= since)
+            .Where(m => m.Type == "identity.email-requested" && m.OccurredAt >= since)
             .ToListAsync(ct);
     }
 

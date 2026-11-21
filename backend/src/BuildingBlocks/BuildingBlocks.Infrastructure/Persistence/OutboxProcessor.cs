@@ -113,6 +113,7 @@ public sealed partial class OutboxProcessor<TContext>(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        IntegrationEventNames.EnsureBuilt();
         using var timer = new PeriodicTimer(options.Value.PollInterval);
         do
         {
@@ -228,7 +229,8 @@ public sealed partial class OutboxProcessor<TContext>(
 
     private static Task Publish(IServiceProvider services, OutboxMessage message, CancellationToken cancellationToken)
     {
-        var type = System.Type.GetType(message.Type, throwOnError: true)!;
+        // Rows written before stable names hold an AssemblyQualifiedName; they still resolve through Type.GetType.
+        var type = IntegrationEventNames.Resolve(message.Type) ?? System.Type.GetType(message.Type, throwOnError: true)!;
         var integrationEvent = JsonSerializer.Deserialize(message.Payload, type)
             ?? throw new InvalidOperationException($"Outbox message {message.Id} has an empty payload.");
 

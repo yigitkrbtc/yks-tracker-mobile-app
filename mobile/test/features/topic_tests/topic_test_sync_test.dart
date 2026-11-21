@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nirengi/core/database/app_database.dart';
 import 'package:nirengi/core/sync/outbox_store.dart';
@@ -260,4 +261,27 @@ void main() {
       expect(await outbox.queuedCount(), 0);
     },
   );
+
+  test('edits and deletes stay newer than a stored time ahead', () async {
+    await repository.save(sample());
+    final ahead = now.add(const Duration(days: 1)).microsecondsSinceEpoch;
+    final change = TopicTestsCompanion(clientModifiedAt: Value(ahead));
+    await db.update(db.topicTests).write(change);
+
+    await repository.save(sample());
+    final saved = await db.select(db.topicTests).getSingle();
+    expect(saved.clientModifiedAt, greaterThan(ahead));
+    final item = await outbox.find('topic_test', 't1');
+    final put = jsonDecode(item!.payload!) as Map<String, dynamic>;
+    final sent = DateTime.parse(put['clientModifiedAt'] as String);
+    expect(sent.microsecondsSinceEpoch, saved.clientModifiedAt);
+
+    await repository.delete('t1');
+    final deleted = await db.select(db.topicTests).getSingle();
+    expect(deleted.clientModifiedAt, greaterThan(saved.clientModifiedAt));
+    final queued = await outbox.find('topic_test', 't1');
+    final del = jsonDecode(queued!.payload!) as Map<String, dynamic>;
+    final sentDelete = DateTime.parse(del['modifiedAt'] as String);
+    expect(sentDelete.microsecondsSinceEpoch, deleted.clientModifiedAt);
+  });
 }

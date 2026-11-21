@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/sync/edit_clock.dart';
 import '../../../core/sync/outbox_store.dart';
 import '../domain/mock_exam.dart';
 import '../domain/mock_exam_repository.dart';
@@ -83,7 +84,7 @@ class DriftMockExamRepository implements MockExamRepository {
 
   @override
   Future<void> save(MockExam exam) => _db.transaction(() async {
-    final micros = _nowMicros();
+    final micros = await _editMicros(exam.id);
     await MockExamRecords.writeLocal(_db, exam, modifiedMicros: micros);
     await _outbox.enqueue(
       entityType: mockExamEntity,
@@ -97,7 +98,7 @@ class DriftMockExamRepository implements MockExamRepository {
   /// the delete (answered 204), which keeps a single queued write per record.
   @override
   Future<void> delete(String id) => _db.transaction(() async {
-    final micros = _nowMicros();
+    final micros = await _editMicros(id);
     final changed =
         await (_db.update(_db.mockExams)..where((e) => e.id.equals(id))).write(
           MockExamsCompanion(
@@ -127,5 +128,11 @@ class DriftMockExamRepository implements MockExamRepository {
     return row == null ? null : (id: row.sourceId, name: row.sourceName);
   }
 
-  int _nowMicros() => _now().toUtc().microsecondsSinceEpoch;
+  /// Read in the caller's transaction; see [nextEditMicros].
+  Future<int> _editMicros(String id) async {
+    final row = await (_db.select(
+      _db.mockExams,
+    )..where((e) => e.id.equals(id))).getSingleOrNull();
+    return nextEditMicros(_now(), row?.clientModifiedAt);
+  }
 }

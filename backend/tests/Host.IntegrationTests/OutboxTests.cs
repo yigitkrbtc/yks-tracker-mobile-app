@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Nirengi.BuildingBlocks.Application.Events;
 using Nirengi.BuildingBlocks.Infrastructure.Persistence;
-using Nirengi.Modules.Platform.Infrastructure;
+using Nirengi.Modules.Tracking.Infrastructure;
 using Shouldly;
 
 namespace Nirengi.Host.IntegrationTests;
@@ -18,7 +18,7 @@ public sealed class OutboxTests(NirengiApiFactory factory)
 
         await using (var scope = factory.Services.CreateAsyncScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<PlatformDbContext>();
+            var db = scope.ServiceProvider.GetRequiredService<TrackingDbContext>();
             db.Enqueue(probe);
             await db.SaveChangesAsync(ct);
         }
@@ -29,7 +29,7 @@ public sealed class OutboxTests(NirengiApiFactory factory)
         {
             await Task.Delay(100, ct);
             await using var scope = factory.Services.CreateAsyncScope();
-            stored = await scope.ServiceProvider.GetRequiredService<PlatformDbContext>().OutboxMessages.FindAsync([probe.Id], ct);
+            stored = await scope.ServiceProvider.GetRequiredService<TrackingDbContext>().OutboxMessages.FindAsync([probe.Id], ct);
         }
 
         stored.ShouldNotBeNull();
@@ -37,5 +37,6 @@ public sealed class OutboxTests(NirengiApiFactory factory)
         stored.Attempts.ShouldBe(0);
     }
 
+    [IntegrationEventName("test.outbox-probe")]
     public sealed record ProbeEvent(Guid Id, DateTimeOffset OccurredAt) : IIntegrationEvent;
 }

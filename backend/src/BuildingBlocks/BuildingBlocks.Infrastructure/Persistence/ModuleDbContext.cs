@@ -26,7 +26,7 @@ public abstract class ModuleDbContext(DbContextOptions options) : DbContext(opti
             OutboxMessages.Add(new OutboxMessage
             {
                 Id = integrationEvent.Id,
-                Type = type.AssemblyQualifiedName ?? type.FullName!,
+                Type = IntegrationEventNames.NameOf(type),
                 Payload = JsonSerializer.Serialize(integrationEvent, type),
                 OccurredAt = integrationEvent.OccurredAt,
             });

@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Nirengi.BuildingBlocks.Application.Events;
 using Nirengi.BuildingBlocks.Infrastructure;
+using Nirengi.BuildingBlocks.Infrastructure.Persistence;
 using Nirengi.Modules.Identity.Infrastructure;
 using Nirengi.Modules.Tracking.Infrastructure;
 using Shouldly;
@@ -27,6 +29,28 @@ public sealed class OutboxRegistrationTests
         services.AddModuleInfrastructure<TrackingDbContext>(configuration, "tracking", Modules.Tracking.Application.AssemblyReference.Assembly);
 
         services.Where(d => d.ServiceType == typeof(IEventOutbox)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void A_module_that_publishes_no_events_gets_no_outbox_worker_or_health_check()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Database"] = "Host=localhost" })
+            .Build();
+        var publishing = new ServiceCollection();
+        var silent = new ServiceCollection();
+
+        publishing.AddModuleInfrastructure<TrackingDbContext>(configuration, "tracking", Modules.Tracking.Application.AssemblyReference.Assembly);
+        silent.AddModuleInfrastructure<TrackingDbContext>(configuration, "tracking", Modules.Tracking.Application.AssemblyReference.Assembly, publishesEvents: false);
+
+        static int Workers(IServiceCollection services) =>
+            services.Count(d => d.ServiceType == typeof(IHostedService) && d.ImplementationType == typeof(OutboxProcessor<TrackingDbContext>));
+
+        Workers(publishing).ShouldBe(1);
+        Workers(silent).ShouldBe(0);
+        // The health check is a configure-options descriptor, so it shows only as a smaller registry.
+        publishing.Count.ShouldBeGreaterThan(silent.Count);
+        silent.Any(d => d.ServiceType == typeof(TrackingDbContext)).ShouldBeTrue();
     }
 
     [Theory]

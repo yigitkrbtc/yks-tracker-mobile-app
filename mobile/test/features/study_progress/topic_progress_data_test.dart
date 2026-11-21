@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart' show Value;
@@ -312,4 +313,21 @@ void main() {
       expect(await v3.select(v3.topicProgressMarks).get(), hasLength(1));
     },
   );
+
+  test('a mark stays newer than a stored time ahead', () async {
+    await repository.mark('t1', ProgressStatus.inProgress);
+    final ahead = now.add(const Duration(days: 1)).microsecondsSinceEpoch;
+    final stamp = Value(ahead);
+    final change = TopicProgressMarksCompanion(clientModifiedAt: stamp);
+    await db.update(db.topicProgressMarks).write(change);
+
+    await repository.mark('t1', ProgressStatus.done);
+
+    final row = await db.select(db.topicProgressMarks).getSingle();
+    expect(row.clientModifiedAt, greaterThan(ahead));
+    final item = await outbox.find('topic_progress', 't1');
+    final put = jsonDecode(item!.payload!) as Map<String, dynamic>;
+    final sent = DateTime.parse(put['clientModifiedAt'] as String);
+    expect(sent.microsecondsSinceEpoch, row.clientModifiedAt);
+  });
 }

@@ -59,6 +59,9 @@ internal sealed class RefreshTokenRepository(IdentityDbContext db) : IRefreshTok
         await db.RefreshTokens.Where(t => t.UserId == userId && t.RevokedAt == null).ToListAsync(cancellationToken);
 
     public void Add(RefreshToken token) => db.RefreshTokens.Add(token);
+
+    public Task<int> DeleteExpiredBefore(DateTimeOffset cutoff, CancellationToken cancellationToken) =>
+        db.RefreshTokens.Where(t => t.ExpiresAt < cutoff).ExecuteDeleteAsync(cancellationToken);
 }
 
 internal sealed class RecoveryCodeRepository(IdentityDbContext db) : IRecoveryCodeRepository

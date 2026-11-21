@@ -59,7 +59,7 @@ public sealed class NirengiApiFactory : WebApplicationFactory<Program>, IAsyncLi
             await using (var scope = Services.CreateAsyncScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
-                var pending = await db.OutboxMessages.CountAsync(m => m.ProcessedAt == null && m.Type.Contains("IdentityEmailRequested"), TestContext.Current.CancellationToken);
+                var pending = await db.OutboxMessages.CountAsync(m => m.ProcessedAt == null && m.Type == "identity.email-requested", TestContext.Current.CancellationToken);
                 if (pending == 0)
                 {
                     return;
