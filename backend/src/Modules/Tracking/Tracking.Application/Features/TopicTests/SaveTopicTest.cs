@@ -106,10 +106,15 @@ internal sealed class SaveTopicTestHandler(
         var test = await tests.Get(command.UserId, command.Id, cancellationToken);
         var isNew = test is null;
 
+        // A stale write is not applied, so nothing else about it is judged: the stored state comes back.
+        var now = clock.UtcNow;
+        if (test is not null && EditTime.IsStale(command.ClientModifiedAt!.Value, now, test.ClientModifiedAt))
+        {
+            return TopicTestResponse.From(test);
+        }
+
         var data = ToData(command);
-        // A stale write is not applied (the stored state is returned below), so its date is not judged.
-        var isStale = test is not null && EditTime.IsStale(command.ClientModifiedAt!.Value, clock.UtcNow, test.ClientModifiedAt);
-        if (!isStale && !TopicTestRules.IsAllowedDateChange(data.StudiedOn, test?.StudiedOn, clock.UtcNow))
+        if (!TopicTestRules.IsAllowedDateChange(data.StudiedOn, test?.StudiedOn, now))
         {
             return Result.ValidationFailure<TopicTestResponse>([Error.Validation(nameof(command.StudiedOn), StudyDateMessage)]);
         }
@@ -120,7 +125,6 @@ internal sealed class SaveTopicTestHandler(
             return error;
         }
 
-        var now = clock.UtcNow;
         var before = test?.Results.Select(r => r.TopicId).ToList() ?? [];
         if (test is null)
         {

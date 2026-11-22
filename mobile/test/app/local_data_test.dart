@@ -168,6 +168,13 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Giriş yap'), findsOneWidget);
     expect(find.text('Merhaba Ada'), findsNothing);
     expect(container.read(localDataReadyProvider), isFalse);
+    final cache = CacheStore(db);
+    final leftover = await tester.runAsync(() => cache.read('leftover'));
+    expect(leftover, isNotNull, reason: 'the wipe was rolled back');
+    final owner = await tester.runAsync(() => cache.read(LocalData.ownerKey));
+    expect(owner?['userId'], 'someone-else');
+    expect(container.read(syncSchedulerProvider).isRunning, isFalse);
+    expect(api.calls.where((c) => c.contains('/v1/sync')), isEmpty);
     await disposeShell(tester);
   });
 

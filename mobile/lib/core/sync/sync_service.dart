@@ -10,8 +10,8 @@ import 'sync_handler.dart';
 
 /// What to tell the student when a run ends [SyncOutcome.failed].
 const syncFailedMessage =
-    'Bazı kayıtlar eşitlenemedi. Sorun sürerse uygulamayı güncelle '
-    'ya da bize yaz.';
+    'Bazı kayıtlar eşitlenemedi; kayıtların bu cihazda duruyor. '
+    'Sorun sürerse uygulamayı güncelle.';
 
 enum SyncOutcome {
   /// Everything queued was pushed and the change feed is caught up.

@@ -136,7 +136,11 @@ class LocalData {
         _report(e, s);
         // Back to the sign-in screen with nothing of the previous student
         // shown; the next sign-in retries the wipe.
-        await _ref.read(sessionControllerProvider.notifier).logout();
+        try {
+          await _ref.read(sessionControllerProvider.notifier).logout();
+        } on Object catch (e, s) {
+          _report(e, s);
+        }
       }
       return;
     }

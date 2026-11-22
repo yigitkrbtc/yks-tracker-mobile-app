@@ -178,9 +178,14 @@ internal sealed class SaveMockExamHandler(
         var exam = await exams.Get(command.UserId, command.Id, cancellationToken);
         var isNew = exam is null;
 
-        // A stale write is not applied (the stored state is returned below), so its date is not judged.
-        var isStale = exam is not null && EditTime.IsStale(command.ClientModifiedAt!.Value, clock.UtcNow, exam.ClientModifiedAt);
-        if (!isStale && !TopicTestRules.IsAllowedDateChange(command.TakenOn!.Value, exam?.TakenOn, clock.UtcNow))
+        // A stale write is not applied, so nothing else about it is judged: the stored state comes back.
+        var now = clock.UtcNow;
+        if (exam is not null && EditTime.IsStale(command.ClientModifiedAt!.Value, now, exam.ClientModifiedAt))
+        {
+            return MockExamResponse.From(exam);
+        }
+
+        if (!TopicTestRules.IsAllowedDateChange(command.TakenOn!.Value, exam?.TakenOn, now))
         {
             return Result.ValidationFailure<MockExamResponse>([Error.Validation(nameof(command.TakenOn), StudyDateMessage)]);
         }
@@ -202,7 +207,6 @@ internal sealed class SaveMockExamHandler(
             return error;
         }
 
-        var now = clock.UtcNow;
         var sectionsBefore = exam?.Sections.Select(s => s.SectionCode).ToList() ?? [];
         var topicsBefore = exam?.Marks.Select(m => m.TopicId).ToList() ?? [];
         if (exam is null)

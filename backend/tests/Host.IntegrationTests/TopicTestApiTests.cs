@@ -225,6 +225,21 @@ public sealed class TopicTestApiTests(NirengiApiFactory factory)
         body.StudiedOn.ShouldBe(stored.StudiedOn);
     }
 
+    [Fact]
+    public async Task Stale_write_with_an_unknown_topic_returns_the_stored_test_instead_of_rejecting()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var id = Guid.CreateVersion7();
+        var now = DateTimeOffset.UtcNow;
+        var stored = await AuthApi.Read<TestItem>(await Put(tokens, id, Body(now.AddMinutes(-1), (TopicA, 10, 9, 1, 0))));
+
+        var stale = await Put(tokens, id, Body(now.AddMinutes(-10), (Guid.NewGuid(), 10, 9, 1, 0)));
+
+        stale.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await AuthApi.Read<TestItem>(stale);
+        body.StudiedOn.ShouldBe(stored.StudiedOn);
+    }
+
     private static string DaysAgo(int days) =>
         TopicTestRules.TodayInTurkey(DateTimeOffset.UtcNow).AddDays(-days).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
