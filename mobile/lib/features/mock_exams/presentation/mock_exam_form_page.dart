@@ -234,11 +234,9 @@ class _MockExamFormPageState extends ConsumerState<MockExamFormPage> {
   /// Saves; true when stored.
   Future<MockExam?> _store(Curriculum c) async {
     final exam = _build(c);
-    final errors = MockExamRules.validate(
-      exam,
-      c,
-      widget.now ?? DateTime.now(),
-    );
+    final now = widget.now ?? DateTime.now();
+    final original = _existing?.takenOn;
+    final errors = MockExamRules.validate(exam, c, now, originalDate: original);
     setState(() => _errors = errors);
     if (errors.isNotEmpty) {
       return null;
@@ -324,7 +322,11 @@ class _MockExamFormPageState extends ConsumerState<MockExamFormPage> {
 
   Future<void> _pickDate() async {
     final today = MockExamRules.todayInTurkey(_now);
-    final first = MockExamRules.earliestDate(_now);
+    final saved = _existing?.takenOn;
+    var first = MockExamRules.earliestDate(_now);
+    if (saved != null && saved.isBefore(first)) {
+      first = saved;
+    }
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime(_date.year, _date.month, _date.day),

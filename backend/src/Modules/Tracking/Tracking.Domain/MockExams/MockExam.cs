@@ -62,7 +62,7 @@ public sealed class MockExam : AggregateRoot<Guid>, ISyncRecord
     public bool Apply(MockExamData data, DateTimeOffset clientModifiedAt, DateTimeOffset now)
     {
         var editTime = EditTime.Of(clientModifiedAt, now);
-        if (editTime <= ClientModifiedAt)
+        if (EditTime.IsStale(clientModifiedAt, now, ClientModifiedAt))
         {
             return false;
         }

@@ -149,7 +149,9 @@ class _TopicTestFormPageState extends ConsumerState<TopicTestFormPage> {
 
   Future<void> _save() async {
     final test = _build();
-    final errors = TopicTestRules.validate(test, widget.now ?? DateTime.now());
+    final now = widget.now ?? DateTime.now();
+    final original = _existing?.studiedOn;
+    final errors = TopicTestRules.validate(test, now, originalDate: original);
     setState(() => _errors = errors);
     if (errors.isNotEmpty) {
       return;
@@ -190,7 +192,11 @@ class _TopicTestFormPageState extends ConsumerState<TopicTestFormPage> {
 
   Future<void> _pickDate() async {
     final today = TopicTestRules.todayInTurkey(_now);
-    final first = TopicTestRules.earliestDate(_now);
+    final saved = _existing?.studiedOn;
+    var first = TopicTestRules.earliestDate(_now);
+    if (saved != null && saved.isBefore(first)) {
+      first = saved;
+    }
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime(_date.year, _date.month, _date.day),

@@ -29,6 +29,10 @@ class AnalysisView extends ConsumerWidget {
         ),
       );
     }
+    if (outcome == SyncOutcome.failed && context.mounted) {
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(const SnackBar(content: Text(syncFailedMessage)));
+    }
     await ref.read(analysisOverviewProvider.notifier).refresh();
   }
 

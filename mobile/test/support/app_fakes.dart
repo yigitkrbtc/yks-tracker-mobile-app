@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/misc.dart';
 import 'package:nirengi/app/composition.dart';
+import 'package:nirengi/core/database/app_database.dart';
 import 'package:nirengi/core/database/database_providers.dart';
 import 'package:nirengi/core/network/api_client.dart';
 import 'package:nirengi/features/analytics/application/analysis_providers.dart';
@@ -136,6 +137,7 @@ List<Override> fakeAppOverrides({
   FakeProfileRepository? profiles,
   FakeCurriculumRepository? curriculum,
   FakeApi? api,
+  AppDatabase? database,
   FakeAnalysisRepository? analysis,
   FakeRecommendationRepository? recommendations,
   FakeExamScheduleRepository? examSchedule,
@@ -144,7 +146,7 @@ List<Override> fakeAppOverrides({
 }) => [
   ...fakeAuthOverrides(auth ?? FakeAuthRepository(), store),
   appDatabaseProvider.overrideWith((ref) {
-    final db = memoryDatabase();
+    final db = database ?? memoryDatabase();
     ref.onDispose(db.close);
     return db;
   }),

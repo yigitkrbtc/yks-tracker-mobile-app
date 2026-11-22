@@ -19,4 +19,7 @@ public static class EditTime
         var capped = client > now ? now : client;
         return capped.AddTicks(-(capped.UtcTicks % 10));
     }
+
+    /// <summary>True when an equal or newer edit is already stored, so the write would not be applied.</summary>
+    public static bool IsStale(DateTimeOffset client, DateTimeOffset now, DateTimeOffset stored) => Of(client, now) <= stored;
 }

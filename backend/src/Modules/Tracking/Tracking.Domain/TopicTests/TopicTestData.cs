@@ -62,5 +62,12 @@ public static class TopicTestRules
         return date <= today && date >= today.AddDays(-MaxDaysBack);
     }
 
+    /// <summary>
+    /// The date window applies to a new record or a changed date; an edit that keeps the stored date passes however old it is,
+    /// so a note on a year-old test can still be corrected.
+    /// </summary>
+    public static bool IsAllowedDateChange(DateOnly date, DateOnly? storedDate, DateTimeOffset utcNow) =>
+        date == storedDate || IsAllowedStudyDate(date, utcNow);
+
     public static decimal Net(int correct, int wrong) => correct - (wrong * WrongPenalty);
 }

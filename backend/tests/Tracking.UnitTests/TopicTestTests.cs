@@ -146,6 +146,18 @@ public sealed class TopicTestTests
         Should.Throw<ArgumentException>(() => TopicTest.Create(Guid.CreateVersion7(), User, data, Now, Now));
 
     [Theory]
+    [InlineData("2024-01-01", "2024-01-01", true)] // unchanged old date stays editable
+    [InlineData("2024-02-01", "2024-01-01", false)] // changed to another date outside the window
+    [InlineData("2026-10-30", "2024-01-01", true)] // changed into the window
+    [InlineData("2024-01-01", null, false)] // new record outside the window
+    [InlineData("2026-11-01", null, false)] // new future record
+    public void Date_window_applies_to_new_records_and_changed_dates_only(string date, string? stored, bool allowed) =>
+        TopicTestRules.IsAllowedDateChange(
+            DateOnly.Parse(date, System.Globalization.CultureInfo.InvariantCulture),
+            stored is null ? null : DateOnly.Parse(stored, System.Globalization.CultureInfo.InvariantCulture),
+            Now).ShouldBe(allowed);
+
+    [Theory]
     [InlineData("2026-10-31T20:59:00Z", "2026-10-31", true)]
     [InlineData("2026-10-31T20:59:00Z", "2026-11-01", false)] // still 31 Oct in Türkiye
     [InlineData("2026-10-31T21:00:00Z", "2026-11-01", true)] // midnight in Türkiye
@@ -155,4 +167,12 @@ public sealed class TopicTestTests
         TopicTestRules.IsAllowedStudyDate(
             DateOnly.Parse(date, System.Globalization.CultureInfo.InvariantCulture),
             DateTimeOffset.Parse(utcNow, System.Globalization.CultureInfo.InvariantCulture)).ShouldBe(allowed);
+
+    [Theory]
+    [InlineData(-10, true)] // older than the stored edit
+    [InlineData(-5, true)] // equal: a replay
+    [InlineData(-1, false)] // newer
+    [InlineData(60, true)] // client clock ahead is capped at server time, which is still not newer than a stored "now"
+    public void Stale_means_the_capped_client_edit_time_is_not_newer_than_the_stored_one(int clientMinutes, bool stale) =>
+        Nirengi.Modules.Tracking.Domain.EditTime.IsStale(Now.AddMinutes(clientMinutes), Now, Now.AddMinutes(clientMinutes == 60 ? 0 : -5)).ShouldBe(stale);
 }
