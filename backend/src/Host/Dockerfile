@@ -12,7 +12,8 @@ WORKDIR /repo/backend
 COPY backend/.editorconfig backend/global.json backend/Directory.Build.props backend/Directory.Packages.props backend/Nirengi.slnx ./
 COPY backend/src/ src/
 COPY data/seed/ /repo/data/seed/
-RUN dotnet publish src/Host/Host.csproj -c Release -o /app /p:OpenApiGenerateDocumentsOnBuild=false
+ARG VERSION=0.0.0-dev
+RUN dotnet publish src/Host/Host.csproj -c Release -o /app /p:OpenApiGenerateDocumentsOnBuild=false /p:Version=${VERSION} /p:InformationalVersion=${VERSION}
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app

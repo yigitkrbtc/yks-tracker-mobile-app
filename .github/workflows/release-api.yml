@@ -1,0 +1,82 @@
+name: Release API image
+
+# ADR-0022: `api-vX.Y.Z` tag -> image on GHCR (no `latest`). Deploying is a separate step (deploy-api.yml).
+on:
+  push:
+    tags: ['api-v*']
+
+# Least privilege: read the repo, write the package. Nothing else.
+permissions:
+  contents: read
+  packages: write
+
+# One group per tag: a single shared group keeps only one pending run, so tags pushed together would cancel a release.
+concurrency:
+  group: release-api-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate tag and commit
+        id: meta
+        run: |
+          version="${GITHUB_REF_NAME#api-v}"
+          if ! echo "$version" | grep -Eq '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'; then
+            echo "::error::Tag '$GITHUB_REF_NAME' is not api-vX.Y.Z."
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tagged commit is not in origin/main history; only main is released."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/nirengi-api" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Refuse to overwrite a published version
+        # A version deploy.sh may roll back to must never change content under the same tag.
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          if docker buildx imagetools inspect "$IMAGE:$VERSION" >/dev/null 2>&1; then
+            echo "::error::$IMAGE:$VERSION is already published; tag a new version instead."
+            exit 1
+          fi
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: backend/src/Host/Dockerfile
+          push: true
+          # One manifest per release: provenance/SBOM would add untagged child versions that prune deletes,
+          # leaving the oldest kept tag unpullable.
+          provenance: false
+          sbom: false
+          build-args: VERSION=${{ steps.meta.outputs.version }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          tags: |
+            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.version }}
+            ${{ steps.meta.outputs.image }}:sha-${{ steps.meta.outputs.short_sha }}
+
+  prune:
+    # Keep the newest 10 versions of the package: with provenance and SBOM off, each release is one
+    # single-platform manifest holding both tags, so 10 versions are 10 releases.
+    needs: image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5.0.0
+        with:
+          package-name: nirengi-api
+          package-type: container
+          min-versions-to-keep: 10
