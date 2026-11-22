@@ -53,6 +53,19 @@ void main() {
     );
   });
 
+  test('an old record keeps its date when edited', () {
+    final old = DateTime.utc(2025, 9, 27); // 400 days before 1 Nov 2026
+    final older = DateTime.utc(2025, 9, 1);
+    final t = sample(on: old);
+    expect(TopicTestRules.validate(t, now, originalDate: old), isEmpty);
+    expect(TopicTestRules.validate(t, now), hasLength(1));
+    final moved = sample(on: older);
+    expect(
+      TopicTestRules.validate(moved, now, originalDate: old),
+      hasLength(1),
+    );
+  });
+
   test('exactly one of listed source or typed name', () {
     expect(TopicTestRules.validate(sample(sourceId: null), now), [
       'Listeden bir kaynak seç ya da kaynağın adını yaz.',

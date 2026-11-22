@@ -89,7 +89,10 @@ class _MockExamMarksPageState extends ConsumerState<MockExamMarksPage> {
           if (m.wrong + m.blank > 0) m.toMark(),
       ],
     );
-    final errors = MockExamRules.validate(exam, c, DateTime.now());
+    // Marking keeps the date, so an exam over a year old stays editable.
+    final original = exam.takenOn;
+    final now = DateTime.now();
+    final errors = MockExamRules.validate(exam, c, now, originalDate: original);
     setState(() => _errors = errors);
     if (errors.isNotEmpty) {
       return;

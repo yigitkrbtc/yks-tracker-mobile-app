@@ -11,10 +11,11 @@ void main() {
     List<MockSectionResult> sections, {
     MockExamKind kind = MockExamKind.tyt,
     List<TopicMark> marks = const [],
+    DateTime? on,
   }) => MockExam(
     id: 'e1',
     kind: kind,
-    takenOn: DateTime.utc(2026, 10, 30),
+    takenOn: on ?? DateTime.utc(2026, 10, 30),
     sourceId: 'src-pub',
     sections: sections,
     marks: marks,
@@ -29,6 +30,21 @@ void main() {
   );
 
   List<String> errors(MockExam e) => MockExamRules.validate(e, curriculum, now);
+
+  test('an old exam keeps its date when edited', () {
+    final old = DateTime.utc(2025, 9, 26); // 400 days before 30 Oct 2026
+    final older = DateTime.utc(2025, 9, 1);
+    final sections = [s('TYT-TUR', 40, 30, 8)];
+    final e = exam(sections, on: old);
+    final moved = exam(sections, on: older);
+    final cur = curriculum;
+    expect(MockExamRules.validate(e, cur, now, originalDate: old), isEmpty);
+    expect(MockExamRules.validate(e, cur, now), hasLength(1));
+    expect(
+      MockExamRules.validate(moved, cur, now, originalDate: old),
+      hasLength(1),
+    );
+  });
 
   test('a valid TYT exam passes', () {
     expect(

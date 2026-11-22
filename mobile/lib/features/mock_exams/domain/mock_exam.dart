@@ -159,6 +159,8 @@ abstract final class MockExamRules {
     return DateTime.utc(local.year, local.month, local.day);
   }
 
+  static DateTime _dateOnly(DateTime d) => DateTime.utc(d.year, d.month, d.day);
+
   static DateTime earliestDate(DateTime now) =>
       todayInTurkey(now).subtract(const Duration(days: maxDaysBack));
 
@@ -172,14 +174,24 @@ abstract final class MockExamRules {
   ];
 
   /// Problems with [exam], in Turkish; empty when it may be saved.
-  static List<String> validate(MockExam exam, Curriculum c, DateTime now) {
+  /// An old record keeps its date: [originalDate] is the stored one, and the
+  /// lower bound is skipped while the date is unchanged.
+  static List<String> validate(
+    MockExam exam,
+    Curriculum c,
+    DateTime now, {
+    DateTime? originalDate,
+  }) {
     final errors = <String>[];
     final day = DateTime.utc(
       exam.takenOn.year,
       exam.takenOn.month,
       exam.takenOn.day,
     );
-    if (day.isAfter(todayInTurkey(now)) || day.isBefore(earliestDate(now))) {
+    final saved = originalDate;
+    final kept = saved != null && _dateOnly(saved) == day;
+    final tooOld = day.isBefore(earliestDate(now)) && !kept;
+    if (day.isAfter(todayInTurkey(now)) || tooOld) {
       errors.add('Tarih bugün ile son $maxDaysBack gün arasında olmalı.');
     }
     final hasName = (exam.sourceName ?? '').trim().isNotEmpty;

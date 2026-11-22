@@ -39,16 +39,13 @@ public sealed record SaveTopicTestCommand(
 
 internal sealed class SaveTopicTestValidator : AbstractValidator<SaveTopicTestCommand>
 {
-    public SaveTopicTestValidator(IClock clock)
+    public SaveTopicTestValidator()
     {
         RuleFor(c => c.Id).NotEmpty();
         RuleFor(c => c.ClientModifiedAt).NotNull();
         RuleFor(c => c.IsRepeat).NotNull();
-        // Separate rules: a trailing When() would also guard NotNull and let a missing value through.
+        // The date window needs the stored test (an unchanged old date stays editable), so the handler applies it.
         RuleFor(c => c.StudiedOn).NotNull();
-        RuleFor(c => c.StudiedOn)
-            .Must(d => TopicTestRules.IsAllowedStudyDate(d!.Value, clock.UtcNow)).When(c => c.StudiedOn.HasValue)
-            .WithMessage($"Tarih bugün ile son {TopicTestRules.MaxDaysBack} gün arasında olmalı.");
 
         RuleFor(c => c.SourceName).MaximumLength(TopicTestRules.SourceNameMaxLength);
         RuleFor(c => c)
@@ -102,12 +99,21 @@ internal sealed class SaveTopicTestHandler(
     ITrackingUnitOfWork unitOfWork,
     IClock clock) : ICommandHandler<SaveTopicTestCommand, TopicTestResponse>
 {
+    private static readonly string StudyDateMessage = $"Tarih bugün ile son {TopicTestRules.MaxDaysBack} gün arasında olmalı.";
+
     public async Task<Result<TopicTestResponse>> Handle(SaveTopicTestCommand command, CancellationToken cancellationToken)
     {
         var test = await tests.Get(command.UserId, command.Id, cancellationToken);
         var isNew = test is null;
 
         var data = ToData(command);
+        // A stale write is not applied (the stored state is returned below), so its date is not judged.
+        var isStale = test is not null && EditTime.IsStale(command.ClientModifiedAt!.Value, clock.UtcNow, test.ClientModifiedAt);
+        if (!isStale && !TopicTestRules.IsAllowedDateChange(data.StudiedOn, test?.StudiedOn, clock.UtcNow))
+        {
+            return Result.ValidationFailure<TopicTestResponse>([Error.Validation(nameof(command.StudiedOn), StudyDateMessage)]);
+        }
+
         var error = await CheckReferences(data, test, cancellationToken);
         if (error is not null)
         {

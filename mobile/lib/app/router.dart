@@ -16,6 +16,7 @@ import '../features/profile/presentation/profile_page.dart';
 import '../features/recommendations/presentation/plan_widgets.dart';
 import '../features/topic_tests/presentation/topic_test_form_page.dart';
 import 'home_shell.dart';
+import 'local_data.dart';
 import 'update_required_page.dart';
 
 const _splash = '/splash';
@@ -24,6 +25,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final changes = ValueNotifier<int>(0);
   ref.listen(sessionControllerProvider, (_, _) => changes.value++);
   ref.listen(updateRequiredProvider, (_, _) => changes.value++);
+  ref.listen(localDataReadyProvider, (_, _) => changes.value++);
   // Redirects look only at whether the profile is loading, failed or missing. Refreshing on every saved edit
   // would race a page that pops right after saving and put it back.
   ref.listen(studyProfileProvider, (previous, next) {
@@ -57,7 +59,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AuthRoutes.isPublic(location) ? null : AuthRoutes.login;
       }
 
-      // Signed in: the study profile decides between onboarding and the app. If it cannot be loaded
+      // Signed in, but the device database may still hold the previous student's rows (wiped first): show
+      // nothing from it until it is verified to be this student's.
+      if (!ref.read(localDataReadyProvider)) {
+        return location == _splash ? null : _splash;
+      }
+
+      // The study profile decides between onboarding and the app. If it cannot be loaded
       // (offline), the app opens anyway and the topic list offers a retry.
       // A reload (e.g. sign-in after sign-out) still carries the previous user's value; never decide on it.
       final profile = ref.read(studyProfileProvider);

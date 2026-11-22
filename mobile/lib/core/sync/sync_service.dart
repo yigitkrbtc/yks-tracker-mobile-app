@@ -8,12 +8,21 @@ import '../network/api_problem.dart';
 import 'outbox_store.dart';
 import 'sync_handler.dart';
 
+/// What to tell the student when a run ends [SyncOutcome.failed].
+const syncFailedMessage =
+    'Bazı kayıtlar eşitlenemedi. Sorun sürerse uygulamayı güncelle '
+    'ya da bize yaz.';
+
 enum SyncOutcome {
   /// Everything queued was pushed and the change feed is caught up.
   done,
 
   /// The server could not be reached, was busy, or failed on some writes; a retry is scheduled.
   offline,
+
+  /// Something unexpected broke the run (e.g. a feed record this version cannot read), not the network.
+  /// A retry is scheduled like for [offline], but it keeps failing until the app is updated.
+  failed,
 
   /// Skipped because a retry is not due yet.
   deferred,
@@ -120,6 +129,7 @@ class SyncService {
     if (!force && retryAt != null && _now().isBefore(retryAt)) {
       return SyncOutcome.deferred;
     }
+    var outcome = SyncOutcome.offline;
     try {
       final allPushed = await _push(generation);
       await _pull(generation);
@@ -135,15 +145,17 @@ class SyncService {
     } on _Transient {
       // Server unreachable or busy: back off below.
     } catch (_) {
-      // Unexpected (e.g. a feed record this version cannot read): back off instead of failing every run at once.
+      // Unexpected (e.g. a feed record this version cannot read): back off instead of failing every run at once,
+      // but report it apart from a network problem.
       if (generation != _generation) {
         throw const _Abandoned();
       }
+      outcome = SyncOutcome.failed;
     }
     _failures++;
     final delay = _firstRetry * pow(2, _failures - 1).toInt();
     _retryAt = _now().add(delay > _maxRetry ? _maxRetry : delay);
-    return SyncOutcome.offline;
+    return outcome;
   }
 
   /// False when the server failed on some writes; they stay queued for the next run.

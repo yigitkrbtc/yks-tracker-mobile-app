@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Nirengi.Modules.Curriculum.Domain.Sources;
 using Nirengi.Modules.Curriculum.Domain.Topics;
+using Nirengi.Modules.Tracking.Domain.MockExams;
 using Nirengi.Modules.Tracking.Domain.TopicTests;
 using Nirengi.Modules.Tracking.Infrastructure;
 using Shouldly;
@@ -179,6 +180,78 @@ public sealed class MockExamApiTests(NirengiApiFactory factory)
         page1.MockExams.Select(e => e.Id).Concat(page1.TopicTests.Select(t => t.Id)).Concat(page2.TopicTests.Select(t => t.Id))
             .Order().ShouldBe(order.Order());
         page1.Cursor.ShouldBe(page1.MockExams.Max(e => e.ChangeSeq));
+    }
+
+    [Fact]
+    public async Task Exam_older_than_a_year_can_be_edited_while_its_date_stays()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var id = Guid.CreateVersion7();
+        var now = DateTimeOffset.UtcNow;
+        await Put(tokens, id, Tyt(now.AddMinutes(-10)));
+        var oldDate = await SetStoredDate(id, 400);
+
+        var edited = await Put(tokens, id, Tyt(now.AddMinutes(-1)) with { TakenOn = oldDate, Note = "düzeltildi" });
+
+        edited.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await AuthApi.Read<ExamItem>(edited)).TakenOn.ShouldBe(oldDate);
+    }
+
+    [Fact]
+    public async Task Changing_the_date_to_one_older_than_a_year_is_rejected_on_the_date_field()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var id = Guid.CreateVersion7();
+        var now = DateTimeOffset.UtcNow;
+        await Put(tokens, id, Tyt(now.AddMinutes(-10)));
+        await SetStoredDate(id, 400);
+
+        var response = await Put(tokens, id, Tyt(now.AddMinutes(-1)) with { TakenOn = DaysAgo(500) });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldContain("\"TakenOn\"");
+    }
+
+    [Fact]
+    public async Task New_exam_dated_more_than_a_year_back_is_rejected_on_the_date_field()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+
+        var response = await Put(tokens, Guid.CreateVersion7(), Tyt(DateTimeOffset.UtcNow) with { TakenOn = DaysAgo(400) });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldContain("\"TakenOn\"");
+    }
+
+    [Fact]
+    public async Task Stale_write_with_an_out_of_window_date_returns_the_stored_exam_instead_of_rejecting()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var id = Guid.CreateVersion7();
+        var now = DateTimeOffset.UtcNow;
+        var stored = await AuthApi.Read<ExamItem>(await Put(tokens, id, Tyt(now.AddMinutes(-1))));
+
+        var stale = await Put(tokens, id, Tyt(now.AddMinutes(-10)) with { TakenOn = DaysAgo(400) });
+
+        stale.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await AuthApi.Read<ExamItem>(stale);
+        body.TakenOn.ShouldBe(stored.TakenOn);
+    }
+
+    private static string DaysAgo(int days) =>
+        TopicTestRules.TodayInTurkey(DateTimeOffset.UtcNow).AddDays(-days).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    /// <summary>Writes the stored date straight to the database (the API would refuse it), returns it as yyyy-MM-dd.</summary>
+    private async Task<string> SetStoredDate(Guid id, int daysAgo)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var date = TopicTestRules.TodayInTurkey(DateTimeOffset.UtcNow).AddDays(-daysAgo);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<TrackingDbContext>();
+        var exam = await db.MockExams.SingleAsync(e => e.Id == id, ct);
+        db.Entry(exam).Property(nameof(MockExam.TakenOn)).CurrentValue = date;
+        await db.SaveChangesAsync(ct);
+        return DaysAgo(daysAgo);
     }
 
     [Fact]

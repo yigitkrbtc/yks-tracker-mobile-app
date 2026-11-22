@@ -14,6 +14,7 @@ class RecordingHandler implements SyncHandler {
   final applied = <List<Map<String, dynamic>>>[];
   final queuedSeen = <Set<String>>[];
   Future<void> Function(OutboxRow item)? duringPush;
+  Exception? applyError;
 
   @override
   String get entityType => 'thing';
@@ -41,6 +42,9 @@ class RecordingHandler implements SyncHandler {
     List<Map<String, dynamic>> records,
     Set<String> queued,
   ) async {
+    if (applyError != null) {
+      throw applyError!;
+    }
     applied.add(records);
     queuedSeen.add(queued);
   }
@@ -299,10 +303,25 @@ void main() {
       api.route = (r) =>
           FakeApi.json(200, {'things': <Object>[], 'cursor': 'x'});
 
-      expect(await service.sync(), SyncOutcome.offline);
+      expect(await service.sync(), SyncOutcome.failed);
       expect(service.retryAt, now.add(const Duration(seconds: 2)));
     },
   );
+
+  test('an unreadable record reports failed, not offline', () async {
+    final record = <String, Object?>{'id': 'x'};
+    api.route = (r) => feed(r, things: [record], cursor: 3);
+    handler.applyError = const FormatException('unknown record');
+
+    expect(await service.sync(), SyncOutcome.failed);
+    expect(service.retryAt, now.add(const Duration(seconds: 2)));
+    expect(await db.select(db.syncCursors).get(), isEmpty);
+
+    handler.applyError = null;
+    expect(await service.sync(force: true), SyncOutcome.done);
+    expect(service.retryAt, isNull);
+    expect(handler.applied.single.single['id'], 'x');
+  });
 
   test('a sync asked for during a run runs again after it', () async {
     var pulls = 0;

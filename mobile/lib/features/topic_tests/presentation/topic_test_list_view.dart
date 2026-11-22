@@ -27,6 +27,10 @@ class TopicTestListView extends ConsumerWidget {
         ),
       );
     }
+    if (outcome == SyncOutcome.failed && context.mounted) {
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(const SnackBar(content: Text(syncFailedMessage)));
+    }
   }
 
   @override

@@ -43,15 +43,13 @@ public sealed record SaveMockExamCommand(
 
 internal sealed class SaveMockExamValidator : AbstractValidator<SaveMockExamCommand>
 {
-    public SaveMockExamValidator(IClock clock)
+    public SaveMockExamValidator()
     {
         RuleFor(c => c.Id).NotEmpty();
         RuleFor(c => c.ClientModifiedAt).NotNull();
         RuleFor(c => c.Kind).NotNull().IsInEnum();
+        // The date window needs the stored exam (an unchanged old date stays editable), so the handler applies it.
         RuleFor(c => c.TakenOn).NotNull();
-        RuleFor(c => c.TakenOn)
-            .Must(d => TopicTestRules.IsAllowedStudyDate(d!.Value, clock.UtcNow)).When(c => c.TakenOn.HasValue)
-            .WithMessage($"Tarih bugün ile son {TopicTestRules.MaxDaysBack} gün arasında olmalı.");
 
         RuleFor(c => c.SourceName).MaximumLength(MockExamRules.SourceNameMaxLength);
         RuleFor(c => c)
@@ -173,10 +171,19 @@ internal sealed class SaveMockExamHandler(
     ITrackingUnitOfWork unitOfWork,
     IClock clock) : ICommandHandler<SaveMockExamCommand, MockExamResponse>
 {
+    private static readonly string StudyDateMessage = $"Tarih bugün ile son {TopicTestRules.MaxDaysBack} gün arasında olmalı.";
+
     public async Task<Result<MockExamResponse>> Handle(SaveMockExamCommand command, CancellationToken cancellationToken)
     {
         var exam = await exams.Get(command.UserId, command.Id, cancellationToken);
         var isNew = exam is null;
+
+        // A stale write is not applied (the stored state is returned below), so its date is not judged.
+        var isStale = exam is not null && EditTime.IsStale(command.ClientModifiedAt!.Value, clock.UtcNow, exam.ClientModifiedAt);
+        if (!isStale && !TopicTestRules.IsAllowedDateChange(command.TakenOn!.Value, exam?.TakenOn, clock.UtcNow))
+        {
+            return Result.ValidationFailure<MockExamResponse>([Error.Validation(nameof(command.TakenOn), StudyDateMessage)]);
+        }
 
         var template = (await catalog.GetMockSections(cancellationToken)).ToDictionary(
             s => s.Code,

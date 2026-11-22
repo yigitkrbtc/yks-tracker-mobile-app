@@ -169,6 +169,79 @@ public sealed class TopicTestApiTests(NirengiApiFactory factory)
     }
 
     [Fact]
+    public async Task Test_older_than_a_year_can_be_edited_while_its_date_stays()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var id = Guid.CreateVersion7();
+        var now = DateTimeOffset.UtcNow;
+        await Put(tokens, id, Body(now.AddMinutes(-10), (TopicA, 10, 9, 1, 0)));
+        var oldDate = await SetStoredDate(id, 400);
+
+        var edited = await Put(tokens, id, Body(now.AddMinutes(-1), (TopicA, 10, 9, 1, 0)) with { StudiedOn = oldDate, Note = "düzeltildi" });
+
+        edited.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await AuthApi.Read<TestItem>(edited)).StudiedOn.ShouldBe(oldDate);
+    }
+
+    [Fact]
+    public async Task Changing_the_date_to_one_older_than_a_year_is_rejected_on_the_date_field()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var id = Guid.CreateVersion7();
+        var now = DateTimeOffset.UtcNow;
+        await Put(tokens, id, Body(now.AddMinutes(-10), (TopicA, 10, 9, 1, 0)));
+        await SetStoredDate(id, 400);
+        var otherOldDate = DaysAgo(500);
+
+        var response = await Put(tokens, id, Body(now.AddMinutes(-1), (TopicA, 10, 9, 1, 0)) with { StudiedOn = otherOldDate });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldContain("\"StudiedOn\"");
+    }
+
+    [Fact]
+    public async Task New_test_dated_more_than_a_year_back_is_rejected_on_the_date_field()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+
+        var response = await Put(tokens, Guid.CreateVersion7(), Body(DateTimeOffset.UtcNow, (TopicA, 10, 9, 1, 0)) with { StudiedOn = DaysAgo(400) });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldContain("\"StudiedOn\"");
+    }
+
+    [Fact]
+    public async Task Stale_write_with_an_out_of_window_date_returns_the_stored_test_instead_of_rejecting()
+    {
+        var tokens = await _api.RegisterAndVerify(AuthApi.NewEmail());
+        var id = Guid.CreateVersion7();
+        var now = DateTimeOffset.UtcNow;
+        var stored = await AuthApi.Read<TestItem>(await Put(tokens, id, Body(now.AddMinutes(-1), (TopicA, 10, 9, 1, 0))));
+
+        var stale = await Put(tokens, id, Body(now.AddMinutes(-10), (TopicA, 10, 9, 1, 0)) with { StudiedOn = DaysAgo(400) });
+
+        stale.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await AuthApi.Read<TestItem>(stale);
+        body.StudiedOn.ShouldBe(stored.StudiedOn);
+    }
+
+    private static string DaysAgo(int days) =>
+        TopicTestRules.TodayInTurkey(DateTimeOffset.UtcNow).AddDays(-days).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+    /// <summary>Writes the stored date straight to the database (the API would refuse it), returns it as yyyy-MM-dd.</summary>
+    private async Task<string> SetStoredDate(Guid id, int daysAgo)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var date = TopicTestRules.TodayInTurkey(DateTimeOffset.UtcNow).AddDays(-daysAgo);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<TrackingDbContext>();
+        var test = await db.TopicTests.SingleAsync(t => t.Id == id, ct);
+        db.Entry(test).Property(nameof(TopicTest.StudiedOn)).CurrentValue = date;
+        await db.SaveChangesAsync(ct);
+        return DaysAgo(daysAgo);
+    }
+
+    [Fact]
     public async Task Topic_tests_require_sign_in()
     {
         var response = await _api.Client.GetAsync("/v1/sync", TestContext.Current.CancellationToken);
