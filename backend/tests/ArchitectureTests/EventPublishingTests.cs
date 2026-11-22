@@ -23,7 +23,8 @@ public sealed class EventPublishingTests
     {
         var m = ModuleAssemblies.Get(module);
 
-        var writers = new[] { m.Application, m.Infrastructure }.SelectMany(EventWriters).ToList();
+        // Api is scanned too: Engagement and Platform register their infrastructure there.
+        var writers = new[] { m.Application, m.Infrastructure, m.Api }.SelectMany(EventWriters).ToList();
 
         if (RunsOutboxWorker(m.Api))
         {
