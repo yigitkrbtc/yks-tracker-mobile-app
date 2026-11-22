@@ -10,8 +10,9 @@ permissions:
   contents: read
   packages: write
 
+# One group per tag: a single shared group keeps only one pending run, so tags pushed together would cancel a release.
 concurrency:
-  group: release-api
+  group: release-api-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -21,6 +22,7 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Validate tag and commit
         id: meta
         run: |
@@ -42,18 +44,34 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Refuse to overwrite a published version
+        # A version deploy.sh may roll back to must never change content under the same tag.
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          if docker buildx imagetools inspect "$IMAGE:$VERSION" >/dev/null 2>&1; then
+            echo "::error::$IMAGE:$VERSION is already published; tag a new version instead."
+            exit 1
+          fi
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           file: backend/src/Host/Dockerfile
           push: true
+          # One manifest per release: provenance/SBOM would add untagged child versions that prune deletes,
+          # leaving the oldest kept tag unpullable.
+          provenance: false
+          sbom: false
           build-args: VERSION=${{ steps.meta.outputs.version }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
           tags: |
             ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.version }}
             ${{ steps.meta.outputs.image }}:sha-${{ steps.meta.outputs.short_sha }}
 
   prune:
-    # Keep the newest 10 versions of the package (each release is one version holding both tags).
+    # Keep the newest 10 versions of the package: with provenance and SBOM off, each release is one
+    # single-platform manifest holding both tags, so 10 versions are 10 releases.
     needs: image
     runs-on: ubuntu-latest
     steps:
