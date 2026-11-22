@@ -28,4 +28,7 @@
     </PackageReference>
     <PackageReference Include="Serilog.AspNetCore" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Nirengi.Host.IntegrationTests" />
+  </ItemGroup>
 </Project>

@@ -13,6 +13,7 @@ if (args.Contains("--health-probe"))
 }
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddSecretFiles();
 
 if (Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider")
 {
@@ -47,6 +48,21 @@ foreach (var module in ModuleCatalog.All)
 }
 
 var app = builder.Build();
+
+if (args.Contains("--migrate"))
+{
+    // One-off deploy step (ADR-0022): migrations only. No seed (the API seeds with its own DML-only role), no web host.
+    try
+    {
+        await DatabaseMigrator.MigrateAll(app.Services);
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        await Console.Error.WriteLineAsync($"Migration failed: {ex}");
+        return 1;
+    }
+}
 
 app.UseNirengiForwardedHeaders();
 app.UseNirengiSecurityHeaders();
