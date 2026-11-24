@@ -4,18 +4,14 @@ using Testcontainers.PostgreSql;
 
 namespace Nirengi.Host.IntegrationTests;
 
-/// <summary>ADR-0022: <c>--migrate</c> applies every module's migrations, seeds nothing, and exits without serving.</summary>
-/// <summary>
-/// Runs alone: Program is invoked in-process, and a WebApplicationFactory resolving in parallel subscribes a
-/// process-wide HostFactoryResolver listener that hijacks any host built meanwhile (our args were dropped for
-/// appsettings' localhost:5432). Console.SetError is process-global too.
-/// </summary>
+/// <summary>Runs alone: Console.SetError, used to capture the failure reason, is process-global.</summary>
 [CollectionDefinition(Name, DisableParallelization = true)]
 public sealed class MigrateCommandGroup
 {
     public const string Name = "migrate-command";
 }
 
+/// <summary>ADR-0022: <c>--migrate</c> applies every module's migrations, seeds nothing, and exits without serving.</summary>
 [Trait("Category", "Integration")]
 [Collection(MigrateCommandGroup.Name)]
 public sealed class MigrateCommandTests : IAsyncLifetime
@@ -44,6 +40,8 @@ public sealed class MigrateCommandTests : IAsyncLifetime
         var exitCode = await RunHost("--migrate", "--ConnectionStrings:Database=Host=127.0.0.1;Port=1;Database=x;Username=x;Password=x;Timeout=2");
 
         exitCode.ShouldNotBe(0);
+        // The settings after the bare --migrate flag must still apply (it once swallowed the next argument).
+        _stderr.ToString().ShouldContain("127.0.0.1:1");
     }
 
     private async Task<int> RunHost(params string[] extra)
