@@ -5,7 +5,19 @@ using Testcontainers.PostgreSql;
 namespace Nirengi.Host.IntegrationTests;
 
 /// <summary>ADR-0022: <c>--migrate</c> applies every module's migrations, seeds nothing, and exits without serving.</summary>
+/// <summary>
+/// Runs alone: Program is invoked in-process, and a WebApplicationFactory resolving in parallel subscribes a
+/// process-wide HostFactoryResolver listener that hijacks any host built meanwhile (our args were dropped for
+/// appsettings' localhost:5432). Console.SetError is process-global too.
+/// </summary>
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class MigrateCommandGroup
+{
+    public const string Name = "migrate-command";
+}
+
 [Trait("Category", "Integration")]
+[Collection(MigrateCommandGroup.Name)]
 public sealed class MigrateCommandTests : IAsyncLifetime
 {
     private readonly StringWriter _stderr = new();
