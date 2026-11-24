@@ -45,7 +45,8 @@ public sealed class MigrateCommandTests : IAsyncLifetime
             .. extra,
         ];
         var entryPoint = typeof(Program).Assembly.EntryPoint!;
-        return await (Task<int>)entryPoint.Invoke(null, [args])!;
+        // The compiler's entry point for an async top-level program is a synchronous wrapper returning int.
+        return await Task.Run(() => (int)entryPoint.Invoke(null, [args])!);
     }
 
     private async Task<long> Scalar(string sql)
