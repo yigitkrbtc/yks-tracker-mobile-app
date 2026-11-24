@@ -8,6 +8,7 @@ namespace Nirengi.Host.IntegrationTests;
 [Trait("Category", "Integration")]
 public sealed class MigrateCommandTests : IAsyncLifetime
 {
+    private readonly StringWriter _stderr = new();
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17-alpine").Build();
 
     public async ValueTask InitializeAsync() => await _postgres.StartAsync();
@@ -20,7 +21,7 @@ public sealed class MigrateCommandTests : IAsyncLifetime
         // A web host would block in RunAsync; getting an exit code back is the proof that none was started.
         var exitCode = await RunHost("--migrate", $"--ConnectionStrings:Database={_postgres.GetConnectionString()}");
 
-        exitCode.ShouldBe(0);
+        exitCode.ShouldBe(0, _stderr.ToString());
         (await Scalar("SELECT count(*) FROM information_schema.tables WHERE table_name = 'outbox_messages'")).ShouldBe(7L);
         (await Scalar("SELECT count(*) FROM curriculum.topics")).ShouldBe(0L); // reference data is the API's job
     }
@@ -33,7 +34,7 @@ public sealed class MigrateCommandTests : IAsyncLifetime
         exitCode.ShouldNotBe(0);
     }
 
-    private static async Task<int> RunHost(params string[] extra)
+    private async Task<int> RunHost(params string[] extra)
     {
         string[] args =
         [
@@ -46,7 +47,17 @@ public sealed class MigrateCommandTests : IAsyncLifetime
         ];
         var entryPoint = typeof(Program).Assembly.EntryPoint!;
         // The compiler's entry point for an async top-level program is a synchronous wrapper returning int.
-        return await Task.Run(() => (int)entryPoint.Invoke(null, [args])!);
+        // Console.Error is captured so a failing migration shows its reason in the assertion message.
+        var original = Console.Error;
+        Console.SetError(_stderr);
+        try
+        {
+            return await Task.Run(() => (int)entryPoint.Invoke(null, [args])!);
+        }
+        finally
+        {
+            Console.SetError(original);
+        }
     }
 
     private async Task<long> Scalar(string sql)
