@@ -31,15 +31,29 @@ public sealed class ProductionSafetyValidatorTests
         Validate("Production", connectionString).Succeeded.ShouldBeTrue();
 
     [Fact]
+    public void Production_rejects_a_missing_data_protection_certificate()
+    {
+        var result = Validate("Production", "Host=db", certificate: null);
+
+        result.Failed.ShouldBeTrue();
+        result.FailureMessage.ShouldContain("DataProtection:Certificate");
+    }
+
+    [Fact]
+    public void Development_needs_no_data_protection_certificate() =>
+        Validate("Development", "Host=localhost", certificate: null).Succeeded.ShouldBeTrue();
+
+    [Fact]
     public void Development_may_use_error_detail() =>
         Validate("Development", "Host=localhost;Include Error Detail=true").Succeeded.ShouldBeTrue();
 
-    private static Microsoft.Extensions.Options.ValidateOptionsResult Validate(string environment, string connectionString)
+    private static Microsoft.Extensions.Options.ValidateOptionsResult Validate(string environment, string connectionString, string? certificate = "cGZ4")
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["ConnectionStrings:Database"] = connectionString,
             ["ForwardedHeaders:KnownProxies:0"] = Proxy,
+            ["DataProtection:Certificate"] = certificate,
         }).Build();
         return new ProductionSafetyValidator(new FakeEnvironment(environment), configuration).Validate(null, new ProductionSafetyOptions());
     }
