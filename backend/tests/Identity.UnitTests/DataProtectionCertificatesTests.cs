@@ -59,6 +59,30 @@ public sealed class DataProtectionCertificatesTests : IDisposable
         error.Message.ShouldNotContain("wrong");
     }
 
+    [Fact]
+    public void A_certificate_without_its_private_key_is_rejected_before_any_key_is_written()
+    {
+        var error = Should.Throw<InvalidOperationException>(() => Protector(Settings(current: NewPfx(withPrivateKey: false))));
+
+        error.Message.ShouldContain("DataProtection:Certificate");
+        _keys.GetFiles().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void A_key_shorter_than_rsa_3072_is_rejected() =>
+        Should.Throw<InvalidOperationException>(() => Protector(Settings(current: NewPfx(keySize: 2048))))
+            .Message.ShouldContain("3072");
+
+    [Fact]
+    public void A_weak_previous_certificate_is_rejected_naming_its_setting() =>
+        Should.Throw<InvalidOperationException>(() => Protector(Settings(current: NewPfx(), previous: NewPfx(keySize: 2048))))
+            .Message.ShouldContain("DataProtection:PreviousCertificates:0");
+
+    [Fact]
+    public void Previous_certificates_without_a_current_one_are_rejected() =>
+        Should.Throw<InvalidOperationException>(() => Protector(Settings(current: null, previous: NewPfx())))
+            .Message.ShouldContain("DataProtection:Certificate");
+
     private IDataProtector Protector(Dictionary<string, string?> settings)
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
@@ -77,11 +101,18 @@ public sealed class DataProtectionCertificatesTests : IDisposable
         ["DataProtection:PreviousCertificates:0"] = previous,
     };
 
-    private static string NewPfx()
+    private static string NewPfx(int keySize = 3072, bool withPrivateKey = true)
     {
-        using var rsa = RSA.Create(2048);
+        using var rsa = RSA.Create(keySize);
         var request = new CertificateRequest("CN=nirengi-dp-test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
-        return Convert.ToBase64String(certificate.Export(X509ContentType.Pfx, Password));
+        if (withPrivateKey)
+        {
+            return Convert.ToBase64String(certificate.Export(X509ContentType.Pfx, Password));
+        }
+
+        // A PFX holding only the public certificate, as `openssl pkcs12 -export -nokeys` produces.
+        using var publicOnly = X509CertificateLoader.LoadCertificate(certificate.RawData);
+        return Convert.ToBase64String(new X509Certificate2Collection(publicOnly).Export(X509ContentType.Pfx, Password)!);
     }
 }

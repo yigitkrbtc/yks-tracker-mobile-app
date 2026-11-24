@@ -24,7 +24,7 @@ internal static class OpenApiBuildSecrets
     /// <summary>Passwordless self-signed PFX; it never encrypts anything, since no key ring is written at build time.</summary>
     private static string ThrowawayPfx()
     {
-        using var rsa = RSA.Create(2048);
+        using var rsa = RSA.Create(3072);
         var request = new CertificateRequest("CN=openapi-build", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1));
         return Convert.ToBase64String(certificate.Export(X509ContentType.Pfx));
