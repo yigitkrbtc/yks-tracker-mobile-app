@@ -54,6 +54,16 @@ jobs:
           fi
       - name: Build (warnings are errors)
         run: dotnet build Nirengi.slnx --no-restore -c Release
+      - name: No forgotten migrations (model matches snapshot)
+        # Does not connect to the database; the connection string only has to exist for the host to build its service provider.
+        env:
+          ConnectionStrings__Database: Host=localhost;Database=ci;Username=ci;Password=ci
+        run: |
+          dotnet tool restore
+          for m in Identity Curriculum Tracking Analytics Recommendation Engagement Platform; do
+            dotnet ef migrations has-pending-model-changes --no-build --configuration Release \
+              -p src/Modules/$m/$m.Infrastructure -s src/Host -c ${m}DbContext
+          done
       - name: OpenAPI contract is up to date
         working-directory: .
         run: git diff --exit-code -- contracts/openapi || (echo "::error::contracts/openapi is stale. Build locally and commit the regenerated file." && exit 1)
