@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -14,7 +15,7 @@ public sealed class ProductionSafetyOptions;
 /// proxy's own address or spoofable through X-Forwarded-For, and (2) a secret is one of the development keys that are
 /// public in the repository. Messages name the setting, never the value.
 /// </summary>
-internal sealed class ProductionSafetyValidator(IHostEnvironment environment, IConfiguration configuration) : IValidateOptions<ProductionSafetyOptions>
+internal sealed partial class ProductionSafetyValidator(IHostEnvironment environment, IConfiguration configuration) : IValidateOptions<ProductionSafetyOptions>
 {
     public ValidateOptionsResult Validate(string? name, ProductionSafetyOptions options)
     {
@@ -29,9 +30,17 @@ internal sealed class ProductionSafetyValidator(IHostEnvironment environment, IC
             failures.Add("ForwardedHeaders:KnownProxies or ForwardedHeaders:KnownNetworks must list the reverse proxy in Production; otherwise every client shares the proxy's IP and the per-IP rate limits are meaningless.");
         }
 
+        if (ErrorDetailOn().IsMatch(configuration.GetConnectionString("Database") ?? string.Empty))
+        {
+            failures.Add("ConnectionStrings:Database must not set 'Include Error Detail=true' in Production; PostgresException messages would carry row values such as e-mail addresses.");
+        }
+
         failures.AddRange(DevelopmentSecrets.InUse(configuration).Select(key => $"{key} is the development key from the repository; set a real secret for Production."));
         return failures.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(failures);
     }
+
+    [GeneratedRegex(@"Include[\s_]*Error[\s_]*Detail\s*=\s*(true|yes|on|1)\b", RegexOptions.IgnoreCase)]
+    private static partial Regex ErrorDetailOn();
 }
 
 internal static class ForwardedHeadersSettings

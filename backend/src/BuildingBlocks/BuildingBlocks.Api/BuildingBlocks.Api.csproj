@@ -8,4 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Nirengi.BuildingBlocks.UnitTests" />
+  </ItemGroup>
 </Project>

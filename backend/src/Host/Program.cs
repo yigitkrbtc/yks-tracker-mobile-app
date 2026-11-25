@@ -12,7 +12,10 @@ if (args.Contains("--health-probe"))
     return await HealthProbe.Run(Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS") ?? "8080");
 }
 
-var builder = WebApplication.CreateBuilder(args);
+// A bare "--migrate" would make the command-line provider take the next argument as its value and drop that setting.
+var migrateOnly = args.Contains("--migrate");
+var builder = WebApplication.CreateBuilder(args.Where(a => a != "--migrate").ToArray());
+builder.Configuration.AddSecretFiles();
 
 if (Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider")
 {
@@ -47,6 +50,21 @@ foreach (var module in ModuleCatalog.All)
 }
 
 var app = builder.Build();
+
+if (migrateOnly)
+{
+    // One-off deploy step (ADR-0022): migrations only. No seed (the API seeds with its own DML-only role), no web host.
+    try
+    {
+        await DatabaseMigrator.MigrateAll(app.Services);
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        await Console.Error.WriteLineAsync($"Migration failed: {ex}");
+        return 1;
+    }
+}
 
 app.UseNirengiForwardedHeaders();
 app.UseNirengiSecurityHeaders();
