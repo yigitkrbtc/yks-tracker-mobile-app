@@ -65,4 +65,15 @@ void main() {
       isEmpty,
     );
   });
+
+  test('Sentry yalnız core/telemetry portu üzerinden (ADR-0022)', () {
+    final direct = RegExp(r"import 'package:sentry(_flutter)?/");
+    expect(
+      offenders(
+        dartFiles('lib').where((f) => !f.path.contains('/core/telemetry/')),
+        direct,
+      ),
+      isEmpty,
+    );
+  });
 }
