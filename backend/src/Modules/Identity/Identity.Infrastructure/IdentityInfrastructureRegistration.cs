@@ -51,7 +51,8 @@ public static class IdentityInfrastructureRegistration
         services.AddOptions<AccountPurgeOptions>().BindConfiguration(AccountPurgeOptions.SectionName);
         services.AddHostedService<AccountPurgeWorker>();
 
-        services.AddDataProtection().SetApplicationName("Nirengi").PersistKeysToDbContext<IdentityDbContext>();
+        services.AddDataProtection().SetApplicationName("Nirengi").PersistKeysToDbContext<IdentityDbContext>()
+            .ProtectKeysWithConfiguredCertificates(configuration);
         return services;
     }
 

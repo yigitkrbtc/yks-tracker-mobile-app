@@ -105,13 +105,20 @@ Sıklık: ilk üç ay ayda bir, sonra üç ayda bir. Healthchecks "restore-drill
 Her sırrın çevrimdışı kopyası parola yöneticisindedir (sunucu kaybında geri yazmak için).
 
 Genel döndürme adımları:
-1. Yeni değeri üret (örn. `openssl rand -base64 64`; sertifika için F2 kartı 2'deki komut).
+1. Yeni değeri üret (örn. `openssl rand -base64 64`; sertifika için aşağıdaki **Data Protection sertifikası** maddesi).
 2. Dosyayı yaz (`install -m 0400 -o <uid>`), parola yöneticisini güncelle.
 3. `sudo /opt/nirengi/bin/deploy.sh <mevcut sürüm>` (yeniden başlatma).
 4. `/health/ready` ve bir giriş denemesi.
 
 Özel durumlar:
 - **HashKey:** yalnız sızıntıda. Önce bekleyen kimlik postalarını boşalt (`SELECT count(*) FROM identity.outbox_messages WHERE processed_at IS NULL` sıfıra inene dek bekle), sonra döndür.
+- **Data Protection sertifikası:** RSA 3072, özel anahtarıyla PFX, tek satır base64 (API daha azını açılışta reddeder):
+  ```bash
+  openssl req -x509 -newkey rsa:3072 -sha256 -days 3650 -nodes -subj /CN=nirengi-dataprotection -keyout dp.key -out dp.crt
+  openssl pkcs12 -export -inkey dp.key -in dp.crt -passout pass:"$DP_PFX_PASSWORD" | base64 -w0 > DataProtection__Certificate
+  shred -u dp.key dp.crt
+  ```
+  Tüm sertifikalar (güncel ve `PreviousCertificates__N`) tek `DataProtection__CertificatePassword` ile açılır: döndürmede parola aynı kalır. Parola değişecekse eski PFX'ler yeni parolayla yeniden paketlenir (`openssl pkcs12 -in eski.pfx -nodes | openssl pkcs12 -export -passout pass:"$YENI"`). Döndürme: eski değeri sıradaki boş `DataProtection__PreviousCertificates__N` dosyasına taşı, yenisini `DataProtection__Certificate`'e yaz; eskiler hiç silinmez (TOTP sırları onlarla korunmuş anahtarlarda kalır).
 - **DB parolası:** `ALTER ROLE ... PASSWORD` → bağlantı dizesi dosyası → yeniden başlat.
 - **CI dağıtım anahtarı:** yeni anahtar çifti, `authorized_keys`'te eskisini değiştir, GitHub sırrını güncelle.
 - **GHCR jetonu:** süresi dolmadan yenisi, `docker login ghcr.io`.

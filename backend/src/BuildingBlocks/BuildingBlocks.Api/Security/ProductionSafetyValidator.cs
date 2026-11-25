@@ -12,7 +12,8 @@ public sealed class ProductionSafetyOptions;
 /// Production start-up guard (security audit G12). A production-like host (any environment but Development and Testing, see
 /// <see cref="RuntimeEnvironment"/>) fails fast, before it serves a request, when
 /// (1) no proxy or network is listed under <c>ForwardedHeaders</c>: client IPs, and so every per-IP rate limit, would be the
-/// proxy's own address or spoofable through X-Forwarded-For, and (2) a secret is one of the development keys that are
+/// proxy's own address or spoofable through X-Forwarded-For, (2) the connection string turns on error detail, (3) no
+/// certificate encrypts the Data Protection key ring, and (4) a secret is one of the development keys that are
 /// public in the repository. Messages name the setting, never the value.
 /// </summary>
 internal sealed partial class ProductionSafetyValidator(IHostEnvironment environment, IConfiguration configuration) : IValidateOptions<ProductionSafetyOptions>
@@ -33,6 +34,11 @@ internal sealed partial class ProductionSafetyValidator(IHostEnvironment environ
         if (ErrorDetailOn().IsMatch(configuration.GetConnectionString("Database") ?? string.Empty))
         {
             failures.Add("ConnectionStrings:Database must not set 'Include Error Detail=true' in Production; PostgresException messages would carry row values such as e-mail addresses.");
+        }
+
+        if (string.IsNullOrWhiteSpace(configuration["DataProtection:Certificate"]))
+        {
+            failures.Add("DataProtection:Certificate must hold the base64 PFX that encrypts the Data Protection key ring in Production; otherwise a database dump exposes the keys that protect admin TOTP secrets (ADR-0022).");
         }
 
         failures.AddRange(DevelopmentSecrets.InUse(configuration).Select(key => $"{key} is the development key from the repository; set a real secret for Production."));

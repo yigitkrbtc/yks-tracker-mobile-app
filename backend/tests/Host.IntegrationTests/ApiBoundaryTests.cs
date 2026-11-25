@@ -276,6 +276,8 @@ public sealed class ApiBoundaryTests(NirengiApiFactory factory)
         factory.WithWebHostBuilder(b =>
         {
             b.UseEnvironment(environment);
+            b.UseSetting("DataProtection:Certificate", TestDataProtectionCertificate.Base64Pfx.Value);
+            b.UseSetting("DataProtection:CertificatePassword", TestDataProtectionCertificate.Password);
             foreach (var (key, value) in settings)
             {
                 b.UseSetting(key, value);
