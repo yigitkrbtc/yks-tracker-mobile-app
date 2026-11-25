@@ -38,12 +38,17 @@ void main() {
       expect(o.enablePrintBreadcrumbs, isFalse);
     });
 
-    test('yerel (Android) SDK ve çökme yakalama kapalı', () {
-      expect(o.autoInitializeNativeSdk, isFalse);
-      expect(o.enableNativeCrashHandling, isFalse);
-      expect(o.anrEnabled, isFalse);
-      expect(o.enableAutoNativeBreadcrumbs, isFalse);
-    });
+    // Yerel SDK Android'de taşıma katmanıdır (FileSystemTransport → captureEnvelope); başlatılmazsa
+    // olay sessizce düşer. Yalnız Dart'ın süzdüğü zarfı iletir; kendi topladıkları kapalıdır.
+    test(
+      'yerel SDK yalnız taşıma için açık, çökme/ANR/kırıntı/oturum kapalı',
+      () {
+        expect(o.autoInitializeNativeSdk, isTrue);
+        expect(o.enableNativeCrashHandling, isFalse);
+        expect(o.anrEnabled, isFalse);
+        expect(o.enableAutoNativeBreadcrumbs, isFalse);
+      },
+    );
 
     test('olay ve kırıntı süzgeçleri bağlı', () async {
       final event = SentryEvent(user: SentryUser(id: 'u1'));
@@ -64,6 +69,23 @@ void main() {
       release: 'nirengi-mobile@0.0.0+0',
     );
     expect(reporter, isA<NoErrorReporter>());
+    expect(Sentry.isEnabled, isFalse);
+  });
+
+  test('bozuk DSN uygulamayı düşürmez, telemetri kapalı kalır', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    for (final dsn in [
+      'not-a-dsn',
+      'https://key@o1.ingest.de.sentry.io',
+      '"https://key@o1.ingest.de.sentry.io/1"',
+    ]) {
+      final reporter = await startTelemetry(
+        dsn: dsn,
+        environment: 'production',
+        release: 'nirengi-mobile@0.0.0+0',
+      );
+      expect(reporter, isA<NoErrorReporter>(), reason: dsn);
+    }
     expect(Sentry.isEnabled, isFalse);
   });
 

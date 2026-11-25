@@ -188,7 +188,102 @@ void main() {
     );
   });
 
+  test('SQL ifadesi ve parametreleri istisna metninden atılır', () {
+    final e = scrubEvent(
+      SentryEvent(
+        exceptions: [
+          SentryException(
+            type: 'SqliteException',
+            value:
+                'SqliteException(1555): UNIQUE constraint failed: entries.id\n'
+                '  Causing statement: INSERT INTO entries VALUES (?, ?), '
+                'parameters: 7, Babamla konuştum',
+          ),
+        ],
+        message: SentryMessage('kayıt yazılamadı Causing statement: x'),
+      ),
+    )!;
+
+    expect(
+      e.exceptions!.single.value,
+      'SqliteException(1555): UNIQUE constraint failed: entries.id',
+    );
+    expect(e.message!.formatted, 'kayıt yazılamadı');
+  });
+
+  test('istisna zinciri (mechanism) korunur', () {
+    final e = scrubEvent(
+      SentryEvent(
+        exceptions: [
+          SentryException(
+            type: 'StateError',
+            value: 'x',
+            mechanism: Mechanism(
+              type: 'chained',
+              exceptionId: 1,
+              parentId: 0,
+              isExceptionGroup: true,
+              source: 'cause',
+              data: const {'gizli': email},
+            ),
+          ),
+        ],
+      ),
+    )!;
+
+    final m = e.exceptions!.single.mechanism!;
+    expect(
+      [m.type, m.exceptionId, m.parentId, m.isExceptionGroup, m.source],
+      ['chained', 1, 0, true, 'cause'],
+    );
+    expect(jsonEncode(e.toJson()), isNot(contains(email)));
+  });
+
+  test('istisnasız olayda iş parçacığı yığını süzülerek kalır', () {
+    final e = scrubEvent(
+      SentryEvent(
+        threads: [
+          SentryThread(
+            id: 1,
+            name: deviceName,
+            current: true,
+            crashed: true,
+            stacktrace: SentryStackTrace(
+              frames: [
+                SentryStackFrame(
+                  function: 'build',
+                  fileName: 'page.dart',
+                  lineNo: 7,
+                  vars: const {'not': 'gizli-not-govdesi'},
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    )!;
+
+    final t = e.threads!.single;
+    expect(t.current, isTrue);
+    expect(t.stacktrace!.frames.single.function, 'build');
+    final json = jsonEncode(e.toJson());
+    expect(json, isNot(contains(deviceName)));
+    expect(json, isNot(contains('gizli-not-govdesi')));
+  });
+
   group('maskPii', () {
+    test(
+      'Türkçe harfli, URL kodlu e-posta ve IPv4 eşlemeli IPv6 maskelenir',
+      () {
+        expect(maskPii('a çağrı@example.com b'), 'a [redacted] b');
+        expect(maskPii('a ayşe.yılmaz@gmail.com b'), 'a [redacted] b');
+        expect(maskPii('a user%40example.com b'), 'a [redacted] b');
+        final mapped = maskPii('a ::ffff:192.168.1.1 b');
+        expect(mapped, isNot(contains('192')));
+        expect(mapped, isNot(contains('168')));
+      },
+    );
+
     test('kısa sayılar ve olağan metin dokunulmaz kalır', () {
       expect(maskPii('soru 1234567 ve 3.14'), 'soru 1234567 ve 3.14');
     });
