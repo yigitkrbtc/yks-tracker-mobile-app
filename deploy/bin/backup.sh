@@ -21,11 +21,15 @@ install -d -m 0750 "$BACKUP_DIR"
 name="nirengi-$(date -u +%Y%m%dT%H%M%SZ)-$tag"
 partial="$BACKUP_DIR/.$name.partial"
 
-# The archive is listed while it is encrypted: an unreadable dump fails the run before anything is kept.
-compose exec -T postgres pg_dump -U postgres -d nirengi -Fc \
-  | tee >(age -R "$recipient" -o "$partial") \
-  | compose exec -T postgres pg_restore --list >/dev/null
-wait $! # the age process substitution
+# The archive is listed while it is encrypted: an unreadable dump fails the run before anything is kept. The lister
+# reads a copy of the stream through a FIFO so its exit status can be awaited (pipefail covers dump, tee and age).
+fifo=$(mktemp -u "$BACKUP_DIR/.fifo.XXXXXX")
+mkfifo -m 0600 "$fifo"
+trap 'rm -f "$fifo" "$partial" "$BACKUP_DIR/.$name.counts"' EXIT
+compose exec -T postgres pg_restore --list <"$fifo" >/dev/null &
+lister=$!
+compose exec -T postgres pg_dump -U postgres -d nirengi -Fc | tee "$fifo" | age -R "$recipient" -o "$partial"
+wait "$lister" || die "pg_restore --list could not read the dump"
 [[ -s $partial ]] || die "empty backup"
 
 # Row counts of the core tables at dump time (table names and numbers only).
