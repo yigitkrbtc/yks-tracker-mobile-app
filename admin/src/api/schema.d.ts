@@ -1200,6 +1200,8 @@ export interface components {
             /** Format: int64 */
             cursor: number | string;
             hasMore: boolean;
+            /** Format: uuid */
+            epoch: string;
         };
         /** @enum {unknown} */
         TaggingStatus: "None" | "Partial" | "Full";

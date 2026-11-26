@@ -68,4 +68,22 @@ class TopicProgressSyncHandler implements SyncHandler {
       }
     }
   }
+
+  @override
+  Future<void> requeueAll(Set<String> queued) async {
+    final rows = await (_db.select(
+      _db.topicProgressMarks,
+    )..where((m) => m.topicId.isNotIn(queued))).get();
+    for (final row in rows) {
+      await _outbox.enqueue(
+        entityType: entityType,
+        entityId: row.topicId,
+        operation: 'put',
+        payload: TopicProgressRecords.putPayload(
+          row.status,
+          row.clientModifiedAt,
+        ),
+      );
+    }
+  }
 }

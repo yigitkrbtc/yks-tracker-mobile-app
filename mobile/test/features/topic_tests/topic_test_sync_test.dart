@@ -91,6 +91,27 @@ void main() {
     });
   });
 
+  test('after a server restore the device sends its tests again', () async {
+    await repository.save(sample(id: 't1', note: 'tekrar'));
+    await repository.save(sample(id: 't2'));
+    await sync.sync();
+    final sent = Map.of(server.records);
+
+    server.restoreEmpty();
+    expect(await sync.sync(), SyncOutcome.done);
+
+    expect(server.records.keys, unorderedEquals(['t1', 't2']));
+    for (final id in ['t1', 't2']) {
+      expect(
+        withoutSeq(server.records[id]!),
+        withoutSeq(sent[id]!),
+        reason: id,
+      );
+    }
+    expect((await repository.get('t1'))!.syncStatus, SyncStatus.synced);
+    expect(await outbox.queuedCount(), 0);
+  });
+
   test('sync pushes, stores the server state and marks it synced', () async {
     await repository.save(sample());
 

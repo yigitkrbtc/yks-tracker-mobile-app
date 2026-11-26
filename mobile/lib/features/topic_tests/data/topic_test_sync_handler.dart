@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:drift/drift.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/network/api_problem.dart';
@@ -70,6 +71,28 @@ class TopicTestSyncHandler implements SyncHandler {
       if (!queued.contains(record['id'])) {
         await TopicTestRecords.storeServer(_db, record);
       }
+    }
+  }
+
+  /// A hidden (deleted) test always has its delete queued, so only visible ones are sent again.
+  @override
+  Future<void> requeueAll(Set<String> queued) async {
+    final rows = await (_db.select(
+      _db.topicTests,
+    )..where((t) => t.deleted.equals(false) & t.id.isNotIn(queued))).get();
+    for (final row in rows) {
+      final results = await (_db.select(
+        _db.topicTestResults,
+      )..where((r) => r.testId.equals(row.id))).get();
+      await _outbox.enqueue(
+        entityType: entityType,
+        entityId: row.id,
+        operation: 'put',
+        payload: TopicTestRecords.putPayload(
+          TopicTestRecords.fromRows(row, results, null),
+          row.clientModifiedAt,
+        ),
+      );
     }
   }
 

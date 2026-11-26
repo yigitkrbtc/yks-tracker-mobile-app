@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
+import 'package:drift/drift.dart' show Value;
 
 import '../database/app_database.dart';
 import '../network/api_problem.dart';
@@ -131,8 +132,12 @@ class SyncService {
     }
     var outcome = SyncOutcome.offline;
     try {
-      final allPushed = await _push(generation);
-      await _pull(generation);
+      var allPushed = await _push(generation);
+      if (await _pull(generation)) {
+        // The server's history was restored: send the records queued again, then catch up from the start.
+        allPushed = await _push(generation);
+        await _pull(generation);
+      }
       if (allPushed) {
         _clearBackoff();
         if (generation == _generation) {
@@ -200,8 +205,13 @@ class SyncService {
     return allPushed;
   }
 
-  Future<void> _pull(int generation) async {
-    var cursor = await _cursor();
+  /// True when the server's sync epoch changed: every local record was queued again and the cursor went back to
+  /// 0 (the feed was then read from the start), so the caller pushes once more.
+  Future<bool> _pull(int generation) async {
+    final stored = await _storedCursor();
+    var cursor = stored?.cursor ?? 0;
+    var epoch = stored?.epoch;
+    var requeued = false;
     while (true) {
       _ensureLive(generation);
       final Map<String, dynamic> body;
@@ -214,6 +224,22 @@ class SyncService {
       } on DioException {
         throw const _Transient();
       }
+      final served = body['epoch'] as String?;
+      if (served != null && epoch != null && served != epoch && !requeued) {
+        await _transaction(generation, () async {
+          for (final handler in _handlers.values) {
+            await handler.requeueAll(
+              await _outbox.queuedIds(handler.entityType),
+            );
+          }
+          await _saveCursor(0, served);
+        });
+        requeued = true;
+        epoch = served;
+        cursor = 0;
+        continue;
+      }
+      epoch = served ?? epoch;
       final next = body['cursor'] as int;
       await _transaction(generation, () async {
         for (final handler in _handlers.values) {
@@ -226,14 +252,10 @@ class SyncService {
             );
           }
         }
-        await _db
-            .into(_db.syncCursors)
-            .insertOnConflictUpdate(
-              SyncCursorsCompanion.insert(stream: feedStream, cursor: next),
-            );
+        await _saveCursor(next, epoch);
       });
       if (body['hasMore'] != true || next == cursor) {
-        return;
+        return requeued;
       }
       cursor = next;
     }
@@ -258,12 +280,19 @@ class SyncService {
     _retryAt = null;
   }
 
-  Future<int> _cursor() async {
-    final row = await (_db.select(
-      _db.syncCursors,
-    )..where((c) => c.stream.equals(feedStream))).getSingleOrNull();
-    return row?.cursor ?? 0;
-  }
+  Future<SyncCursorRow?> _storedCursor() => (_db.select(
+    _db.syncCursors,
+  )..where((c) => c.stream.equals(feedStream))).getSingleOrNull();
+
+  Future<void> _saveCursor(int cursor, String? epoch) => _db
+      .into(_db.syncCursors)
+      .insertOnConflictUpdate(
+        SyncCursorsCompanion.insert(
+          stream: feedStream,
+          cursor: cursor,
+          epoch: Value(epoch),
+        ),
+      );
 
   /// No answer, or one that says nothing about this write (signed out, rate limited, gateway down): stop the
   /// run and retry later.

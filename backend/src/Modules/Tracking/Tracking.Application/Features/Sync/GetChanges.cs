@@ -1,6 +1,7 @@
 using FluentValidation;
 using Nirengi.BuildingBlocks.Application.Messaging;
 using Nirengi.BuildingBlocks.Domain.Results;
+using Nirengi.Modules.Platform.Contracts;
 using Nirengi.Modules.Tracking.Application.Abstractions;
 using Nirengi.Modules.Tracking.Application.Features.MockExams;
 using Nirengi.Modules.Tracking.Application.Features.Progress;
@@ -17,12 +18,17 @@ public sealed record GetChangesQuery(Guid UserId, long Since, int Limit) : IQuer
 /// <summary>One page of the change feed; every record kind has its own list, all sharing one cursor.</summary>
 /// <param name="Cursor">Pass as <c>since</c> next time; unchanged when nothing new arrived.</param>
 /// <param name="HasMore">More changes are waiting; ask again right away with the new cursor.</param>
+/// <param name="Epoch">
+/// The server's sync epoch (ADR-0022 §4). When it differs from the one the device stored, a restore moved the feed
+/// back: the device resets its cursor to 0 and queues its records again.
+/// </param>
 public sealed record SyncResponse(
     IReadOnlyList<TopicTestResponse> TopicTests,
     IReadOnlyList<MockExamResponse> MockExams,
     IReadOnlyList<TopicProgressResponse> TopicProgress,
     long Cursor,
-    bool HasMore);
+    bool HasMore,
+    Guid Epoch);
 
 internal sealed class GetChangesValidator : AbstractValidator<GetChangesQuery>
 {
@@ -33,10 +39,13 @@ internal sealed class GetChangesValidator : AbstractValidator<GetChangesQuery>
     }
 }
 
-internal sealed class GetChangesHandler(ITopicTestRepository tests, IMockExamRepository exams, ITopicProgressRepository progress) : IQueryHandler<GetChangesQuery, SyncResponse>
+internal sealed class GetChangesHandler(ITopicTestRepository tests, IMockExamRepository exams, ITopicProgressRepository progress, ISyncEpoch epoch) : IQueryHandler<GetChangesQuery, SyncResponse>
 {
     public async Task<Result<SyncResponse>> Handle(GetChangesQuery query, CancellationToken cancellationToken)
     {
+        // Read first: a page is never newer than the epoch it is labelled with.
+        var currentEpoch = await epoch.Current(cancellationToken);
+
         // Every kind draws positions from one sequence: take the first `limit` positions across them.
         var topicTests = await tests.GetChanges(query.UserId, query.Since, query.Limit + 1, cancellationToken);
         var mockExams = await exams.GetChanges(query.UserId, query.Since, query.Limit + 1, cancellationToken);
@@ -54,6 +63,7 @@ internal sealed class GetChangesHandler(ITopicTestRepository tests, IMockExamRep
             [.. mockExams.Where(e => e.ChangeSeq <= last).Select(MockExamResponse.From)],
             [.. marks.Where(p => p.ChangeSeq <= last).Select(TopicProgressResponse.From)],
             last,
-            page.Count > query.Limit);
+            page.Count > query.Limit,
+            currentEpoch);
     }
 }

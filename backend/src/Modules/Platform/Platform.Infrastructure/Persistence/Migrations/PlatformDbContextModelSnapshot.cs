@@ -72,6 +72,18 @@ namespace Nirengi.Modules.Platform.Infrastructure.Persistence.Migrations
 
                     b.ToTable("outbox_messages", "platform");
                 });
+
+            modelBuilder.Entity("Nirengi.Modules.Platform.Infrastructure.Persistence.SyncEpochs.SyncEpochRow", b =>
+                {
+                    b.Property<Guid>("Epoch")
+                        .HasColumnType("uuid")
+                        .HasColumnName("epoch");
+
+                    b.HasKey("Epoch")
+                        .HasName("pk_sync_epoch");
+
+                    b.ToTable("sync_epoch", "platform");
+                });
 #pragma warning restore 612, 618
         }
     }
