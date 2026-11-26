@@ -28,6 +28,7 @@ if [[ ${2:-} != --yes ]]; then
   [[ $answer == RESTORE ]] || die "cancelled"
 fi
 
+take_lock 0
 stage=safety-backup
 # shellcheck disable=SC2317,SC2329 # EXIT trap
 finish() {

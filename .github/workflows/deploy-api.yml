@@ -1,0 +1,54 @@
+# Deploys a published API version to the VPS (ADR-0022 §2, F2 card 9). Manual: Actions → deploy-api → Run workflow.
+# The SSH key is forced to /opt/nirengi/bin/ci-entry on the server: it can only "deploy X.Y.Z" or "status".
+name: deploy-api
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "API version (X.Y.Z): its api-vX.Y.Z tag must have been released to GHCR"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    steps:
+      - name: Version is X.Y.Z and its tag exists
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          [[ $VERSION =~ ^[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}$ ]] || { echo "::error::version must look like 1.2.3"; exit 1; }
+          gh api "repos/$REPO/git/ref/tags/api-v$VERSION" >/dev/null || { echo "::error::tag api-v$VERSION does not exist"; exit 1; }
+
+      - name: Deploy over the restricted key
+        env:
+          VERSION: ${{ inputs.version }}
+          SSH_KEY: ${{ secrets.NIRENGI_DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.NIRENGI_DEPLOY_HOST }}
+          KNOWN_HOSTS: ${{ secrets.NIRENGI_DEPLOY_KNOWN_HOSTS }}
+          PORT: ${{ secrets.NIRENGI_DEPLOY_PORT }}
+        run: |
+          [[ -n $SSH_KEY && -n $HOST && -n $KNOWN_HOSTS ]] || { echo "::error::set NIRENGI_DEPLOY_SSH_KEY, NIRENGI_DEPLOY_HOST and NIRENGI_DEPLOY_KNOWN_HOSTS"; exit 1; }
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 0600 ~/.ssh/deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # -n: the runner's stdin never reaches the server. The server finishes a deploy even if this job is cancelled.
+          ssh=(ssh -n -p "${PORT:-22}" -i ~/.ssh/deploy -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 "deploy@$HOST")
+          status=0
+          "${ssh[@]}" "deploy $VERSION" || status=$?
+          echo "--- deploy-history"
+          "${ssh[@]}" status || true
+          rm -f ~/.ssh/deploy
+          exit $status

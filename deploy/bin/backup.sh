@@ -30,7 +30,11 @@ finish() {
 }
 trap finish EXIT
 
-hc_ping "${HC_BACKUP_URL:-}" start
+# The Healthchecks "backup" check watches the daily timer: other backups (pre-deploy, manual) only report failures,
+# so frequent deploys cannot hide a broken timer.
+if [[ $tag == daily ]]; then hc_ping "${HC_BACKUP_URL:-}" start; fi
+# Not while a restore replaces the database or a deploy migrates it.
+take_lock 1800
 install -d -m 0750 "$BACKUP_DIR" # keeps a setgid bit set for copy 2's reader (docs/isletim.md §2)
 compose up -d --wait --no-recreate postgres >/dev/null 2>&1 || true # after a reboot the timer may beat compose
 
@@ -74,16 +78,19 @@ mv "$BACKUP_DIR/.$name.counts" "$BACKUP_DIR/$name.counts"
 (cd "$BACKUP_DIR" && sha256sum "$name.dump.age" >"$name.dump.age.sha256")
 chmod 0640 "$BACKUP_DIR/$name".*
 
-# Retention (copy 1): 7 days of daily/manual; the 3 newest pre-* (deploy, restore); nothing older than 35 days.
+# Retention (copy 1): 7 days of daily/manual; the 3 newest of each pre-* kind (deploy, restore: a run of deploys
+# cannot push out the last safety copy taken before a restore); nothing older than 35 days.
 prune() { for f in "$@"; do rm -f "$f" "${f%.dump.age}.counts" "$f.sha256"; done; }
 mapfile -t old < <(find "$BACKUP_DIR" -maxdepth 1 -name 'nirengi-*.dump.age' ! -name '*-pre-*.dump.age' -mtime +6)
 prune "${old[@]}"
-mapfile -t pre < <(find "$BACKUP_DIR" -maxdepth 1 -name 'nirengi-*-pre-*.dump.age' -printf '%f\n' | sort -r | tail -n +4)
-prune "${pre[@]/#/$BACKUP_DIR/}"
+for kind in pre-deploy pre-restore; do
+  mapfile -t pre < <(find "$BACKUP_DIR" -maxdepth 1 -name "nirengi-*-$kind.dump.age" -printf '%f\n' | sort -r | tail -n +4)
+  prune "${pre[@]/#/$BACKUP_DIR/}"
+done
 mapfile -t ancient < <(find "$BACKUP_DIR" -maxdepth 1 -name 'nirengi-*.dump.age' -mtime +34)
 prune "${ancient[@]}"
 find "$BACKUP_DIR" -maxdepth 1 -name '.nirengi-*' -mmin +60 -delete
 
 log "backup $name.dump.age ($(du -h "$BACKUP_DIR/$name.dump.age" | cut -f1))"
-hc_ping "${HC_BACKUP_URL:-}"
+if [[ $tag == daily ]]; then hc_ping "${HC_BACKUP_URL:-}"; fi
 echo "$BACKUP_DIR/$name.dump.age"

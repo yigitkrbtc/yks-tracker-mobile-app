@@ -138,3 +138,60 @@ echo "restore: backup state back, newer objects gone, new sync epoch, safety bac
 "$repo/deploy/bin/diskcheck.sh"
 if DISK_THRESHOLD=0 "$repo/deploy/bin/diskcheck.sh" 2>/dev/null; then fail "diskcheck.sh did not alarm above the threshold"; fi
 echo "diskcheck: ok, alarms above the threshold"
+
+# --- Card 9: deploy.sh and ci-entry against the running stack. ---
+# Images exist only on this runner: the root-owned marker lets deploy.sh use them (never present on a server).
+sudo touch "$work/.allow-local-images"
+export DEPLOY_READY_TIMEOUT=90
+bump() { awk -F. '{print $1"."$2"."$3+1}' <<<"$1"; }
+running() { docker inspect -f '{{.Config.Image}}' "$(compose ps -q api)"; }
+last() { tail -1 deploy-history; }
+ready() { curl -sk --max-time 5 --resolve "$host:443:127.0.0.1" "https://$host/health/ready" || true; }
+image_with_entry() { # image_with_entry <tag> <shell script run for every start; $1 is --migrate for migrate>
+  printf 'FROM ghcr.io/%s/nirengi-api:%s\nENTRYPOINT ["sh", "-c", %s, "--"]\n' "$owner" "$version" \
+    "$(jq -Rn --arg s "$2" '$s')" | docker build -q -t "ghcr.io/$owner/nirengi-api:$1" - >/dev/null
+}
+
+next=$(bump "$version")
+docker tag "ghcr.io/$owner/nirengi-api:$version" "ghcr.io/$owner/nirengi-api:$next"
+"$repo/deploy/bin/deploy.sh" "$next" || fail "deploy.sh $next failed"
+grep -qx "NIRENGI_VERSION=$next" .env || fail ".env does not name $next after the deploy"
+[[ $(running) == "ghcr.io/$owner/nirengi-api:$next" ]] || fail "api does not run $next"
+[[ $(last) == *" $next "*" ok (was $version)" ]] || fail "deploy-history: $(last)"
+ls "$BACKUP_DIR"/*-pre-deploy.dump.age >/dev/null || fail "no pre-deploy backup"
+echo "deploy: $next running, pre-deploy backup, history ok"
+
+# A deploy while another holds the lock is refused and changes nothing.
+if flock "$work/.operations.lock" "$repo/deploy/bin/deploy.sh" "$next" 2>/dev/null; then fail "a second deploy ran under the lock"; fi
+[[ $(last) == *" $next "*" ok (was $version)" ]] || fail "the refused deploy wrote history: $(last)"
+
+# A version whose migration fails: nothing switches.
+nomigrate=$(bump "$next")
+# shellcheck disable=SC2016 # the script runs in the image, $1 is its argument
+image_with_entry "$nomigrate" 'if [ "$1" = --migrate ]; then exit 1; fi; exec dotnet Nirengi.Host.dll'
+if "$repo/deploy/bin/deploy.sh" "$nomigrate" 2>/dev/null; then fail "deploy.sh $nomigrate reported success"; fi
+grep -qx "NIRENGI_VERSION=$next" .env || fail ".env changed after a failed migration"
+[[ $(running) == "ghcr.io/$owner/nirengi-api:$next" ]] || fail "api changed after a failed migration"
+[[ $(last) == *" $nomigrate "*" migrate-failed (was $next)" ]] || fail "deploy-history: $(last)"
+echo "deploy: failed migration left $next running"
+
+# A version that migrates but never answers: deploy.sh goes back to the running one.
+broken=$(bump "$nomigrate")
+# shellcheck disable=SC2016
+image_with_entry "$broken" 'if [ "$1" = --migrate ]; then exec dotnet Nirengi.Host.dll --migrate; fi; sleep 3600'
+if DEPLOY_READY_TIMEOUT=20 "$repo/deploy/bin/deploy.sh" "$broken"; then fail "deploy.sh $broken reported success"; fi
+grep -qx "NIRENGI_VERSION=$next" .env || fail ".env was not put back to $next"
+[[ $(running) == "ghcr.io/$owner/nirengi-api:$next" ]] || fail "api does not run $next after the rollback"
+[[ $(last) == *" $broken "*" rolled-back (was $next)" ]] || fail "deploy-history: $(last)"
+[[ $(ready) == Healthy ]] || fail "not Healthy after the rollback"
+echo "deploy: unresponsive $broken rolled back to $next"
+
+# The CI key's forced command, through the real sudo (env_reset: /opt/nirengi is this run's directory).
+sudo ln -sfn "$work" /opt/nirengi
+for request in "deploy $next; touch /tmp/pwned" "deploy latest" "sh" "deploy $next extra" "deploy 0$next" "" "deploy $version"; do
+  if SSH_ORIGINAL_COMMAND=$request "$repo/deploy/bin/ci-entry" >/dev/null 2>&1; then fail "ci-entry accepted '$request'"; fi
+done
+SSH_ORIGINAL_COMMAND=status "$repo/deploy/bin/ci-entry" | grep -q " $next " || fail "ci-entry status"
+SSH_ORIGINAL_COMMAND="deploy $next" "$repo/deploy/bin/ci-entry" >/dev/null || fail "ci-entry deploy $next (sudo path)"
+[[ $(last) == *" $next "*" ok (was $next)" ]] || fail "deploy-history after ci-entry: $(last)"
+echo "ci-entry: 'deploy X.Y.Z' through sudo, 'status'; downgrades past the previous release and anything else refused"

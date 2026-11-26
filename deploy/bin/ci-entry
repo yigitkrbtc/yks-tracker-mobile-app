@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Forced command of the CI deploy key (ADR-0022 §2): authorized_keys
+#   command="/opt/nirengi/bin/ci-entry",restrict <key>
+# Accepts only "deploy X.Y.Z" and "status". A leaked key can deploy a version GHCR already has, and go back at
+# most to the previous successful release; older versions need the manual path (sudo deploy.sh on the server).
+set -euo pipefail
+here=$(dirname "$(readlink -f "$0")")
+# shellcheck source=deploy/bin/lib.sh
+. "$here/lib.sh"
+request=${SSH_ORIGINAL_COMMAND:-}
+history=$NIRENGI_DIR/deploy-history
+
+if [[ $request == status ]]; then
+  tail -n 5 "$history" 2>/dev/null || echo "no deploys yet"
+  exit 0
+fi
+version=${request#deploy }
+if [[ $request == "deploy $version" && $version =~ $VERSION_PATTERN ]]; then
+  # Successful releases, oldest first (a re-deploy of the same version counts once).
+  mapfile -t releases < <(awk '$4 ~ /^ok/ {print $2}' "$history" 2>/dev/null | awk '!seen[$0]++ {print} ' | tail -n 2)
+  latest=${releases[-1]:-}
+  previous=${releases[-2]:-}
+  if [[ -n $latest && $version != "$previous" && $(printf '%s\n%s\n' "$version" "$latest" | sort -V | head -1) != "$latest" ]]; then
+    echo "refused: $version is older than $latest and is not the previous release ($previous); use sudo deploy.sh on the server" >&2
+    exit 2
+  fi
+  exec /usr/bin/sudo -n "$here/deploy.sh" "$version"
+fi
+echo "refused: only 'deploy X.Y.Z' and 'status' are allowed" >&2
+exit 2
