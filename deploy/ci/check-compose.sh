@@ -39,4 +39,24 @@ if [[ -n $leaky ]]; then
   fail=1
 fi
 
+# Nothing escapes the rules above or the host: no host network, privileged mode or Docker socket.
+escapes=$(jq -r '.services | to_entries[] | select(.value.network_mode == "host" or .value.privileged == true or ([.value.volumes[]?.source // ""] | any(test("docker.sock")))) | .key' <<<"$config")
+if [[ -n $escapes ]]; then
+  echo "::error::Host network, privileged mode or Docker socket on: $escapes"
+  fail=1
+fi
+
+# The API trusts exactly Caddy's fixed address, which lies outside the range Docker hands out.
+caddy_ip=$(jq -r '.services.caddy.networks.edge.ipv4_address // ""' <<<"$config")
+known=$(jq -r '.services.api.environment.ForwardedHeaders__KnownProxies__0 // ""' <<<"$config")
+range=$(jq -r '.networks.edge.ipam.config[0].ip_range // ""' <<<"$config")
+if [[ -z $caddy_ip || $caddy_ip != "$known" ]]; then
+  echo "::error::ForwardedHeaders__KnownProxies__0 ($known) must equal caddy's edge address ($caddy_ip)"
+  fail=1
+fi
+if [[ $range != 172.30.0.128/25 || ${caddy_ip##*.} -ge 128 ]]; then
+  echo "::error::caddy's address must lie outside the edge ip_range ($range)"
+  fail=1
+fi
+
 exit $fail

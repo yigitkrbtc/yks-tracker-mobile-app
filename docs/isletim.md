@@ -25,27 +25,29 @@ Sürüm geçmişi: `/opt/nirengi/deploy-history` (`zaman sürüm imaj-özeti son
 ## 2. Sunucu ilk kurulum (bir kez)
 
 1. VPS'i aç, yönetici kullanıcıyı oluştur, SSH'yi yalnız anahtara çevir, root girişini kapat.
-2. `sudo ./bootstrap.sh` ([`deploy/bin/bootstrap.sh`](../deploy/bin/bootstrap.sh)): Docker Engine + compose eklentisi, ufw (22, 80, 443/tcp, 443/udp), `unattended-upgrades` (yalnız güvenlik, 04:30 yeniden başlatma), saat dilimi UTC, `/opt/nirengi` dizinleri, `deploy` kullanıcısı (docker grubunda değil; sudoers yalnız `/opt/nirengi/bin/deploy.sh`).
+2. `sudo ./bootstrap.sh` ([`deploy/bin/bootstrap.sh`](../deploy/bin/bootstrap.sh)): Docker Engine + compose eklentisi, ufw (sshd'nin gerçek portu `limit` ile, 80, 443/tcp, 443/udp; sağlayıcı duvarında da 443/udp açılmalı), `unattended-upgrades` (Ubuntu güvenlik + Docker deposu, 04:30 yeniden başlatma), saat dilimi UTC, `/opt/nirengi` dizinleri, `deploy` kullanıcısı (docker grubunda değil; sudoers yalnız `/opt/nirengi/bin/deploy.sh`).
 3. `deploy` kullanıcısının `authorized_keys` satırı: `command="/opt/nirengi/bin/ci-entry",restrict <CI açık anahtarı>`.
 4. GHCR girişi (root): `docker login ghcr.io` (`read:packages` jetonu; süresi takvime yazılır).
-5. `deploy/compose.prod.yml`, `deploy/Caddyfile`, `deploy/sql/` ve `deploy/bin/` dosyalarını `/opt/nirengi/`'ye kopyala. Sırları bölüm 7'deki listeye göre `/opt/nirengi/secrets/` altına yaz (parolalar `openssl rand -hex 32`: bağlantı dizesinde kaçış gerektirmez), sahip ve izinleri ayarla:
+5. `deploy/compose.prod.yml`, `deploy/Caddyfile`, `deploy/sql/` ve `deploy/bin/` dosyalarını `/opt/nirengi/`'ye kopyala (`bin/` root sahipli, başkası yazamaz: `deploy.sh` sudo ile root çalışır). Sırları bölüm 7'deki düzene göre yaz; her konteynerin kendi dizini vardır ve dizindeki her dosya adıyla bir ayar olur. Parolalar `openssl rand -hex 32` (bağlantı dizesinde kaçış gerektirmez):
    ```bash
    cd /opt/nirengi/secrets
-   printf 'Host=postgres;Port=5432;Database=nirengi;Username=nirengi_app;Password=%s' "$(cat app_password)" > app_db_connection
-   printf 'Host=postgres;Port=5432;Database=nirengi;Username=nirengi_owner;Password=%s' "$(cat owner_password)" > owner_db_connection
-   chown 1654 app_db_connection owner_db_connection Jwt__SigningKey Identity__Security__HashKey \
-     DataProtection__Certificate DataProtection__CertificatePassword Smtp__Password   # APP_UID (api, migrate)
-   chown 70 postgres_password                                                         # postgres (alpine)
-   chmod 0400 *
+   openssl rand -hex 32 > owner_password; openssl rand -hex 32 > app_password; chmod 0400 owner_password app_password
+   openssl rand -hex 32 > postgres/postgres_password
+   printf 'Host=postgres;Port=5432;Database=nirengi;Username=nirengi_app;Password=%s' "$(cat app_password)" > api/ConnectionStrings__Database
+   printf 'Host=postgres;Port=5432;Database=nirengi;Username=nirengi_owner;Password=%s' "$(cat owner_password)" > migrate/ConnectionStrings__Database
+   # api/: Jwt__SigningKey, Identity__Security__HashKey, DataProtection__Certificate, DataProtection__CertificatePassword, Smtp__Password
+   chown -R 1654 api migrate && chown -R 70 postgres          # APP_UID (api, migrate), postgres (alpine)
+   chmod 0400 api/* migrate/* postgres/* && chmod 0500 api migrate postgres
    ```
-   SMTP henüz yoksa `Smtp__Password` boş dosya olur (compose eksik dosyayla açılmaz).
-6. `.env`'yi `.env.example`'dan doldur (`chmod 0600`).
-7. Postgres'i başlat, rolleri kur (tekrar çalıştırılabilir; parolayı da eşitler):
+   `Smtp__Password` sağlayıcı parola istemiyorsa boş dosya olur; SMTP sunucusu ve gönderen adresi `.env`'de zorunludur (API onlarsız açılmaz).
+6. `.env`'yi `.env.example`'dan doldur (`chmod 0600`). DNS'te yalnız A kaydı (AAAA yok: portlar IPv4'e bağlı; IPv6 istemciler tek adres gibi görünürdü).
+7. Postgres'i başlat, rolleri kur (tekrar çalıştırılabilir; parolaları da eşitler). Parolalar komut satırında değil ortamda geçer:
    ```bash
    cd /opt/nirengi
    docker compose -f compose.prod.yml up -d --wait postgres
-   docker compose -f compose.prod.yml exec -T postgres psql -U postgres -d nirengi \
-     -v owner_password="$(cat secrets/owner_password)" -v app_password="$(cat secrets/app_password)" -f /sql/00-roles.sql
+   NIRENGI_OWNER_PASSWORD=$(cat secrets/owner_password) NIRENGI_APP_PASSWORD=$(cat secrets/app_password) \
+     docker compose -f compose.prod.yml exec -T -e NIRENGI_OWNER_PASSWORD -e NIRENGI_APP_PASSWORD postgres \
+     psql -U postgres -d nirengi -f /sql/00-roles.sql
    ```
 8. İlk dağıtım: bölüm 3.
 9. DNS: `api.<alan>` A kaydı; posta kayıtları (SPF, DKIM, DMARC) bölüm 9.
@@ -109,14 +111,18 @@ Sıklık: ilk üç ay ayda bir, sonra üç ayda bir. Healthchecks "restore-drill
 
 | Sır (dosya adı `/opt/nirengi/secrets/`) | Kim okur | Döndürme etkisi |
 | --- | --- | --- |
-| `app_db_connection` → `ConnectionStrings__Database` (sahip 1654) | api | Yok (yeni parola + yeniden başlatma) |
-| `owner_db_connection` → `ConnectionStrings__Database` (sahip 1654) | migrate | Yok |
-| `app_password`, `owner_password` (root) | yalnız rol kurulumu (`00-roles.sql`) | Bağlantı dizesiyle birlikte |
-| `postgres_password` (sahip 70) | postgres (süper kullanıcı) | Yalnız ilk açılışta okunur; sonra `ALTER ROLE postgres` |
-| `Jwt__SigningKey` | api | Erişim jetonları (≤ 15 dk) geçersiz; istemci refresh ile sürer |
-| `Identity__Security__HashKey` | api | **Yıkıcı:** tüm refresh token'lar, kurtarma kodları, bekleyen kodlar ve kimlik postaları geçersiz; herkes yeniden giriş yapar |
-| `DataProtection__Certificate` (+ `__CertificatePassword`) | api | Eski sertifika `DataProtection__PreviousCertificates__N`'e taşınır, **silinmez** |
-| `Smtp__Password` | api | Yok |
+Düzen: `/opt/nirengi/secrets/` (0700 root) altında konteyner başına dizin (0500, okuyan konteynerin kullanıcısı: `api/` ve `migrate/` 1654, `postgres/` 70), dosyalar 0400. Dizin konteynerde `/run/secrets` olur; sonradan eklenen dosya (örn. `PreviousCertificates__0`) yeniden başlatmada okunur.
+
+| Sır (dosya) | Kim okur | Döndürme etkisi |
+| --- | --- | --- |
+| `api/ConnectionStrings__Database` | api | Yok (yeni parola + yeniden başlatma) |
+| `migrate/ConnectionStrings__Database` | migrate | Yok |
+| `owner_password`, `app_password` (kökte, root) | yalnız rol kurulumu (`00-roles.sql`) | Bağlantı dizesiyle birlikte |
+| `postgres/postgres_password` | postgres (süper kullanıcı) | Yalnız ilk açılışta okunur; sonra `ALTER ROLE postgres` |
+| `api/Jwt__SigningKey` | api | Erişim jetonları (≤ 15 dk) geçersiz; istemci refresh ile sürer |
+| `api/Identity__Security__HashKey` | api | **Yıkıcı:** tüm refresh token'lar, kurtarma kodları, bekleyen kodlar ve kimlik postaları geçersiz; herkes yeniden giriş yapar |
+| `api/DataProtection__Certificate` (+ `__CertificatePassword`) | api | Eski sertifika `DataProtection__PreviousCertificates__N`'e taşınır, **silinmez** |
+| `api/Smtp__Password` | api | Yok |
 | `age` açık anahtarı (`/opt/nirengi/backup.pub`) | backup.sh | Yeni yedekler yeni anahtarla; eski özel anahtar eski yedekler bitene dek (~35 gün) saklanır |
 
 Her sırrın çevrimdışı kopyası parola yöneticisindedir (sunucu kaybında geri yazmak için).
@@ -124,7 +130,7 @@ Her sırrın çevrimdışı kopyası parola yöneticisindedir (sunucu kaybında 
 Genel döndürme adımları:
 1. Yeni değeri üret (örn. `openssl rand -base64 64`; sertifika için aşağıdaki **Data Protection sertifikası** maddesi).
 2. Dosyayı yaz (`install -m 0400 -o <uid>`), parola yöneticisini güncelle.
-3. `sudo /opt/nirengi/bin/deploy.sh <mevcut sürüm>` (yeniden başlatma).
+3. `docker compose -f /opt/nirengi/compose.prod.yml restart api` (dizin bağlı olduğu için yeni dosya yeniden başlatmada okunur).
 4. `/health/ready` ve bir giriş denemesi.
 
 Özel durumlar:

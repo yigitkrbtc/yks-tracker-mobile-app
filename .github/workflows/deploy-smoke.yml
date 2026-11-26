@@ -6,14 +6,16 @@ on:
     paths:
       - "deploy/**"
       - "backend/src/Host/Dockerfile"
-      - "backend/src/**/Migrations/**"
+      - "backend/src/**"
+      - "data/seed/**"
       - ".github/workflows/deploy-smoke.yml"
   push:
     branches: [main]
     paths:
       - "deploy/**"
       - "backend/src/Host/Dockerfile"
-      - "backend/src/**/Migrations/**"
+      - "backend/src/**"
+      - "data/seed/**"
       - ".github/workflows/deploy-smoke.yml"
   workflow_dispatch:
 

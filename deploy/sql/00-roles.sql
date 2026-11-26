@@ -1,8 +1,20 @@
--- Database roles (ADR-0022 §3). Run once as the postgres superuser, idempotent:
---   docker compose -f compose.prod.yml exec -T postgres psql -U postgres -d nirengi \
---     -v owner_password="$(cat secrets/owner_password)" -v app_password="$(cat secrets/app_password)" -f /sql/00-roles.sql
+-- Database roles (ADR-0022 §3). Run once as the postgres superuser; idempotent (re-running also resets passwords).
+-- Passwords come from the caller's environment, never the command line (docs/isletim.md §2):
+--   NIRENGI_OWNER_PASSWORD=$(cat secrets/owner_password) NIRENGI_APP_PASSWORD=$(cat secrets/app_password) \
+--     docker compose -f compose.prod.yml exec -T -e NIRENGI_OWNER_PASSWORD -e NIRENGI_APP_PASSWORD postgres \
+--     psql -U postgres -d nirengi -f /sql/00-roles.sql
 -- nirengi_owner owns schemas and tables (migrate only); nirengi_app reads and writes rows (the API, seed included).
 \set ON_ERROR_STOP on
+\getenv owner_password NIRENGI_OWNER_PASSWORD
+\getenv app_password NIRENGI_APP_PASSWORD
+\if :{?owner_password}
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'NIRENGI_OWNER_PASSWORD is not set'; END $$;
+\endif
+\if :{?app_password}
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'NIRENGI_APP_PASSWORD is not set'; END $$;
+\endif
 
 SELECT format('CREATE ROLE nirengi_owner LOGIN PASSWORD %L', :'owner_password')
 WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'nirengi_owner') \gexec

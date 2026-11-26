@@ -1,5 +1,6 @@
 # Production on one VPS (ADR-0022 §1). Lives at /opt/nirengi/compose.prod.yml next to .env, Caddyfile, sql/ and
-# secrets/. Only Caddy publishes ports (Docker bypasses ufw for published ports; CI enforces the rule).
+# secrets/. Only Caddy publishes ports (Docker bypasses ufw for published ports; CI enforces the rule), on IPv4
+# only: IPv6 clients would reach Caddy through docker-proxy as one gateway address (no AAAA record).
 #   docker compose -f compose.prod.yml up -d                 # caddy, api, postgres
 #   docker compose -f compose.prod.yml run --rm migrate      # one-off migrations (deploy.sh does this)
 name: nirengi
@@ -17,10 +18,16 @@ services:
     image: caddy:2.11.8-alpine
     restart: unless-stopped
     logging: *logging
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+      - "0.0.0.0:443:443/udp"
     environment:
       NIRENGI_API_HOST: ${NIRENGI_API_HOST:?set in .env}
       ACME_EMAIL: ${ACME_EMAIL:?set in .env}
@@ -44,7 +51,9 @@ services:
       - ALL
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      AllowedHosts: ${NIRENGI_API_HOST}
+      # localhost: the image's HEALTHCHECK (--health-probe) calls http://localhost:8080. Caddy forwards only its
+      # own site, so no outside request arrives with that host.
+      AllowedHosts: "${NIRENGI_API_HOST};localhost"
       # Caddy's fixed address on `edge`: only it may set X-Forwarded-For (ADR-0022 §1).
       ForwardedHeaders__KnownProxies__0: 172.30.0.10
       Database__MigrateOnStartup: "false"
@@ -52,26 +61,16 @@ services:
       Clients__MinimumVersion: ${CLIENTS_MINIMUM_VERSION:-}
       Sentry__Dsn: ${SENTRY_DSN:-}
       Sentry__Environment: production
-      Smtp__Host: ${SMTP_HOST:-}
+      Smtp__Host: ${SMTP_HOST:?set in .env}
       Smtp__Port: ${SMTP_PORT:-587}
       Smtp__Security: ${SMTP_SECURITY:-StartTls}
       Smtp__Username: ${SMTP_USERNAME:-}
-      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:-}
+      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:?set in .env}
       Smtp__FromName: ${SMTP_FROM_NAME:-Nirengi}
-    # Files under /run/secrets become settings (KeyPerFile, ADR-0022): the target is the setting name.
-    secrets:
-      - source: app_db_connection
-        target: ConnectionStrings__Database
-      - source: jwt_signing_key
-        target: Jwt__SigningKey
-      - source: identity_hash_key
-        target: Identity__Security__HashKey
-      - source: dp_certificate
-        target: DataProtection__Certificate
-      - source: dp_certificate_password
-        target: DataProtection__CertificatePassword
-      - source: smtp_password
-        target: Smtp__Password
+    # Every file in secrets/api becomes a setting named after it (KeyPerFile, ADR-0022), including ones added later
+    # (DataProtection__PreviousCertificates__N); a restart picks changes up.
+    volumes:
+      - ./secrets/api:/run/secrets:ro
     networks:
       - edge
       - db
@@ -91,9 +90,8 @@ services:
     command: ["--migrate"]
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-    secrets:
-      - source: owner_db_connection
-        target: ConnectionStrings__Database
+    volumes:
+      - ./secrets/migrate:/run/secrets:ro
     networks:
       - db
     depends_on:
@@ -104,18 +102,20 @@ services:
     image: postgres:17.11-alpine
     restart: unless-stopped
     logging: *logging
+    security_opt:
+      - no-new-privileges:true
     shm_size: 256m
     environment:
       POSTGRES_DB: nirengi
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
-    secrets:
-      - postgres_password
     volumes:
+      - ./secrets/postgres:/run/secrets:ro
       - pgdata:/var/lib/postgresql/data
       - ./sql:/sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d nirengi"]
+      # Over TCP: during first initialisation the temporary server listens on the socket only.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d nirengi"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -136,22 +136,5 @@ volumes:
   caddy_data:
   caddy_config:
 
-# /opt/nirengi/secrets: directory 0700 root, files 0400. Owner: the reading container's user
-# (api/migrate APP_UID 1654, postgres 70). docs/isletim.md §7.
-secrets:
-  app_db_connection:
-    file: ./secrets/app_db_connection
-  owner_db_connection:
-    file: ./secrets/owner_db_connection
-  postgres_password:
-    file: ./secrets/postgres_password
-  jwt_signing_key:
-    file: ./secrets/Jwt__SigningKey
-  identity_hash_key:
-    file: ./secrets/Identity__Security__HashKey
-  dp_certificate:
-    file: ./secrets/DataProtection__Certificate
-  dp_certificate_password:
-    file: ./secrets/DataProtection__CertificatePassword
-  smtp_password:
-    file: ./secrets/Smtp__Password
+# Secrets: /opt/nirengi/secrets/{api,migrate,postgres}, one directory per reading container (0500, owned by its
+# user: api and migrate APP_UID 1654, postgres 70), files 0400. docs/isletim.md §7.
