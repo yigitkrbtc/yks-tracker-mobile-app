@@ -15,9 +15,12 @@ public static partial class SentryScrubber
     private const string Redacted = "[redacted]";
     private static readonly HashSet<string> AllowedTags = ["route", "method", "status"];
 
-    /// <summary>Replaces e-mail, IPv4/IPv6, JWT-like tokens and runs of 8+ digits with <c>[redacted]</c>.</summary>
+    /// <summary>
+    /// Replaces e-mail, GUIDs (record ids in paths), IPv4/IPv6, JWT-like tokens and runs of 8+ digits with
+    /// <c>[redacted]</c>.
+    /// </summary>
     public static string Mask(string text) =>
-        LongDigits().Replace(Ipv6().Replace(Ipv4().Replace(Jwt().Replace(Email().Replace(text, Redacted), Redacted), Redacted), Redacted), Redacted);
+        LongDigits().Replace(Ipv6().Replace(Ipv4().Replace(Guid().Replace(Jwt().Replace(Email().Replace(text, Redacted), Redacted), Redacted), Redacted), Redacted), Redacted);
 
     public static SentryEvent? ScrubEvent(SentryEvent e)
     {
@@ -48,8 +51,8 @@ public static partial class SentryScrubber
 
         if (e.Message is { } message)
         {
-            // The template ("User {Id} failed") carries no values; the formatted text and parameters do.
-            e.Message = new SentryMessage { Message = message.Message, Formatted = MaskOrNull(message.Formatted) };
+            // A real template ("User {Id} failed") is unchanged by masking; an interpolated one is not a template.
+            e.Message = new SentryMessage { Message = MaskOrNull(message.Message), Formatted = MaskOrNull(message.Formatted) };
         }
 
         e.SentryExceptions = e.SentryExceptions?.Select(ScrubException).ToList();
@@ -145,7 +148,11 @@ public static partial class SentryScrubber
     [GeneratedRegex(@"eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+")]
     private static partial Regex Jwt();
 
-    [GeneratedRegex(@"\b(?:\d{1,3}\.){3}\d{1,3}\b")]
+    [GeneratedRegex(@"\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\b")]
+    private static partial Regex Guid();
+
+    // Assembly versions ("Version=10.0.0.0") are not addresses.
+    [GeneratedRegex(@"(?<!Version=)\b(?:\d{1,3}\.){3}\d{1,3}\b")]
     private static partial Regex Ipv4();
 
     // Full form (8 groups) or a compressed one with "::"; times (12:30:45) and file:line:column do not match.

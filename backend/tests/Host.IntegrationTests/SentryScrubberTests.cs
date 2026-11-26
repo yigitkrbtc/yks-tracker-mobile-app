@@ -54,6 +54,8 @@ public sealed class SentryScrubberTests
         e.Tags.ShouldBe(new Dictionary<string, string> { ["route"] = "/v1/topic-tests/{id}", ["method"] = "PUT", ["status"] = "500" });
         e.Message!.Formatted.ShouldBe("Kullanıcı [redacted] [redacted] için hata");
         e.Message.Message.ShouldBe("Kullanıcı {Email} {Ip} için hata");
+        SentryScrubber.ScrubEvent(new SentryEvent { Message = new SentryMessage { Message = $"interpolated {Email}" } })!
+            .Message!.Message.ShouldBe("interpolated [redacted]");
         e.Extra.ShouldBeEmpty();
         e.Modules.ShouldBeEmpty();
 
@@ -101,6 +103,8 @@ public sealed class SentryScrubberTests
     [InlineData("a fe80::1 b", "a [redacted] b")]
     [InlineData("12:30:45 SaveTopicTest.cs:42:7", "12:30:45 SaveTopicTest.cs:42:7")]
     [InlineData("soru 1234567 ve 3.14", "soru 1234567 ve 3.14")]
+    [InlineData("HTTP PUT /v1/topic-tests/0198c2a4-7d1e-7b3a-9f00-123456789abc responded 500", "HTTP PUT /v1/topic-tests/[redacted] responded 500")]
+    [InlineData("Could not load Npgsql, Version=10.0.0.0, Culture=neutral", "Could not load Npgsql, Version=10.0.0.0, Culture=neutral")]
     public void Mask_hides_addresses_and_keeps_ordinary_text(string input, string expected) =>
         SentryScrubber.Mask(input).ShouldBe(expected);
 

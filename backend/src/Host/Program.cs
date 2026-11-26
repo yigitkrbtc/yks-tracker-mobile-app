@@ -24,29 +24,7 @@ if (Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider")
     builder.Configuration.AddInMemoryCollection(OpenApiBuildSecrets.Values);
 }
 
-// Error tracking (ADR-0022 §5): only with a DSN. Error logs become events, warnings and up breadcrumbs.
-var errorTracking = SentryTelemetry.IsEnabled(builder.Configuration) && !migrateOnly;
-if (errorTracking)
-{
-    var version = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0";
-    builder.WebHost.UseSentry(o => SentryTelemetry.Configure(o, builder.Configuration, version));
-}
-
-builder.Host.UseSerilog((context, logger) =>
-{
-    logger
-        .ReadFrom.Configuration(context.Configuration)
-        .Enrich.FromLogContext()
-        .WriteTo.Console();
-    if (errorTracking)
-    {
-        logger.WriteTo.Sentry(o =>
-        {
-            o.MinimumEventLevel = Serilog.Events.LogEventLevel.Error;
-            o.MinimumBreadcrumbLevel = Serilog.Events.LogEventLevel.Warning;
-        });
-    }
-});
+var errorTracking = SentryTelemetry.AddLoggingAndErrorTracking(builder, migrateOnly);
 
 builder.Services.AddProblemDetails();
 builder.Services.ConfigureHttpJsonOptions(o =>
@@ -70,6 +48,10 @@ foreach (var module in ModuleCatalog.All)
 }
 
 var app = builder.Build();
+if (errorTracking)
+{
+    SentryTelemetry.StartEarly(app);
+}
 
 if (migrateOnly)
 {
