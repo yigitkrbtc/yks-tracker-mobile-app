@@ -31,6 +31,8 @@ x86/
 [Aa][Rr][Mm]64/
 bld/
 [Bb]in/
+# deploy/bin holds the server scripts (ADR-0022), not build output.
+!deploy/bin/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
