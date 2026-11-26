@@ -107,7 +107,10 @@ age-keygen -y "$work/age.key" > "$work/backup.pub"
 backup=$("$repo/deploy/bin/backup.sh" --tag manual)
 [[ -s $backup && -s $backup.sha256 && -s ${backup%.dump.age}.counts ]] || fail "backup.sh left no archive, checksum or counts"
 (cd "$BACKUP_DIR" && sha256sum -c --quiet "$(basename "$backup").sha256") || fail "backup checksum"
-if age -d -i "$work/age.key" "$backup" | head -c 5 | grep -q PGDMP; then echo "backup: encrypted pg_dump archive"; else fail "backup is not an age-encrypted pg_dump archive"; fi
+age -d -i "$work/age.key" -o "$work/plain.dump" "$backup" || fail "backup does not decrypt with the key"
+[[ $(head -c 5 "$work/plain.dump") == PGDMP ]] || fail "backup is not a pg_dump custom archive"
+rm -f "$work/plain.dump"
+echo "backup: age-encrypted pg_dump archive"
 grep -q '^curriculum.topics [1-9]' "${backup%.dump.age}.counts" || fail "counts file lacks the curriculum"
 
 epoch_before=$(compose exec -T postgres psql -U postgres -d nirengi -tA -c 'SELECT epoch FROM platform.sync_epoch')
