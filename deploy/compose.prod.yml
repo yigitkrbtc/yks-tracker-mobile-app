@@ -1,0 +1,140 @@
+# Production on one VPS (ADR-0022 §1). Lives at /opt/nirengi/compose.prod.yml next to .env, Caddyfile, sql/ and
+# secrets/. Only Caddy publishes ports (Docker bypasses ufw for published ports; CI enforces the rule), on IPv4
+# only: IPv6 clients would reach Caddy through docker-proxy as one gateway address (no AAAA record).
+#   docker compose -f compose.prod.yml up -d                 # caddy, api, postgres
+#   docker compose -f compose.prod.yml run --rm migrate      # one-off migrations (deploy.sh does this)
+name: nirengi
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-api-image: &api-image ghcr.io/${NIRENGI_IMAGE_OWNER:?set in .env}/nirengi-api:${NIRENGI_VERSION:?set in .env}
+
+services:
+  caddy:
+    image: caddy:2.11.8-alpine
+    restart: unless-stopped
+    logging: *logging
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+      - "0.0.0.0:443:443/udp"
+    environment:
+      NIRENGI_API_HOST: ${NIRENGI_API_HOST:?set in .env}
+      ACME_EMAIL: ${ACME_EMAIL:?set in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      edge:
+        ipv4_address: 172.30.0.10
+    depends_on:
+      - api
+
+  api:
+    image: *api-image
+    restart: unless-stopped
+    logging: *logging
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # localhost: the image's HEALTHCHECK (--health-probe) calls http://localhost:8080. Caddy forwards only its
+      # own site, so no outside request arrives with that host.
+      AllowedHosts: "${NIRENGI_API_HOST};localhost"
+      # Caddy's fixed address on `edge`: only it may set X-Forwarded-For (ADR-0022 §1).
+      ForwardedHeaders__KnownProxies__0: 172.30.0.10
+      Database__MigrateOnStartup: "false"
+      Identity__AdminEmails__0: ${NIRENGI_ADMIN_EMAIL:?set in .env}
+      Clients__MinimumVersion: ${CLIENTS_MINIMUM_VERSION:-}
+      Sentry__Dsn: ${SENTRY_DSN:-}
+      Sentry__Environment: production
+      Smtp__Host: ${SMTP_HOST:?set in .env}
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__Security: ${SMTP_SECURITY:-StartTls}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:?set in .env}
+      Smtp__FromName: ${SMTP_FROM_NAME:-Nirengi}
+    # Every file in secrets/api becomes a setting named after it (KeyPerFile, ADR-0022), including ones added later
+    # (DataProtection__PreviousCertificates__N); a restart picks changes up.
+    volumes:
+      - ./secrets/api:/run/secrets:ro
+    networks:
+      - edge
+      - db
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  migrate:
+    image: *api-image
+    profiles: ["tools"]
+    restart: "no"
+    logging: *logging
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    command: ["--migrate"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    volumes:
+      - ./secrets/migrate:/run/secrets:ro
+    networks:
+      - db
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17.11-alpine
+    restart: unless-stopped
+    logging: *logging
+    security_opt:
+      - no-new-privileges:true
+    shm_size: 256m
+    environment:
+      POSTGRES_DB: nirengi
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    volumes:
+      - ./secrets/postgres:/run/secrets:ro
+      - pgdata:/var/lib/postgresql/data
+      - ./sql:/sql:ro
+    healthcheck:
+      # Over TCP: during first initialisation the temporary server listens on the socket only.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d nirengi"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - db
+
+networks:
+  edge:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          ip_range: 172.30.0.128/25
+  db:
+    internal: true
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
+
+# Secrets: /opt/nirengi/secrets/{api,migrate,postgres}, one directory per reading container (0500, owned by its
+# user: api and migrate APP_UID 1654, postgres 70), files 0400. docs/isletim.md §7.

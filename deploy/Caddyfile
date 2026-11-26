@@ -1,0 +1,22 @@
+# TLS termination and reverse proxy (ADR-0022 §1). Certificates via ACME; HTTP redirects to HTTPS.
+{
+	email {$ACME_EMAIL}
+}
+
+{$NIRENGI_API_HOST} {
+	encode zstd gzip
+
+	# The application enforces its own limits (64 KB, admin drafts 1 MB); this only stops oversized uploads early.
+	request_body {
+		max_size 2MB
+	}
+
+	# No trusted_proxies: Caddy replaces any client X-Forwarded-For with the address it sees.
+	reverse_proxy api:8080 {
+		# A deploy restarts the single API instance; requests wait instead of getting 502.
+		lb_try_duration 30s
+		lb_try_interval 250ms
+	}
+
+	header -Server
+}
