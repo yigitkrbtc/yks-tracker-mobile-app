@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nirengi/core/database/app_database.dart';
 import 'package:nirengi/core/network/api_problem.dart';
@@ -9,12 +12,24 @@ import 'package:nirengi/core/sync/sync_service.dart';
 import '../support/sync_fakes.dart';
 
 class RecordingHandler implements SyncHandler {
+  RecordingHandler(this._outbox);
+
+  final OutboxStore _outbox;
+
+  /// Ids of the records this fake device holds.
+  final local = <String>[];
+
+  /// Edit time each local record carries in its put body.
+  static const localModifiedAt = '2026-10-30T10:00:00.000Z';
+  final requeuedWith = <Set<String>>[];
   final pushed = <String>[];
   final rejected = <String>[];
   final applied = <List<Map<String, dynamic>>>[];
   final queuedSeen = <Set<String>>[];
   Future<void> Function(OutboxRow item)? duringPush;
   Exception? applyError;
+  Future<void> Function()? duringApply;
+  Future<void> Function()? duringRequeue;
 
   @override
   String get entityType => 'thing';
@@ -47,6 +62,28 @@ class RecordingHandler implements SyncHandler {
     }
     applied.add(records);
     queuedSeen.add(queued);
+    await duringApply?.call();
+  }
+
+  @override
+  String recordId(Map<String, dynamic> record) => record['id'] as String;
+
+  @override
+  Future<void> requeueAll(Set<String> queued) async {
+    requeuedWith.add(queued);
+    final during = duringRequeue;
+    duringRequeue = null;
+    for (final id in local) {
+      if (!queued.contains(id)) {
+        await _outbox.enqueue(
+          entityType: entityType,
+          entityId: id,
+          operation: 'put',
+          payload: {'id': id, 'clientModifiedAt': localModifiedAt},
+        );
+      }
+    }
+    await during?.call();
   }
 }
 
@@ -62,7 +99,7 @@ void main() {
     db = memoryDatabase();
     outbox = OutboxStore(db);
     api = FakeApi();
-    handler = RecordingHandler();
+    handler = RecordingHandler(outbox);
     now = DateTime.utc(2026, 10, 31, 12);
     service = SyncService(db, outbox, api.dio, [handler], now: () => now);
   });
@@ -362,5 +399,256 @@ void main() {
     api.route = (r) => r.method == 'PUT' ? FakeApi.json(200, {}) : feed(r);
     expect(await service.sync(), SyncOutcome.done);
     expect(handler.pushed, ['a']);
+  });
+
+  group('sync epoch (ADR-0022 §4)', () {
+    ResponseBody epochFeed(RequestOptions r, String? epoch, {int cursor = 0}) =>
+        FakeApi.json(200, {
+          'things': <Object>[],
+          'cursor': cursor,
+          'hasMore': false,
+          'epoch': ?epoch,
+        });
+
+    Future<SyncCursorRow?> stored() => (db.select(
+      db.syncCursors,
+    )..where((c) => c.stream.equals(SyncService.feedStream))).getSingleOrNull();
+
+    test(
+      'the first epoch seen is stored and nothing is queued again',
+      () async {
+        handler.local.add('a');
+        api.route = (r) => epochFeed(r, 'e1', cursor: 7);
+
+        expect(await service.sync(), SyncOutcome.done);
+
+        expect(handler.requeuedWith, isEmpty);
+        expect(await outbox.queuedCount(), 0);
+        final row = await stored();
+        expect([row?.cursor, row?.epoch], [7, 'e1']);
+      },
+    );
+
+    test('a new epoch resets the cursor and sends every local record again in the same run', () async {
+      handler.local.addAll(['a', 'b']);
+      api.route = (r) => epochFeed(r, 'e1', cursor: 7);
+      await service.sync();
+
+      await queue('b');
+      api.requests.clear();
+      var restoredPage = false;
+      api.route = (r) {
+        if (r.method == 'PUT') {
+          // The server refuses b for good: it stays parked, not queued again.
+          return r.uri.path.endsWith('/b')
+              ? FakeApi.json(400, {'type': 'validation.failed'})
+              : FakeApi.json(200, {});
+        }
+        restoredPage = true;
+        return epochFeed(r, 'e2', cursor: 2);
+      };
+
+      expect(await service.sync(), SyncOutcome.done);
+
+      expect(restoredPage, isTrue);
+      expect(
+        handler.requeuedWith,
+        [
+          {'b'},
+        ],
+        reason:
+            'a record with a queued (here parked) write is not queued again',
+      );
+      expect(api.calls, [
+        'PUT /v1/things/b',
+        'GET /v1/sync?since=7&limit=500',
+        'GET /v1/sync?since=0&limit=500',
+        'PUT /v1/things/a',
+        'GET /v1/sync?since=2&limit=500',
+      ]);
+      expect(handler.applied, isEmpty);
+      expect(handler.rejected, ['b']);
+      expect((await outbox.pushable()), isEmpty);
+      final row = await stored();
+      expect([row?.cursor, row?.epoch], [2, 'e2']);
+    });
+
+    test('the same epoch, or a feed without one, queues nothing', () async {
+      handler.local.add('a');
+      api.route = (r) => epochFeed(r, 'e1', cursor: 3);
+      await service.sync();
+
+      api.route = (r) => epochFeed(r, 'e1', cursor: 4);
+      await service.sync();
+      api.route = (r) => epochFeed(r, null, cursor: 5);
+      await service.sync();
+
+      expect(handler.requeuedWith, isEmpty);
+      final row = await stored();
+      expect([row?.cursor, row?.epoch], [5, 'e1']);
+    });
+  });
+
+  group('sync epoch: sending only what the restored server lacks', () {
+    ResponseBody page(
+      String epoch, {
+      int cursor = 0,
+      bool hasMore = false,
+      List<Map<String, Object?>> things = const [],
+    }) => FakeApi.json(200, {
+      'things': things,
+      'cursor': cursor,
+      'hasMore': hasMore,
+      'epoch': epoch,
+    });
+
+    Future<void> firstEpoch(String epoch, {int cursor = 7}) async {
+      api.route = (r) => page(epoch, cursor: cursor);
+      await service.sync();
+      api.requests.clear();
+    }
+
+    test('records the restored server already has (same or newer) are not sent again', () async {
+      handler.local.addAll(['same', 'newer', 'older', 'missing']);
+      await firstEpoch('e1');
+      api.route = (r) {
+        if (r.method == 'PUT') {
+          return FakeApi.json(200, {});
+        }
+        return page(
+          'e2',
+          cursor: 4,
+          things: [
+            {'id': 'same', 'clientModifiedAt': '2026-10-30T10:00:00Z'},
+            {'id': 'newer', 'clientModifiedAt': '2026-10-30T11:00:00Z'},
+            {'id': 'older', 'clientModifiedAt': '2026-10-30T09:00:00Z'},
+          ],
+        );
+      };
+
+      expect(await service.sync(), SyncOutcome.done);
+
+      expect(
+        api.calls.where((c) => c.startsWith('PUT')),
+        unorderedEquals(['PUT /v1/things/older', 'PUT /v1/things/missing']),
+      );
+      expect(handler.applied.first.map((r) => r['id']), [
+        'same',
+        'newer',
+        'older',
+      ]);
+      expect(handler.queuedSeen.first, {
+        'older',
+        'missing',
+      }, reason: 'pruned records take the server state');
+      expect(await outbox.queuedCount(), 0);
+    });
+
+    test('a write made after the requeue is never pruned', () async {
+      handler.local.add('a');
+      await firstEpoch('e1');
+      api.route = (r) {
+        if (r.method == 'PUT') {
+          return FakeApi.offline(r);
+        }
+        return page(
+          'e2',
+          cursor: 4,
+          things: [
+            {'id': 'a', 'clientModifiedAt': '2026-10-30T12:00:00Z'},
+          ],
+        );
+      };
+      // The student edits a while the restored feed is being read: the requeued write is replaced.
+      handler.duringRequeue = () => queue('a');
+
+      await service.sync();
+
+      final item = await outbox.find('thing', 'a');
+      expect(item, isNotNull);
+      expect(item!.revision, 1);
+    });
+
+    test('an epoch change on a later page restarts the feed from 0', () async {
+      handler.local.add('a');
+      await firstEpoch('e1', cursor: 1);
+      api.route = (r) {
+        if (r.method == 'PUT') {
+          return FakeApi.json(200, {});
+        }
+        final since = r.uri.queryParameters['since'];
+        return since == '1'
+            ? page('e1', cursor: 3, hasMore: true)
+            : page('e2', cursor: 2);
+      };
+
+      expect(await service.sync(), SyncOutcome.done);
+
+      expect(api.calls, [
+        'GET /v1/sync?since=1&limit=500',
+        'GET /v1/sync?since=3&limit=500',
+        'GET /v1/sync?since=0&limit=500',
+        'PUT /v1/things/a',
+        'GET /v1/sync?since=2&limit=500',
+      ]);
+    });
+
+    test(
+      'a device that synced before epochs existed sends its records once',
+      () async {
+        handler.local.add('a');
+        await db
+            .into(db.syncCursors)
+            .insert(
+              SyncCursorsCompanion.insert(
+                stream: SyncService.feedStream,
+                cursor: 900,
+              ),
+            );
+        api.route = (r) =>
+            r.method == 'PUT' ? FakeApi.json(200, {}) : page('e1', cursor: 5);
+
+        expect(await service.sync(), SyncOutcome.done);
+
+        expect(api.calls, [
+          'GET /v1/sync?since=900&limit=500',
+          'GET /v1/sync?since=0&limit=500',
+          'PUT /v1/things/a',
+          'GET /v1/sync?since=5&limit=500',
+        ]);
+      },
+    );
+
+    test(
+      'a write that failed earlier in the run is not retried in it',
+      () async {
+        await firstEpoch('e1');
+        await queue('x');
+        api.route = (r) =>
+            r.method == 'PUT' ? FakeApi.json(500, null) : page('e2', cursor: 1);
+
+        expect(await service.sync(), SyncOutcome.offline);
+
+        expect(api.calls.where((c) => c == 'PUT /v1/things/x'), hasLength(1));
+      },
+    );
+  });
+
+  test('a version 3 database keeps its cursor and has no epoch yet', () async {
+    final dir = await Directory.systemTemp.createTemp('nirengi-v4');
+    addTearDown(() => dir.delete(recursive: true));
+    final file = File('${dir.path}/app.sqlite');
+    final v3 = AppDatabase(NativeDatabase(file));
+    await v3
+        .into(v3.syncCursors)
+        .insert(SyncCursorsCompanion.insert(stream: 'main', cursor: 42));
+    await v3.customStatement('ALTER TABLE sync_cursors DROP COLUMN epoch');
+    await v3.customStatement('PRAGMA user_version = 3');
+    await v3.close();
+
+    final v4 = AppDatabase(NativeDatabase(file));
+    addTearDown(v4.close);
+    final row = await v4.select(v4.syncCursors).getSingle();
+    expect([row.cursor, row.epoch], [42, null]);
   });
 }

@@ -148,6 +148,9 @@ class SyncCursors extends Table {
   TextColumn get stream => text()();
   IntColumn get cursor => integer()();
 
+  /// The server's sync epoch the cursor belongs to (ADR-0022 §4); null until a server that sends one answered.
+  TextColumn get epoch => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {stream};
 }
@@ -181,7 +184,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -195,6 +198,10 @@ class AppDatabase extends _$AppDatabase {
       if (from < 3) {
         // S6: topic progress marks.
         await m.createTable(topicProgressMarks);
+      }
+      if (from < 4) {
+        // F2: sync epoch next to the cursor.
+        await m.addColumn(syncCursors, syncCursors.epoch);
       }
     },
     beforeOpen: (details) async {

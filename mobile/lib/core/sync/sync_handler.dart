@@ -27,4 +27,12 @@ abstract interface class SyncHandler {
     List<Map<String, dynamic>> records,
     Set<String> queued,
   );
+
+  /// The record's id in a change feed entry (matches [OutboxRow.entityId]).
+  String recordId(Map<String, dynamic> record);
+
+  /// Inside a transaction, when the server's sync epoch changed (a restore moved its history back, ADR-0022 §4):
+  /// queues a put of every record this device holds, skipping ids in [queued] (their write is queued already).
+  /// The server merges them by last-writer-wins, so records it already has are left as they are.
+  Future<void> requeueAll(Set<String> queued);
 }

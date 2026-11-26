@@ -74,6 +74,22 @@ class FakeTrackingServer {
   var feed = <Map<String, dynamic>>[];
   var reject = false;
 
+  /// Sync epoch the feed carries (ADR-0022 §4).
+  var epoch = 'epoch-1';
+
+  /// A database restore to an empty backup: records and sequence go back, the epoch is renewed.
+  void restoreEmpty() => restore(const {}, seq: 0);
+
+  /// A database restore to a backup holding [backup] (topic tests by id) at sequence [seq].
+  void restore(Map<String, Map<String, dynamic>> backup, {required int seq}) {
+    records
+      ..clear()
+      ..addAll(backup);
+    exams.clear();
+    this.seq = seq;
+    epoch = 'epoch-${DateTime.now().microsecondsSinceEpoch}';
+  }
+
   ResponseBody handle(RequestOptions r) {
     final path = r.uri.path;
     if (r.method == 'GET' && path == '/v1/sync') {
@@ -90,6 +106,7 @@ class FakeTrackingServer {
         ],
         'cursor': seq,
         'hasMore': false,
+        'epoch': epoch,
       });
     }
     final id = path.split('/').last;
@@ -158,6 +175,21 @@ class FakeTrackingServer {
     return FakeApi.json(204, null);
   }
 }
+
+/// A stored record without its server-assigned change position (it differs after a restore).
+Map<String, dynamic> withoutSeq(Map<String, dynamic> record) =>
+    Map.of(record)..remove('changeSeq');
+
+/// A mock exam body with its sections in code order (the API keys them by code; their order means nothing).
+Map<String, dynamic> sortedSections(Map<String, dynamic> exam) => {
+  ...exam,
+  'sections': [...exam['sections'] as List<dynamic>]
+    ..sort(
+      (a, b) => ((a as Map)['sectionCode'] as String).compareTo(
+        (b as Map)['sectionCode'] as String,
+      ),
+    ),
+};
 
 /// The first topic row of a stored test record.
 Map<String, dynamic> firstResult(Map<String, dynamic> record) =>

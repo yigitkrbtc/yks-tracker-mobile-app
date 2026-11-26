@@ -72,7 +72,7 @@ Ne zaman: veri bozulması, DB kaybı, sunucu kaybı. Hedef süre (RTO): 2 saat. 
 
 1. Kullanılacak yedeği seç (kopya 1, yoksa kopya 2), SHA-256'yı doğrula.
 2. Özel `age` anahtarını sunucuya geçici kopyala (`/root/restore.key`, 0400).
-3. `sudo /opt/nirengi/bin/restore.sh <dosya>` (F2 kartı 8): API'yi durdurur, çözer, `pg_restore --clean --if-exists --no-owner --role=nirengi_owner`, `migrate`, senkron dönemini (`platform.sync_epoch`) yeniler, API'yi başlatır.
+3. `sudo /opt/nirengi/bin/restore.sh <dosya>` (F2 kartı 8): API'yi durdurur, çözer, `pg_restore --clean --if-exists --no-owner --role=nirengi_owner`, `migrate`, senkron dönemini yeniler (`UPDATE platform.sync_epoch SET epoch = gen_random_uuid()`), API'yi başlatır. Yeni dönemi gören cihaz imlecini 0'a çeker, elindeki kayıtları yeniden gönderir (sunucu LWW ile birleştirir). Sunucuda aynı ya da daha yeni hâli olan kayıtlar yeniden gönderilmez; yalnız yedekte olmayanlar gider. Sınırlar: yedek anından sonra silinip silmesi eşitlenmiş kayıtlar cihazda iz bırakmadığı için geri gelir (kullanıcı yeniden silebilir); kaybolan eski bir kayıt bugünkü kurallarla (365 günlük tarih penceresi, emekli konu/kaynak) reddedilip cihazda "reddedildi" olarak kalabilir. Dönem yenilemesi atlanırsa (betik dışı elle `pg_restore`) kayıp sessiz olur: geri yükleme yalnız `restore.sh` ile yapılır.
 4. Özel anahtarı sil: `shred -u /root/restore.key`.
 5. `/health/ready` = `Healthy`; admin girişi (Data Protection sertifikası doğruysa TOTP çalışır; sertifika kayıpsa admin TOTP'yi yeniden kurar).
 6. Yedek anından sonra silinmiş hesapları yeniden sil: o aralıktaki `UserDeleted` log satırlarından kullanıcı kimliklerini al, silmeyi tekrar çalıştır (komut F2 kartı 8'de).

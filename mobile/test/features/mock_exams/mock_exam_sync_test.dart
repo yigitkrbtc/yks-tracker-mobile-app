@@ -127,6 +127,18 @@ void main() {
     });
   });
 
+  test('after a server restore the device sends its exams again', () async {
+    await repository.save(sample());
+    await sync.sync();
+    final sent = sortedSections(withoutSeq(server.exams['e1']!));
+
+    server.restoreEmpty();
+    expect(await sync.sync(), SyncOutcome.done);
+
+    expect(sortedSections(withoutSeq(server.exams['e1']!)), sent);
+    expect((await repository.get('e1'))!.syncStatus, SyncStatus.synced);
+  });
+
   test('sync pushes, stores the server state and marks it synced', () async {
     await repository.save(sample());
 
@@ -245,6 +257,9 @@ void main() {
           );
           d.execute(
             "INSERT INTO topic_tests (id, studied_on, is_repeat, client_modified_at) VALUES ('t1', '2026-10-30', 0, 1)",
+          );
+          d.execute(
+            'CREATE TABLE sync_cursors (stream TEXT NOT NULL PRIMARY KEY, cursor INTEGER NOT NULL)',
           );
           d.execute('PRAGMA user_version = 1');
         },

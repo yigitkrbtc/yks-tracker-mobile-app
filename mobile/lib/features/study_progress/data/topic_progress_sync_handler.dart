@@ -19,6 +19,9 @@ class TopicProgressSyncHandler implements SyncHandler {
   String get entityType => topicProgressEntity;
 
   @override
+  String recordId(Map<String, dynamic> record) => record['topicId'] as String;
+
+  @override
   String get feedKey => 'topicProgress';
 
   @override
@@ -66,6 +69,24 @@ class TopicProgressSyncHandler implements SyncHandler {
       if (!queued.contains(record['topicId'])) {
         await TopicProgressRecords.storeServer(_db, record);
       }
+    }
+  }
+
+  @override
+  Future<void> requeueAll(Set<String> queued) async {
+    final rows = await (_db.select(
+      _db.topicProgressMarks,
+    )..where((m) => m.topicId.isNotIn(queued))).get();
+    for (final row in rows) {
+      await _outbox.enqueue(
+        entityType: entityType,
+        entityId: row.topicId,
+        operation: 'put',
+        payload: TopicProgressRecords.putPayload(
+          row.status,
+          row.clientModifiedAt,
+        ),
+      );
     }
   }
 }

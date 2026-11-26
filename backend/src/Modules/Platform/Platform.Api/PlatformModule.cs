@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nirengi.BuildingBlocks.Api.Modules;
-using Nirengi.BuildingBlocks.Infrastructure;
 using Nirengi.Modules.Platform.Api.Endpoints;
 using Nirengi.Modules.Platform.Infrastructure;
 
@@ -14,11 +13,7 @@ public sealed class PlatformModule : IModule
 
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddModuleInfrastructure<PlatformDbContext>(
-            configuration,
-            PlatformDbContext.SchemaName,
-            Application.AssemblyReference.Assembly,
-            publishesEvents: false);
+        services.AddPlatformInfrastructure(configuration);
     }
 
     public void MapEndpoints(IEndpointRouteBuilder v1)

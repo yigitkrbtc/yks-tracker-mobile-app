@@ -3727,8 +3727,17 @@ class $SyncCursorsTable extends SyncCursors
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _epochMeta = const VerificationMeta('epoch');
   @override
-  List<GeneratedColumn> get $columns => [stream, cursor];
+  late final GeneratedColumn<String> epoch = GeneratedColumn<String>(
+    'epoch',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [stream, cursor, epoch];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -3757,6 +3766,12 @@ class $SyncCursorsTable extends SyncCursors
     } else if (isInserting) {
       context.missing(_cursorMeta);
     }
+    if (data.containsKey('epoch')) {
+      context.handle(
+        _epochMeta,
+        epoch.isAcceptableOrUnknown(data['epoch']!, _epochMeta),
+      );
+    }
     return context;
   }
 
@@ -3774,6 +3789,10 @@ class $SyncCursorsTable extends SyncCursors
         DriftSqlType.int,
         data['${effectivePrefix}cursor'],
       )!,
+      epoch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}epoch'],
+      ),
     );
   }
 
@@ -3786,17 +3805,29 @@ class $SyncCursorsTable extends SyncCursors
 class SyncCursorRow extends DataClass implements Insertable<SyncCursorRow> {
   final String stream;
   final int cursor;
-  const SyncCursorRow({required this.stream, required this.cursor});
+
+  /// The server's sync epoch the cursor belongs to (ADR-0022 §4); null until a server that sends one answered.
+  final String? epoch;
+  const SyncCursorRow({required this.stream, required this.cursor, this.epoch});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['stream'] = Variable<String>(stream);
     map['cursor'] = Variable<int>(cursor);
+    if (!nullToAbsent || epoch != null) {
+      map['epoch'] = Variable<String>(epoch);
+    }
     return map;
   }
 
   SyncCursorsCompanion toCompanion(bool nullToAbsent) {
-    return SyncCursorsCompanion(stream: Value(stream), cursor: Value(cursor));
+    return SyncCursorsCompanion(
+      stream: Value(stream),
+      cursor: Value(cursor),
+      epoch: epoch == null && nullToAbsent
+          ? const Value.absent()
+          : Value(epoch),
+    );
   }
 
   factory SyncCursorRow.fromJson(
@@ -3807,6 +3838,7 @@ class SyncCursorRow extends DataClass implements Insertable<SyncCursorRow> {
     return SyncCursorRow(
       stream: serializer.fromJson<String>(json['stream']),
       cursor: serializer.fromJson<int>(json['cursor']),
+      epoch: serializer.fromJson<String?>(json['epoch']),
     );
   }
   @override
@@ -3815,17 +3847,24 @@ class SyncCursorRow extends DataClass implements Insertable<SyncCursorRow> {
     return <String, dynamic>{
       'stream': serializer.toJson<String>(stream),
       'cursor': serializer.toJson<int>(cursor),
+      'epoch': serializer.toJson<String?>(epoch),
     };
   }
 
-  SyncCursorRow copyWith({String? stream, int? cursor}) => SyncCursorRow(
+  SyncCursorRow copyWith({
+    String? stream,
+    int? cursor,
+    Value<String?> epoch = const Value.absent(),
+  }) => SyncCursorRow(
     stream: stream ?? this.stream,
     cursor: cursor ?? this.cursor,
+    epoch: epoch.present ? epoch.value : this.epoch,
   );
   SyncCursorRow copyWithCompanion(SyncCursorsCompanion data) {
     return SyncCursorRow(
       stream: data.stream.present ? data.stream.value : this.stream,
       cursor: data.cursor.present ? data.cursor.value : this.cursor,
+      epoch: data.epoch.present ? data.epoch.value : this.epoch,
     );
   }
 
@@ -3833,44 +3872,51 @@ class SyncCursorRow extends DataClass implements Insertable<SyncCursorRow> {
   String toString() {
     return (StringBuffer('SyncCursorRow(')
           ..write('stream: $stream, ')
-          ..write('cursor: $cursor')
+          ..write('cursor: $cursor, ')
+          ..write('epoch: $epoch')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(stream, cursor);
+  int get hashCode => Object.hash(stream, cursor, epoch);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is SyncCursorRow &&
           other.stream == this.stream &&
-          other.cursor == this.cursor);
+          other.cursor == this.cursor &&
+          other.epoch == this.epoch);
 }
 
 class SyncCursorsCompanion extends UpdateCompanion<SyncCursorRow> {
   final Value<String> stream;
   final Value<int> cursor;
+  final Value<String?> epoch;
   final Value<int> rowid;
   const SyncCursorsCompanion({
     this.stream = const Value.absent(),
     this.cursor = const Value.absent(),
+    this.epoch = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SyncCursorsCompanion.insert({
     required String stream,
     required int cursor,
+    this.epoch = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : stream = Value(stream),
        cursor = Value(cursor);
   static Insertable<SyncCursorRow> custom({
     Expression<String>? stream,
     Expression<int>? cursor,
+    Expression<String>? epoch,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (stream != null) 'stream': stream,
       if (cursor != null) 'cursor': cursor,
+      if (epoch != null) 'epoch': epoch,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3878,11 +3924,13 @@ class SyncCursorsCompanion extends UpdateCompanion<SyncCursorRow> {
   SyncCursorsCompanion copyWith({
     Value<String>? stream,
     Value<int>? cursor,
+    Value<String?>? epoch,
     Value<int>? rowid,
   }) {
     return SyncCursorsCompanion(
       stream: stream ?? this.stream,
       cursor: cursor ?? this.cursor,
+      epoch: epoch ?? this.epoch,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3896,6 +3944,9 @@ class SyncCursorsCompanion extends UpdateCompanion<SyncCursorRow> {
     if (cursor.present) {
       map['cursor'] = Variable<int>(cursor.value);
     }
+    if (epoch.present) {
+      map['epoch'] = Variable<String>(epoch.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3907,6 +3958,7 @@ class SyncCursorsCompanion extends UpdateCompanion<SyncCursorRow> {
     return (StringBuffer('SyncCursorsCompanion(')
           ..write('stream: $stream, ')
           ..write('cursor: $cursor, ')
+          ..write('epoch: $epoch, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -6730,12 +6782,14 @@ typedef $$SyncCursorsTableCreateCompanionBuilder =
     SyncCursorsCompanion Function({
       required String stream,
       required int cursor,
+      Value<String?> epoch,
       Value<int> rowid,
     });
 typedef $$SyncCursorsTableUpdateCompanionBuilder =
     SyncCursorsCompanion Function({
       Value<String> stream,
       Value<int> cursor,
+      Value<String?> epoch,
       Value<int> rowid,
     });
 
@@ -6755,6 +6809,11 @@ class $$SyncCursorsTableFilterComposer
 
   ColumnFilters<int> get cursor => $composableBuilder(
     column: $table.cursor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get epoch => $composableBuilder(
+    column: $table.epoch,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -6777,6 +6836,11 @@ class $$SyncCursorsTableOrderingComposer
     column: $table.cursor,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get epoch => $composableBuilder(
+    column: $table.epoch,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SyncCursorsTableAnnotationComposer
@@ -6793,6 +6857,9 @@ class $$SyncCursorsTableAnnotationComposer
 
   GeneratedColumn<int> get cursor =>
       $composableBuilder(column: $table.cursor, builder: (column) => column);
+
+  GeneratedColumn<String> get epoch =>
+      $composableBuilder(column: $table.epoch, builder: (column) => column);
 }
 
 class $$SyncCursorsTableTableManager
@@ -6828,20 +6895,24 @@ class $$SyncCursorsTableTableManager
               ({
                 Value<String> stream = const Value.absent(),
                 Value<int> cursor = const Value.absent(),
+                Value<String?> epoch = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SyncCursorsCompanion(
                 stream: stream,
                 cursor: cursor,
+                epoch: epoch,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String stream,
                 required int cursor,
+                Value<String?> epoch = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SyncCursorsCompanion.insert(
                 stream: stream,
                 cursor: cursor,
+                epoch: epoch,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

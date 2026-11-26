@@ -28,6 +28,7 @@ void main() {
   final stored = <String, Map<String, dynamic>>{};
   var seq = 0;
   var feed = <Map<String, dynamic>>[];
+  var epoch = 'epoch-1';
 
   setUp(() {
     db = memoryDatabase();
@@ -36,9 +37,15 @@ void main() {
     stored.clear();
     seq = 0;
     feed = [];
+    epoch = 'epoch-1';
     api.route = (r) {
       if (r.method == 'GET' && r.uri.path == '/v1/sync') {
-        final body = {'topicProgress': feed, 'cursor': seq, 'hasMore': false};
+        final body = {
+          'topicProgress': feed,
+          'cursor': seq,
+          'hasMore': false,
+          'epoch': epoch,
+        };
         feed = [];
         return FakeApi.json(200, body);
       }
@@ -76,6 +83,26 @@ void main() {
     await sync.dispose();
     outbox.dispose();
     await db.close();
+  });
+
+  test('after a server restore the device sends its marks again', () async {
+    await repository.mark('t1', ProgressStatus.inProgress);
+    await repository.mark('t2', ProgressStatus.done);
+    await sync.sync();
+    final sent = {
+      for (final e in stored.entries) e.key: e.value['clientModifiedAt'],
+    };
+
+    stored.clear();
+    seq = 0;
+    epoch = 'epoch-2';
+    expect(await sync.sync(), SyncOutcome.done);
+
+    expect({
+      for (final e in stored.entries) e.key: e.value['clientModifiedAt'],
+    }, sent);
+    expect(stored['t2']!['status'], 'Done');
+    expect(await outbox.queuedCount(), 0);
   });
 
   test(
@@ -295,6 +322,7 @@ void main() {
             ),
           );
       await v2.customStatement('DROP TABLE topic_progress_marks');
+      await v2.customStatement('ALTER TABLE sync_cursors DROP COLUMN epoch');
       await v2.customStatement('PRAGMA user_version = 2');
       await v2.close();
 

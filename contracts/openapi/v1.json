@@ -4858,7 +4858,8 @@
           "mockExams",
           "topicProgress",
           "cursor",
-          "hasMore"
+          "hasMore",
+          "epoch"
         ],
         "type": "object",
         "properties": {
@@ -4890,6 +4891,10 @@
           },
           "hasMore": {
             "type": "boolean"
+          },
+          "epoch": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },

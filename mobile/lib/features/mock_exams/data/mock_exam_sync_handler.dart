@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:drift/drift.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/network/api_problem.dart';
@@ -17,6 +18,9 @@ class MockExamSyncHandler implements SyncHandler {
 
   @override
   String get entityType => mockExamEntity;
+
+  @override
+  String recordId(Map<String, dynamic> record) => record['id'] as String;
 
   @override
   String get feedKey => 'mockExams';
@@ -69,6 +73,31 @@ class MockExamSyncHandler implements SyncHandler {
       if (!queued.contains(record['id'])) {
         await MockExamRecords.storeServer(_db, record);
       }
+    }
+  }
+
+  /// A hidden (deleted) exam always has its delete queued, so only visible ones are sent again.
+  @override
+  Future<void> requeueAll(Set<String> queued) async {
+    final rows = await (_db.select(
+      _db.mockExams,
+    )..where((e) => e.deleted.equals(false) & e.id.isNotIn(queued))).get();
+    for (final row in rows) {
+      final sections = await (_db.select(
+        _db.mockExamSections,
+      )..where((s) => s.examId.equals(row.id))).get();
+      final marks = await (_db.select(
+        _db.mockExamTopicMarks,
+      )..where((m) => m.examId.equals(row.id))).get();
+      await _outbox.enqueue(
+        entityType: entityType,
+        entityId: row.id,
+        operation: 'put',
+        payload: MockExamRecords.putPayload(
+          MockExamRecords.fromRows(row, sections, marks, null),
+          row.clientModifiedAt,
+        ),
+      );
     }
   }
 
