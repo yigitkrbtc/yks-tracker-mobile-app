@@ -13,8 +13,8 @@
 | Ters vekil | Caddy, [`deploy/Caddyfile`](../deploy/Caddyfile) | 80/443 tek açık port; `api.<alan>` |
 | Sır olmayan ayar | `/opt/nirengi/.env` ← [`deploy/.env.example`](../deploy/.env.example) | `NIRENGI_VERSION`, alan adı, Sentry DSN, `Clients__MinimumVersion`, SMTP sunucusu |
 | Sırlar | `/opt/nirengi/secrets/` (0700 root, dosyalar 0400) | Liste bölüm 7'de |
-| Betikler | `/opt/nirengi/bin/` ← `deploy/bin/` (F2 kartı 7, 8) | `deploy.sh`, `ci-entry`, `backup.sh`, `restore.sh`, `verify-restore.sh`, `diskcheck.sh` |
-| Zamanlayıcılar | systemd ← `deploy/systemd/` (F2 kartı 8) | `nirengi-backup.timer` 03:30 UTC, `nirengi-disk.timer` 15 dk |
+| Betikler | `/opt/nirengi/bin/` ← [`deploy/bin/`](../deploy/bin/) (`deploy.sh`, `ci-entry`: F2 kartı 9) | `deploy.sh`, `ci-entry`, `backup.sh`, `restore.sh`, `verify-restore.sh`, `diskcheck.sh` |
+| Zamanlayıcılar | systemd ← [`deploy/systemd/`](../deploy/systemd/) | `nirengi-backup.timer` 03:30 UTC, `nirengi-disk.timer` 15 dk |
 | Yedek kopya 1 | VPS `/var/backups/nirengi` | 7 günlük + son 3 dağıtım öncesi |
 | Yedek kopya 2 | Türkiye'de ikinci sağlayıcıdaki depolama sunucusu | 05:00 UTC'de çeker; 7 günlük + 4 haftalık |
 | İzleme | Sentry (AB), UptimeRobot, Healthchecks.io | Bölüm 8 |
@@ -51,8 +51,21 @@ Sürüm geçmişi: `/opt/nirengi/deploy-history` (`zaman sürüm imaj-özeti son
    ```
 8. İlk dağıtım: bölüm 3.
 9. DNS: `api.<alan>` A kaydı; posta kayıtları (SPF, DKIM, DMARC) bölüm 9.
-10. Zamanlayıcıları etkinleştir, Healthchecks.io ping adreslerini `.env`'ye yaz; bir yedeği elle tetikleyip ping'in geldiğini gör.
-11. Kopya 2 sunucusunu kur: salt okunur `rrsync` anahtarı, çekme zamanlayıcısı, kendi Healthchecks ping'i (F2 kartı 8).
+10. Yedek anahtarı ve zamanlayıcılar. `age` anahtar çiftini **kendi makinende** üret; sunucuya yalnız açık anahtar gider:
+    ```bash
+    age-keygen -o nirengi-backup.key          # özel anahtar: parola yöneticisi + kâğıt; sunucuya koyma
+    age-keygen -y nirengi-backup.key          # çıktıyı sunucuda /opt/nirengi/backup.pub dosyasına yaz
+    ```
+    Healthchecks.io'da `backup` (günlük, 26 sa tolerans), `disk` (15 dk) denetimlerini aç, ping adreslerini `.env`'ye yaz (`HC_BACKUP_URL`, `HC_DISK_URL`). Sonra:
+    ```bash
+    cp deploy/systemd/nirengi-backup.* deploy/systemd/nirengi-disk.* /etc/systemd/system/
+    systemctl daemon-reload && systemctl enable --now nirengi-backup.timer nirengi-disk.timer
+    sudo /opt/nirengi/bin/backup.sh --tag manual   # ping'in geldiğini gör
+    ```
+11. Kopya 2 sunucusu (Türkiye'de başka sağlayıcı):
+    - Orada bir anahtar çifti üret; açık anahtarı VPS'te yedek okuyucu bir kullanıcının `authorized_keys`'ine `command="rrsync -ro /var/backups/nirengi",restrict <anahtar>` olarak ekle (`/var/backups/nirengi` o kullanıcının grubuna okunur: `chgrp <grup> /var/backups/nirengi`, dosyalar 0640).
+    - Kopya 2'ye `deploy/bin/backup-pull.sh` → `/usr/local/bin/nirengi-backup-pull.sh`, `/etc/nirengi-pull.env`: `PULL_SOURCE=<kullanıcı>@<vps>:`, `PULL_DEST=/srv/nirengi-backups`, `PULL_SSH_KEY=<anahtar yolu>`, `HC_PULL_URL=<ping>`.
+    - `deploy/systemd/nirengi-backup-pull.*` → `/etc/systemd/system/`, `systemctl enable --now nirengi-backup-pull.timer`.
 
 ## 3. Dağıtım
 
@@ -79,7 +92,7 @@ Migration içeren sürümden önce: [ ] migration genişlet/daralt kuralına uyu
 
 ## 5. Yedekleme
 
-- Otomatik: her gün 03:30 UTC ve her dağıtımdan önce `backup.sh` (F2 kartı 8): `pg_dump -Fc` → `pg_restore --list` doğrulaması → `age` ile şifreleme → `/var/backups/nirengi`, SHA-256 dosyası, Healthchecks ping'i.
+- Otomatik: her gün 03:30 UTC (`nirengi-backup.timer`) ve her dağıtımdan önce `backup.sh`: `pg_dump -Fc` → `pg_restore --list` doğrulaması → `age` ile şifreleme → `/var/backups/nirengi/nirengi-<UTC>-<etiket>.dump.age`, `.sha256` ve `.counts` (çekirdek tablo satır sayıları; prova karşılaştırır), Healthchecks başlangıç/başarı/hata ping'i. Kopya 1 saklama: 7 gün + son 3 `pre-deploy`.
 - Elle: `sudo /opt/nirengi/bin/backup.sh --tag manual`.
 - Kopya 2 her gün 05:00'te çeker; çekmeyi sunucu değil kopya 2 başlatır.
 - `age` özel anahtarı sunucuda **yoktur**; parola yöneticisinde ve kâğıtta.
@@ -90,10 +103,10 @@ Ne zaman: veri bozulması, DB kaybı, sunucu kaybı. Hedef süre (RTO): 2 saat. 
 
 1. Kullanılacak yedeği seç (kopya 1, yoksa kopya 2), SHA-256'yı doğrula.
 2. Özel `age` anahtarını sunucuya geçici kopyala (`/root/restore.key`, 0400).
-3. `sudo /opt/nirengi/bin/restore.sh <dosya>` (F2 kartı 8): API'yi durdurur, çözer, `pg_restore --clean --if-exists --no-owner --role=nirengi_owner`, `migrate`, senkron dönemini yeniler (`UPDATE platform.sync_epoch SET epoch = gen_random_uuid()`), API'yi başlatır. Yeni dönemi gören cihaz imlecini 0'a çeker, elindeki kayıtları yeniden gönderir (sunucu LWW ile birleştirir). Sunucuda aynı ya da daha yeni hâli olan kayıtlar yeniden gönderilmez; yalnız yedekte olmayanlar gider. Sınırlar: yedek anından sonra silinip silmesi eşitlenmiş kayıtlar cihazda iz bırakmadığı için geri gelir (kullanıcı yeniden silebilir); kaybolan eski bir kayıt bugünkü kurallarla (365 günlük tarih penceresi, emekli konu/kaynak) reddedilip cihazda "reddedildi" olarak kalabilir. Dönem yenilemesi atlanırsa (betik dışı elle `pg_restore`) kayıp sessiz olur: geri yükleme yalnız `restore.sh` ile yapılır.
+3. `sudo /opt/nirengi/bin/restore.sh <dosya>` (onay için `RESTORE` yazılır; anahtar yolu `RESTORE_KEY` ile değişir): API'yi durdurur, çözer, `pg_restore --clean --if-exists --no-owner --role=nirengi_owner --single-transaction` (hata olursa canlı veri değişmez), `migrate`, senkron dönemini yeniler (`UPDATE platform.sync_epoch SET epoch = gen_random_uuid()`), API'yi başlatır. Yeni dönemi gören cihaz imlecini 0'a çeker, elindeki kayıtları yeniden gönderir (sunucu LWW ile birleştirir). Sunucuda aynı ya da daha yeni hâli olan kayıtlar yeniden gönderilmez; yalnız yedekte olmayanlar gider. Sınırlar: yedek anından sonra silinip silmesi eşitlenmiş kayıtlar cihazda iz bırakmadığı için geri gelir (kullanıcı yeniden silebilir); kaybolan eski bir kayıt bugünkü kurallarla (365 günlük tarih penceresi, emekli konu/kaynak) reddedilip cihazda "reddedildi" olarak kalabilir. Dönem yenilemesi atlanırsa (betik dışı elle `pg_restore`) kayıp sessiz olur: geri yükleme yalnız `restore.sh` ile yapılır.
 4. Özel anahtarı sil: `shred -u /root/restore.key`.
 5. `/health/ready` = `Healthy`; admin girişi (Data Protection sertifikası doğruysa TOTP çalışır; sertifika kayıpsa admin TOTP'yi yeniden kurar).
-6. Yedek anından sonra silinmiş hesapları yeniden sil: o aralıktaki `UserDeleted` log satırlarından kullanıcı kimliklerini al, silmeyi tekrar çalıştır (komut F2 kartı 8'de).
+6. Silinen hesaplar: yedek anından sonra kalıcı silinen hesaplar yedekte "silme istendi" durumunda ve eski tarihle durur; saatlik temizlik işi onları bir saat içinde yeniden siler, elle iş gerekmez. Yedek anından **sonra** istenen silmeler kaybolur (log kullanıcı kimliği taşımaz): o aralıkta hesabını silen biri hesabı açık görür, yeniden silmesi gerekir. Bu, RPO'nun (≤ 24 sa) kabul edilen sonucudur.
 7. Mobil istemciler yeni dönemi görünce kayıtlarını yeniden gönderir (F2 kartı 12); bir test cihazında kaydın geri geldiğini doğrula.
 
 Sunucu tümden kaybolduysa: bölüm 2'yi yeni VPS'te uygula, sırları parola yöneticisinden geri yaz, sonra bu bölüm; DNS'i yeni IP'ye çevir.
@@ -103,9 +116,14 @@ Sunucu tümden kaybolduysa: bölüm 2'yi yeni VPS'te uygula, sırları parola y�
 Sıklık: ilk üç ay ayda bir, sonra üç ayda bir. Healthchecks "restore-drill" denetimi kaçırılan provayı alarm yapar.
 
 1. Kopya 2'den en yeni yedeği kendi makinene indir (şifreli disk).
-2. `deploy/bin/verify-restore.sh <dosya>` (F2 kartı 8): yerelde PostgreSQL 17 + aynı sürüm imajı ayağa kaldırır, çözer, yükler; migration geçmişi, çekirdek tablo satır sayıları, `/health/ready` denetler; başarıda "restore-drill" ping'i atar.
+2. Üretimdeki sürümü `deploy-history`'nin son `ok` satırından al, sonra:
+   ```bash
+   HC_DRILL_URL=<restore-drill ping> deploy/bin/verify-restore.sh nirengi-....dump.age \
+     --identity nirengi-backup.key --image ghcr.io/<sahip>/nirengi-api:<X.Y.Z>
+   ```
+   Atılabilir bir PostgreSQL 17'ye yükler; yedeğin imajın şema sürümünde olduğunu (migrate uygulanacak bir şey bulmamalı), satır sayılarının `.counts` ile aynı olduğunu ve API'nin bu DB'ye karşı `Healthy` açıldığını denetler; başarıda ping atar.
 3. İndirilen dosyayı ve çözülmüş dökümü sil.
-4. Sonucu prova günlüğüne yaz (`/opt/nirengi/drill-history`; biçim F2 kartı 8).
+4. Sonuç satırı `~/nirengi-drill-history`'ye kendiliğinden yazılır (`zaman drill dosya imaj ok`; yol `DRILL_HISTORY` ile değişir).
 
 ## 7. Sırlar ve döndürme
 

@@ -98,3 +98,29 @@ privileges=$(compose exec -T -e PGPASSWORD="$app_pw" postgres psql -h 127.0.0.1 
   "SELECT current_user, has_database_privilege('nirengi','CREATE'), has_schema_privilege('platform','CREATE'), has_table_privilege('platform.sync_epoch','UPDATE')")
 [[ $privileges == "nirengi_app|f|f|t" ]] || fail "nirengi_app privileges are '$privileges', expected nirengi_app|f|f|t"
 echo "nirengi_app: DML only"
+
+# --- Card 8 scripts against the running stack (as on the server, with paths moved into $work). ---
+export NIRENGI_DIR=$work BACKUP_DIR=$work/backups DISK_THRESHOLD=99
+age-keygen -o "$work/age.key" 2>/dev/null
+age-keygen -y "$work/age.key" > "$work/backup.pub"
+
+backup=$("$repo/deploy/bin/backup.sh" --tag manual)
+[[ -s $backup && -s $backup.sha256 && -s ${backup%.dump.age}.counts ]] || fail "backup.sh left no archive, checksum or counts"
+(cd "$BACKUP_DIR" && sha256sum -c --quiet "$(basename "$backup").sha256") || fail "backup checksum"
+if age -d -i "$work/age.key" "$backup" | head -c 5 | grep -q PGDMP; then echo "backup: encrypted pg_dump archive"; else fail "backup is not an age-encrypted pg_dump archive"; fi
+grep -q '^curriculum.topics [1-9]' "${backup%.dump.age}.counts" || fail "counts file lacks the curriculum"
+
+epoch_before=$(compose exec -T postgres psql -U postgres -d nirengi -tA -c 'SELECT epoch FROM platform.sync_epoch')
+RESTORE_KEY=$work/age.key "$repo/deploy/bin/restore.sh" "$backup" --yes
+epoch_after=$(compose exec -T postgres psql -U postgres -d nirengi -tA -c 'SELECT epoch FROM platform.sync_epoch')
+[[ -n $epoch_after && $epoch_after != "$epoch_before" ]] || fail "restore.sh did not renew the sync epoch"
+privileges=$(compose exec -T postgres psql -h 127.0.0.1 -U nirengi_app -d nirengi -tA -c \
+  "SELECT has_schema_privilege('platform','CREATE'), has_table_privilege('platform.sync_epoch','UPDATE')")
+[[ $privileges == "f|t" ]] || fail "after restore nirengi_app privileges are '$privileges'"
+body=$(curl -sk --max-time 5 --resolve "$host:443:127.0.0.1" "https://$host/health/ready" || true)
+[[ $body == Healthy ]] || fail "not Healthy after restore ($body)"
+echo "restore: Healthy, new sync epoch, DML-only app role"
+
+"$repo/deploy/bin/verify-restore.sh" "$backup" --identity "$work/age.key" --image "ghcr.io/$owner/nirengi-api:$version"
+"$repo/deploy/bin/diskcheck.sh"
+echo "diskcheck: ok"

@@ -52,6 +52,13 @@ APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 CONF
 
+# Larger UDP buffers for Caddy's HTTP/3 (quic-go asks for ~7 MB).
+cat > /etc/sysctl.d/60-nirengi-quic.conf <<'CONF'
+net.core.rmem_max=7500000
+net.core.wmem_max=7500000
+CONF
+sysctl --system >/dev/null
+
 # Layout: everything under /opt/nirengi; secrets readable by root only (files get per-container owners).
 install -d -m 0755 /opt/nirengi /opt/nirengi/bin /opt/nirengi/sql
 install -d -m 0700 /opt/nirengi/secrets
