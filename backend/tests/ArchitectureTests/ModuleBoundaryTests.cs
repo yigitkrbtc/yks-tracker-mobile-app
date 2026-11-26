@@ -31,6 +31,19 @@ public sealed class ModuleBoundaryTests
         result.IsSuccessful.ShouldBeTrue(LayerTests.Describe(result));
     }
 
+    [Theory]
+    [MemberData(nameof(ModuleAssemblies.Names), MemberType = typeof(ModuleAssemblies))]
+    public void Module_does_not_depend_on_error_tracking(string module)
+    {
+        // ADR-0022 §5: Sentry lives in the Host only; modules log through ILogger and stay unaware of it.
+        var result = Types.InAssemblies(ModuleAssemblies.Get(module).All)
+            .ShouldNot()
+            .HaveDependencyOn("Sentry")
+            .GetResult();
+
+        result.IsSuccessful.ShouldBeTrue(LayerTests.Describe(result));
+    }
+
     [Fact]
     public void Analytics_engine_is_a_pure_library()
     {

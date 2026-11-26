@@ -5,6 +5,7 @@ using Serilog;
 using Nirengi.BuildingBlocks.Api.Security;
 using Nirengi.BuildingBlocks.Infrastructure;
 using Nirengi.Host;
+using Nirengi.Host.Telemetry;
 
 if (args.Contains("--health-probe"))
 {
@@ -23,10 +24,29 @@ if (Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider")
     builder.Configuration.AddInMemoryCollection(OpenApiBuildSecrets.Values);
 }
 
-builder.Host.UseSerilog((context, logger) => logger
-    .ReadFrom.Configuration(context.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console());
+// Error tracking (ADR-0022 §5): only with a DSN. Error logs become events, warnings and up breadcrumbs.
+var errorTracking = SentryTelemetry.IsEnabled(builder.Configuration) && !migrateOnly;
+if (errorTracking)
+{
+    var version = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0";
+    builder.WebHost.UseSentry(o => SentryTelemetry.Configure(o, builder.Configuration, version));
+}
+
+builder.Host.UseSerilog((context, logger) =>
+{
+    logger
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .WriteTo.Console();
+    if (errorTracking)
+    {
+        logger.WriteTo.Sentry(o =>
+        {
+            o.MinimumEventLevel = Serilog.Events.LogEventLevel.Error;
+            o.MinimumBreadcrumbLevel = Serilog.Events.LogEventLevel.Warning;
+        });
+    }
+});
 
 builder.Services.AddProblemDetails();
 builder.Services.ConfigureHttpJsonOptions(o =>
