@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Forced command of the CI deploy key (ADR-0022 §2): authorized_keys
+#   command="/opt/nirengi/bin/ci-entry",restrict <key>
+# Accepts only "deploy X.Y.Z" and "status". A leaked key can deploy a version GHCR already has, nothing else.
+set -euo pipefail
+here=$(dirname "$(readlink -f "$0")")
+request=${SSH_ORIGINAL_COMMAND:-}
+history=${NIRENGI_DIR:-/opt/nirengi}/deploy-history
+
+if [[ $request =~ ^deploy\ ([0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4})$ ]]; then
+  exec ${CI_ENTRY_SUDO:-sudo} "$here/deploy.sh" "${BASH_REMATCH[1]}"
+elif [[ $request == status ]]; then
+  tail -n 5 "$history" 2>/dev/null || echo "no deploys yet"
+  exit 0
+fi
+echo "refused: only 'deploy X.Y.Z' and 'status' are allowed" >&2
+exit 2

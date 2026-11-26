@@ -26,7 +26,7 @@ Sürüm geçmişi: `/opt/nirengi/deploy-history` (`zaman sürüm imaj-özeti son
 
 1. VPS'i aç, yönetici kullanıcıyı oluştur, SSH'yi yalnız anahtara çevir, root girişini kapat.
 2. `sudo ./bootstrap.sh` ([`deploy/bin/bootstrap.sh`](../deploy/bin/bootstrap.sh)): Docker Engine + compose eklentisi, ufw (sshd'nin gerçek portu `limit` ile, 80, 443/tcp, 443/udp; sağlayıcı duvarında da 443/udp açılmalı), `unattended-upgrades` (Ubuntu güvenlik + Docker deposu, 04:30 yeniden başlatma), saat dilimi UTC, `/opt/nirengi` dizinleri, `deploy` kullanıcısı (docker grubunda değil; sudoers yalnız `/opt/nirengi/bin/deploy.sh`).
-3. `deploy` kullanıcısının `authorized_keys` satırı: `command="/opt/nirengi/bin/ci-entry",restrict <CI açık anahtarı>`.
+3. CI dağıtım anahtarı: kendi makinende `ssh-keygen -t ed25519 -f nirengi-ci -C nirengi-ci`. Açık anahtarı `/home/deploy/.ssh/authorized_keys`'e **tek satır** olarak yaz: `command="/opt/nirengi/bin/ci-entry",restrict ssh-ed25519 AAAA... nirengi-ci` (`chown deploy: ...`, 0600). GitHub → Settings → Environments → `production` ortamını aç; sırları oraya ekle: `NIRENGI_DEPLOY_SSH_KEY` (özel anahtar), `NIRENGI_DEPLOY_HOST` (sunucu adı/IP), `NIRENGI_DEPLOY_KNOWN_HOSTS` (`ssh-keyscan <sunucu>` çıktısı, parmak izini sağlayıcı panelinden doğrula). Anahtar yalnız `deploy X.Y.Z` ve `status` çalıştırabilir.
 4. GHCR girişi (root): `docker login ghcr.io` (`read:packages` jetonu; süresi takvime yazılır).
 5. `deploy/compose.prod.yml`, `deploy/Caddyfile`, `deploy/sql/` ve `deploy/bin/` dosyalarını `/opt/nirengi/`'ye kopyala (`bin/` root sahipli, başkası yazamaz: `deploy.sh` sudo ile root çalışır). Sırları bölüm 7'deki düzene göre yaz; her konteynerin kendi dizini vardır ve dizindeki her dosya adıyla bir ayar olur. Parolalar `openssl rand -hex 32` (bağlantı dizesinde kaçış gerektirmez):
    ```bash
@@ -72,8 +72,9 @@ Sürüm geçmişi: `/opt/nirengi/deploy-history` (`zaman sürüm imaj-özeti son
 
 Ön koşul: `main` yeşil; sürüm etiketi `api-vX.Y.Z` itildi ve `release-api.yml` (F2 kartı 5) imajı GHCR'ye yükledi.
 
-- **GitHub'dan:** Actions → `deploy-api` (F2 kartı 9) → Run workflow → `version = X.Y.Z`.
-- **Sunucudan:** `sudo /opt/nirengi/bin/deploy.sh X.Y.Z`.
+- **GitHub'dan:** Actions → `deploy-api` → Run workflow → `version = X.Y.Z` (etiket `api-vX.Y.Z` var olmalı). Çıktının sonunda `deploy-history`'nin son satırları görünür.
+- **Sunucudan:** `sudo /opt/nirengi/bin/deploy.sh X.Y.Z`. Aynı sürümü yeniden vermek API'yi yeniden yaratır (değişen sırları okur).
+- Aynı anda tek dağıtım çalışır (kilit). `deploy-history` sonuçları: `ok`, `rolled-back` (yeni sürüm Healthy olmadı, öncekine dönüldü), `migrate-failed` / `backup-failed` / `pull-failed` (hiçbir şey değişmedi), `rollback-unhealthy` (önceki sürüm de açılmadı: hemen bak).
 
 `deploy.sh` sırası (ayrıntı ADR-0022 §2): imajı çek → dağıtım öncesi yedek → `migrate` → `api`'yi yeni sürümle başlat → 120 sn içinde `/health/ready` = `Healthy` bekle → olmazsa önceki sürüme kendiliğinden dön.
 

@@ -138,3 +138,34 @@ echo "restore: backup state back, newer objects gone, new sync epoch, safety bac
 "$repo/deploy/bin/diskcheck.sh"
 if DISK_THRESHOLD=0 "$repo/deploy/bin/diskcheck.sh" 2>/dev/null; then fail "diskcheck.sh did not alarm above the threshold"; fi
 echo "diskcheck: ok, alarms above the threshold"
+
+# --- Card 9: deploy.sh and ci-entry against the running stack. ---
+export NIRENGI_ALLOW_LOCAL_IMAGE=1 DEPLOY_LOCK=$work/deploy.lock DEPLOY_READY_TIMEOUT=90
+next=$(awk -F. '{print $1"."$2"."$3+1}' <<<"$version")
+docker tag "ghcr.io/$owner/nirengi-api:$version" "ghcr.io/$owner/nirengi-api:$next"
+"$repo/deploy/bin/deploy.sh" "$next" || fail "deploy.sh $next failed"
+grep -qx "NIRENGI_VERSION=$next" .env || fail ".env does not name $next after the deploy"
+[[ $(docker inspect -f '{{.Config.Image}}' "$(compose ps -q api)") == "ghcr.io/$owner/nirengi-api:$next" ]] || fail "api does not run $next"
+[[ $(tail -1 deploy-history) =~ \ $next\ .+\ ok$ ]] || fail "deploy-history: $(tail -1 deploy-history)"
+ls "$BACKUP_DIR"/*-pre-deploy.dump.age >/dev/null || fail "no pre-deploy backup"
+echo "deploy: $next running, pre-deploy backup, history ok"
+
+# A version that migrates but never becomes Healthy: deploy.sh must fail and go back to the running one.
+broken=$(awk -F. '{print $1"."$2"."$3+1}' <<<"$next")
+# shellcheck disable=SC2016 # $1 belongs to the image's shell, not this one
+printf 'FROM ghcr.io/%s/nirengi-api:%s\nENTRYPOINT ["sh", "-c", "if [ \\"$1\\" = --migrate ]; then exec dotnet Nirengi.Host.dll --migrate; fi; sleep 3600", "--"]\n' \
+  "$owner" "$next" | docker build -q -t "ghcr.io/$owner/nirengi-api:$broken" - >/dev/null
+if DEPLOY_READY_TIMEOUT=20 "$repo/deploy/bin/deploy.sh" "$broken"; then fail "deploy.sh $broken reported success"; fi
+grep -qx "NIRENGI_VERSION=$next" .env || fail ".env was not put back to $next"
+[[ $(tail -1 deploy-history) =~ \ $broken\ .+\ rolled-back$ ]] || fail "deploy-history: $(tail -1 deploy-history)"
+body=$(curl -sk --max-time 5 --resolve "$host:443:127.0.0.1" "https://$host/health/ready" || true)
+[[ $body == Healthy ]] || fail "not Healthy after the rollback ($body)"
+echo "deploy: unhealthy $broken rolled back to $next"
+
+# The CI key's forced command accepts "deploy X.Y.Z" and "status" only.
+for request in "deploy $next; touch /tmp/pwned" "deploy latest" "sh" "deploy $next extra" ""; do
+  if SSH_ORIGINAL_COMMAND=$request "$repo/deploy/bin/ci-entry" >/dev/null 2>&1; then fail "ci-entry accepted '$request'"; fi
+done
+SSH_ORIGINAL_COMMAND=status "$repo/deploy/bin/ci-entry" | grep -q "$next" || fail "ci-entry status"
+SSH_ORIGINAL_COMMAND="deploy $next" CI_ENTRY_SUDO=env "$repo/deploy/bin/ci-entry" >/dev/null || fail "ci-entry deploy $next"
+echo "ci-entry: only 'deploy X.Y.Z' and 'status'"
