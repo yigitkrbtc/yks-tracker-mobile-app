@@ -32,7 +32,8 @@ if [[ -n $unpinned$latest ]]; then
 fi
 
 # Secrets come from files, never from the environment.
-leaky=$(jq -r '.services[] | (.environment // {}) | keys[] | select(test("Password|SigningKey|HashKey|Certificate|ConnectionStrings"; "i"))' <<<"$config")
+# (A *_FILE variable holds a path to a secret file, which is the point.)
+leaky=$(jq -r '.services[] | (.environment // {}) | keys[] | select(test("Password|SigningKey|HashKey|Certificate|ConnectionStrings"; "i")) | select(endswith("_FILE") | not)' <<<"$config")
 if [[ -n $leaky ]]; then
   echo "::error::Secret-looking settings in environment (use secrets/): $leaky"
   fail=1

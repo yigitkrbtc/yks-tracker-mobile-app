@@ -5,7 +5,7 @@
 set -euo pipefail
 owner=${1:?owner} version=${2:?version}
 work=$(mktemp -d)
-# shellcheck disable=SC2317 # called by the EXIT trap
+# shellcheck disable=SC2317,SC2329 # called by the EXIT trap
 cleanup() {
   cd "$work" || return
   docker compose -f compose.prod.yml --profile tools logs --no-color 2>&1 | tail -200 || true
