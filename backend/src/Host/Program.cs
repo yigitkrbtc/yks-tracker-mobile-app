@@ -5,6 +5,7 @@ using Serilog;
 using Nirengi.BuildingBlocks.Api.Security;
 using Nirengi.BuildingBlocks.Infrastructure;
 using Nirengi.Host;
+using Nirengi.Host.Telemetry;
 
 if (args.Contains("--health-probe"))
 {
@@ -23,10 +24,7 @@ if (Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider")
     builder.Configuration.AddInMemoryCollection(OpenApiBuildSecrets.Values);
 }
 
-builder.Host.UseSerilog((context, logger) => logger
-    .ReadFrom.Configuration(context.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console());
+var errorTracking = SentryTelemetry.AddLoggingAndErrorTracking(builder, migrateOnly);
 
 builder.Services.AddProblemDetails();
 builder.Services.ConfigureHttpJsonOptions(o =>
@@ -50,6 +48,10 @@ foreach (var module in ModuleCatalog.All)
 }
 
 var app = builder.Build();
+if (errorTracking)
+{
+    SentryTelemetry.StartEarly(app);
+}
 
 if (migrateOnly)
 {

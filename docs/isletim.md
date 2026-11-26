@@ -138,6 +138,8 @@ Genel döndürme adımları:
 
 Sentry'de kişisel veri görülürse: olayı sil, süzgeç testine (F2 kartı 3/4) o alanı ekle, düzelt.
 
+Sentry ayarı (Sentry Logs/Metrics kodda kapalı; sunucuda da açılmaz): API `.env`'de `Sentry__Dsn` (boşsa kapalı) ve `Sentry__Environment=production`; mobil `SENTRY_DSN_MOBILE` depo değişkeni. Sunucu tarafında (Sentry proje ayarı) "Data Scrubber", "Use Default Scrubbers" ve "Prevent Storing of IP Addresses" açık; ek hassas alanlar `password, code, email, token, refreshToken, note, title, sourceName` (ADR-0022 §5 katman 4).
+
 ## 9. E-posta (SMTP) ve DNS
 
 - Sağlayıcı: ADR-0022 §6'daki ölçütlerle seçilir; değişim yalnız `Smtp__*` ayarları.
