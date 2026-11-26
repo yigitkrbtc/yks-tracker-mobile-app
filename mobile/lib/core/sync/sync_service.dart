@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
@@ -46,6 +47,9 @@ class SyncService {
   static const feedStream = 'main';
   static const pageSize = 500;
   static const maxServerFailures = 5;
+
+  /// Epoch changes handled in one pull before giving up on it (two restores during one pull is already absurd).
+  static const _maxEpochResets = 3;
   static const _firstRetry = Duration(seconds: 2);
   static const _maxRetry = Duration(minutes: 5);
 
@@ -132,10 +136,12 @@ class SyncService {
     }
     var outcome = SyncOutcome.offline;
     try {
-      var allPushed = await _push(generation);
+      // Writes the server failed on in this run are not tried again in it (they count once per run).
+      final failed = <String>{};
+      var allPushed = await _push(generation, failed);
       if (await _pull(generation)) {
-        // The server's history was restored: send the records queued again, then catch up from the start.
-        allPushed = await _push(generation);
+        // The server's history was restored: send what it lacks, then catch up.
+        allPushed = await _push(generation, failed) && allPushed;
         await _pull(generation);
       }
       if (allPushed) {
@@ -163,13 +169,19 @@ class SyncService {
     return outcome;
   }
 
-  /// False when the server failed on some writes; they stay queued for the next run.
-  Future<bool> _push(int generation) async {
+  /// False when the server failed on some writes; they stay queued for the next run. Keys of those writes are
+  /// added to [failed], and writes already in it are skipped.
+  Future<bool> _push(int generation, Set<String> failed) async {
     var allPushed = true;
     for (final item in await _outbox.pushable()) {
       final handler = _handlers[item.entityType];
       if (handler == null) {
         continue; // written by a newer app version's feature; left for it
+      }
+      final key = '${item.id}:${item.revision}';
+      if (failed.contains(key)) {
+        allPushed = false;
+        continue;
       }
       _ensureLive(generation);
       final Object? response;
@@ -180,12 +192,12 @@ class SyncService {
         if (_isUnreachable(problem.status)) {
           throw const _Transient();
         }
-        final key = '${item.id}:${item.revision}';
         final failures = _isRefusal(problem.status)
             ? maxServerFailures
             : (_serverFailures[key] ?? 0) + 1;
         if (failures < maxServerFailures) {
           _serverFailures[key] = failures;
+          failed.add(key);
           allPushed = false;
           continue;
         }
@@ -205,13 +217,18 @@ class SyncService {
     return allPushed;
   }
 
-  /// True when the server's sync epoch changed: every local record was queued again and the cursor went back to
-  /// 0 (the feed was then read from the start), so the caller pushes once more.
+  /// True when the server's sync epoch changed: every local record was queued again, the cursor went back to 0
+  /// and the feed was read from the start, so the caller pushes once more.
+  ///
+  /// While reading the restored feed, a record queued again only because of the epoch change is dropped from the
+  /// queue when the server already holds it at the same or a newer edit time: only what the restore lost is sent,
+  /// so a large history does not run into the per-user rate limit.
   Future<bool> _pull(int generation) async {
     final stored = await _storedCursor();
     var cursor = stored?.cursor ?? 0;
     var epoch = stored?.epoch;
-    var requeued = false;
+    var resets = 0;
+    final requeued = <String, Set<String>>{};
     while (true) {
       _ensureLive(generation);
       final Map<String, dynamic> body;
@@ -225,16 +242,21 @@ class SyncService {
         throw const _Transient();
       }
       final served = body['epoch'] as String?;
-      if (served != null && epoch != null && served != epoch && !requeued) {
+      // A cursor kept without an epoch was read before epochs existed: it cannot be trusted either.
+      if (served != null && served != epoch && (epoch != null || cursor > 0)) {
+        if (++resets > _maxEpochResets) {
+          throw StateError('Sync epoch keeps changing');
+        }
         await _transaction(generation, () async {
           for (final handler in _handlers.values) {
-            await handler.requeueAll(
-              await _outbox.queuedIds(handler.entityType),
-            );
+            final before = await _outbox.queuedIds(handler.entityType);
+            await handler.requeueAll(before);
+            final added = (await _outbox.queuedIds(handler.entityType))
+                .difference(before);
+            (requeued[handler.entityType] ??= {}).addAll(added);
           }
           await _saveCursor(0, served);
         });
-        requeued = true;
         epoch = served;
         cursor = 0;
         continue;
@@ -246,6 +268,7 @@ class SyncService {
           final records = (body[handler.feedKey] as List<dynamic>? ?? [])
               .cast<Map<String, dynamic>>();
           if (records.isNotEmpty) {
+            await _pruneHeld(handler, records, requeued[handler.entityType]);
             await handler.applyRemote(
               records,
               await _outbox.queuedIds(handler.entityType),
@@ -255,10 +278,50 @@ class SyncService {
         await _saveCursor(next, epoch);
       });
       if (body['hasMore'] != true || next == cursor) {
-        return requeued;
+        return resets > 0;
       }
       cursor = next;
     }
+  }
+
+  /// Drops requeued writes (still untouched: revision 0) of records the server holds at the same or a newer edit
+  /// time; the record then takes the server state through [SyncHandler.applyRemote].
+  Future<void> _pruneHeld(
+    SyncHandler handler,
+    List<Map<String, dynamic>> records,
+    Set<String>? requeued,
+  ) async {
+    if (requeued == null || requeued.isEmpty) {
+      return;
+    }
+    for (final record in records) {
+      final id = handler.recordId(record);
+      if (!requeued.contains(id)) {
+        continue;
+      }
+      final item = await _outbox.find(handler.entityType, id);
+      if (item != null &&
+          item.revision == 0 &&
+          item.operation == 'put' &&
+          !item.rejected &&
+          _serverHolds(record, item) &&
+          await _outbox.complete(item)) {
+        requeued.remove(id);
+      }
+    }
+  }
+
+  static bool _serverHolds(Map<String, dynamic> record, OutboxRow item) {
+    final server = DateTime.tryParse(
+      record['clientModifiedAt'] as String? ?? '',
+    );
+    final payload = item.payload == null ? null : jsonDecode(item.payload!);
+    final local = payload is Map<String, dynamic>
+        ? DateTime.tryParse(payload['clientModifiedAt'] as String? ?? '')
+        : null;
+    return server != null &&
+        local != null &&
+        server.microsecondsSinceEpoch >= local.microsecondsSinceEpoch;
   }
 
   /// Checks inside the transaction, so a run abandoned while waiting for the database (sign-out wipe) writes

@@ -19,6 +19,9 @@ class TopicProgressSyncHandler implements SyncHandler {
   String get entityType => topicProgressEntity;
 
   @override
+  String recordId(Map<String, dynamic> record) => record['topicId'] as String;
+
+  @override
   String get feedKey => 'topicProgress';
 
   @override

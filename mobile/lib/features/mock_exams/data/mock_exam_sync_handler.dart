@@ -20,6 +20,9 @@ class MockExamSyncHandler implements SyncHandler {
   String get entityType => mockExamEntity;
 
   @override
+  String recordId(Map<String, dynamic> record) => record['id'] as String;
+
+  @override
   String get feedKey => 'mockExams';
 
   @override

@@ -112,6 +112,26 @@ void main() {
     expect(await outbox.queuedCount(), 0);
   });
 
+  test('after a restore only tests missing from the backup are sent', () async {
+    await repository.save(sample(id: 't1'));
+    await sync.sync();
+    final backup = {'t1': Map.of(server.records['t1']!)};
+    final backupSeq = server.seq;
+    await repository.save(sample(id: 't2'));
+    await sync.sync();
+
+    server.restore(backup, seq: backupSeq);
+    api.requests.clear();
+    expect(await sync.sync(), SyncOutcome.done);
+
+    expect(api.calls.where((c) => c.startsWith('PUT')), [
+      'PUT /v1/topic-tests/t2',
+    ]);
+    expect(server.records.keys, unorderedEquals(['t1', 't2']));
+    expect(await outbox.queuedCount(), 0);
+    expect((await repository.get('t1'))!.syncStatus, SyncStatus.synced);
+  });
+
   test('sync pushes, stores the server state and marks it synced', () async {
     await repository.save(sample());
 

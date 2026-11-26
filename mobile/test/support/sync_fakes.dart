@@ -78,10 +78,15 @@ class FakeTrackingServer {
   var epoch = 'epoch-1';
 
   /// A database restore to an empty backup: records and sequence go back, the epoch is renewed.
-  void restoreEmpty() {
-    records.clear();
+  void restoreEmpty() => restore(const {}, seq: 0);
+
+  /// A database restore to a backup holding [backup] (topic tests by id) at sequence [seq].
+  void restore(Map<String, Map<String, dynamic>> backup, {required int seq}) {
+    records
+      ..clear()
+      ..addAll(backup);
     exams.clear();
-    seq = 0;
+    this.seq = seq;
     epoch = 'epoch-${DateTime.now().microsecondsSinceEpoch}';
   }
 

@@ -20,6 +20,9 @@ class TopicTestSyncHandler implements SyncHandler {
   String get entityType => topicTestEntity;
 
   @override
+  String recordId(Map<String, dynamic> record) => record['id'] as String;
+
+  @override
   String get feedKey => 'topicTests';
 
   @override

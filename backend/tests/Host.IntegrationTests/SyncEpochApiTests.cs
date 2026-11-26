@@ -16,7 +16,7 @@ public sealed class SyncEpochApiTests(NirengiApiFactory factory)
     private readonly AuthApi _api = new(factory);
 
     [Fact]
-    public async Task Feed_carries_one_epoch_for_every_caller_and_page()
+    public async Task Feed_carries_one_epoch_for_every_caller()
     {
         var first = await Sync(await _api.RegisterAndVerify(AuthApi.NewEmail()));
         var second = await Sync(await _api.RegisterAndVerify(AuthApi.NewEmail()));
