@@ -65,4 +65,15 @@ void main() {
       isEmpty,
     );
   });
+
+  test('Sentry yalnız core/telemetry portu üzerinden (ADR-0022)', () {
+    final direct = RegExp(r"""(import|export) ['"]package:sentry[a-z_]*/""");
+    expect(
+      offenders(
+        dartFiles('lib').where((f) => !f.path.contains('/core/telemetry/')),
+        direct,
+      ),
+      isEmpty,
+    );
+  });
 }

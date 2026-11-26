@@ -67,6 +67,7 @@ cd admin && npm run dev                       # http://localhost:5173/admin/, /v
 - UI yalnız `lib/core/design/design.dart` (token + `N*` bileşenleri) üzerinden; `shadcn_ui` doğrudan yalnız `core/design` ve `app` içinde (ADR-0011, mimari test).
 - Yapılandırma `--dart-define` ile (`AppConfig`).
 - Bildirim yalnız `core/notifications` portu (`LocalReminderScheduler`) üzerinden; özellik plugin'i doğrudan çağırmaz.
+- Hata takibi yalnız `core/telemetry` portu (`ErrorReporter`) üzerinden; `sentry_flutter` başka yerde import edilmez. `SENTRY_DSN` boşsa kapalı. Olay `sentry_scrubber.dart` izin listesinden geçer; kırıntı kategorisi `nirengi.` ile başlar (ADR-0022).
 
 ## Admin kuralları
 
