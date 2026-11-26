@@ -38,12 +38,14 @@ jobs:
           SSH_KEY: ${{ secrets.NIRENGI_DEPLOY_SSH_KEY }}
           HOST: ${{ secrets.NIRENGI_DEPLOY_HOST }}
           KNOWN_HOSTS: ${{ secrets.NIRENGI_DEPLOY_KNOWN_HOSTS }}
+          PORT: ${{ secrets.NIRENGI_DEPLOY_PORT }}
         run: |
           [[ -n $SSH_KEY && -n $HOST && -n $KNOWN_HOSTS ]] || { echo "::error::set NIRENGI_DEPLOY_SSH_KEY, NIRENGI_DEPLOY_HOST and NIRENGI_DEPLOY_KNOWN_HOSTS"; exit 1; }
           install -d -m 0700 ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 0600 ~/.ssh/deploy
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          ssh=(ssh -i ~/.ssh/deploy -o BatchMode=yes -o StrictHostKeyChecking=yes "deploy@$HOST")
+          # -n: the runner's stdin never reaches the server. The server finishes a deploy even if this job is cancelled.
+          ssh=(ssh -n -p "${PORT:-22}" -i ~/.ssh/deploy -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 "deploy@$HOST")
           status=0
           "${ssh[@]}" "deploy $VERSION" || status=$?
           echo "--- deploy-history"
