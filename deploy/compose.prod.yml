@@ -1,0 +1,157 @@
+# Production on one VPS (ADR-0022 §1). Lives at /opt/nirengi/compose.prod.yml next to .env, Caddyfile, sql/ and
+# secrets/. Only Caddy publishes ports (Docker bypasses ufw for published ports; CI enforces the rule).
+#   docker compose -f compose.prod.yml up -d                 # caddy, api, postgres
+#   docker compose -f compose.prod.yml run --rm migrate      # one-off migrations (deploy.sh does this)
+name: nirengi
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-api-image: &api-image ghcr.io/${NIRENGI_IMAGE_OWNER:?set in .env}/nirengi-api:${NIRENGI_VERSION:?set in .env}
+
+services:
+  caddy:
+    image: caddy:2.11.8-alpine
+    restart: unless-stopped
+    logging: *logging
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      NIRENGI_API_HOST: ${NIRENGI_API_HOST:?set in .env}
+      ACME_EMAIL: ${ACME_EMAIL:?set in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      edge:
+        ipv4_address: 172.30.0.10
+    depends_on:
+      - api
+
+  api:
+    image: *api-image
+    restart: unless-stopped
+    logging: *logging
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      AllowedHosts: ${NIRENGI_API_HOST}
+      # Caddy's fixed address on `edge`: only it may set X-Forwarded-For (ADR-0022 §1).
+      ForwardedHeaders__KnownProxies__0: 172.30.0.10
+      Database__MigrateOnStartup: "false"
+      Identity__AdminEmails__0: ${NIRENGI_ADMIN_EMAIL:?set in .env}
+      Clients__MinimumVersion: ${CLIENTS_MINIMUM_VERSION:-}
+      Sentry__Dsn: ${SENTRY_DSN:-}
+      Sentry__Environment: production
+      Smtp__Host: ${SMTP_HOST:-}
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__Security: ${SMTP_SECURITY:-StartTls}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:-}
+      Smtp__FromName: ${SMTP_FROM_NAME:-Nirengi}
+    # Files under /run/secrets become settings (KeyPerFile, ADR-0022): the target is the setting name.
+    secrets:
+      - source: app_db_connection
+        target: ConnectionStrings__Database
+      - source: jwt_signing_key
+        target: Jwt__SigningKey
+      - source: identity_hash_key
+        target: Identity__Security__HashKey
+      - source: dp_certificate
+        target: DataProtection__Certificate
+      - source: dp_certificate_password
+        target: DataProtection__CertificatePassword
+      - source: smtp_password
+        target: Smtp__Password
+    networks:
+      - edge
+      - db
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  migrate:
+    image: *api-image
+    profiles: ["tools"]
+    restart: "no"
+    logging: *logging
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    command: ["--migrate"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    secrets:
+      - source: owner_db_connection
+        target: ConnectionStrings__Database
+    networks:
+      - db
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17.11-alpine
+    restart: unless-stopped
+    logging: *logging
+    shm_size: 256m
+    environment:
+      POSTGRES_DB: nirengi
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql:/sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nirengi"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - db
+
+networks:
+  edge:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          ip_range: 172.30.0.128/25
+  db:
+    internal: true
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
+
+# /opt/nirengi/secrets: directory 0700 root, files 0400. Owner: the reading container's user
+# (api/migrate APP_UID 1654, postgres 70). docs/isletim.md §7.
+secrets:
+  app_db_connection:
+    file: ./secrets/app_db_connection
+  owner_db_connection:
+    file: ./secrets/owner_db_connection
+  postgres_password:
+    file: ./secrets/postgres_password
+  jwt_signing_key:
+    file: ./secrets/Jwt__SigningKey
+  identity_hash_key:
+    file: ./secrets/Identity__Security__HashKey
+  dp_certificate:
+    file: ./secrets/DataProtection__Certificate
+  dp_certificate_password:
+    file: ./secrets/DataProtection__CertificatePassword
+  smtp_password:
+    file: ./secrets/Smtp__Password

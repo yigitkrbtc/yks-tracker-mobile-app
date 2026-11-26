@@ -9,9 +9,9 @@
 | Parça | Nerede | Not |
 | --- | --- | --- |
 | VPS | Türkiye, Ubuntu 24.04 LTS | `/opt/nirengi/` altında her şey |
-| Compose | `/opt/nirengi/compose.prod.yml` ← `deploy/compose.prod.yml` (F2 kartı 7) | `caddy`, `api`, `migrate` (profil `tools`), `postgres` |
-| Ters vekil | Caddy, `deploy/Caddyfile` (F2 kartı 7) | 80/443 tek açık port; `api.<alan>` |
-| Sır olmayan ayar | `/opt/nirengi/.env` ← `deploy/.env.example` (F2 kartı 7) | `NIRENGI_VERSION`, alan adı, Sentry DSN, `Clients__MinimumVersion`, SMTP sunucusu |
+| Compose | `/opt/nirengi/compose.prod.yml` ← [`deploy/compose.prod.yml`](../deploy/compose.prod.yml) | `caddy`, `api`, `migrate` (profil `tools`), `postgres` |
+| Ters vekil | Caddy, [`deploy/Caddyfile`](../deploy/Caddyfile) | 80/443 tek açık port; `api.<alan>` |
+| Sır olmayan ayar | `/opt/nirengi/.env` ← [`deploy/.env.example`](../deploy/.env.example) | `NIRENGI_VERSION`, alan adı, Sentry DSN, `Clients__MinimumVersion`, SMTP sunucusu |
 | Sırlar | `/opt/nirengi/secrets/` (0700 root, dosyalar 0400) | Liste bölüm 7'de |
 | Betikler | `/opt/nirengi/bin/` ← `deploy/bin/` (F2 kartı 7, 8) | `deploy.sh`, `ci-entry`, `backup.sh`, `restore.sh`, `verify-restore.sh`, `diskcheck.sh` |
 | Zamanlayıcılar | systemd ← `deploy/systemd/` (F2 kartı 8) | `nirengi-backup.timer` 03:30 UTC, `nirengi-disk.timer` 15 dk |
@@ -25,12 +25,28 @@ Sürüm geçmişi: `/opt/nirengi/deploy-history` (`zaman sürüm imaj-özeti son
 ## 2. Sunucu ilk kurulum (bir kez)
 
 1. VPS'i aç, yönetici kullanıcıyı oluştur, SSH'yi yalnız anahtara çevir, root girişini kapat.
-2. `deploy/bin/bootstrap.sh` (F2 kartı 7): Docker Engine + compose eklentisi, ufw (22, 80, 443/tcp, 443/udp), `unattended-upgrades` (yalnız güvenlik, 04:30 yeniden başlatma), saat dilimi UTC, `/opt/nirengi` dizinleri, `deploy` kullanıcısı (docker grubunda değil; sudoers yalnız `/opt/nirengi/bin/deploy.sh`).
+2. `sudo ./bootstrap.sh` ([`deploy/bin/bootstrap.sh`](../deploy/bin/bootstrap.sh)): Docker Engine + compose eklentisi, ufw (22, 80, 443/tcp, 443/udp), `unattended-upgrades` (yalnız güvenlik, 04:30 yeniden başlatma), saat dilimi UTC, `/opt/nirengi` dizinleri, `deploy` kullanıcısı (docker grubunda değil; sudoers yalnız `/opt/nirengi/bin/deploy.sh`).
 3. `deploy` kullanıcısının `authorized_keys` satırı: `command="/opt/nirengi/bin/ci-entry",restrict <CI açık anahtarı>`.
 4. GHCR girişi (root): `docker login ghcr.io` (`read:packages` jetonu; süresi takvime yazılır).
-5. Sırları bölüm 7'deki listeye göre `/opt/nirengi/secrets/` altına yaz, izinleri ayarla.
-6. `.env`'yi `.env.example`'dan doldur.
-7. Postgres'i başlat, rolleri kur: `deploy/sql/00-roles.sql` (F2 kartı 7).
+5. `deploy/compose.prod.yml`, `deploy/Caddyfile`, `deploy/sql/` ve `deploy/bin/` dosyalarını `/opt/nirengi/`'ye kopyala. Sırları bölüm 7'deki listeye göre `/opt/nirengi/secrets/` altına yaz (parolalar `openssl rand -hex 32`: bağlantı dizesinde kaçış gerektirmez), sahip ve izinleri ayarla:
+   ```bash
+   cd /opt/nirengi/secrets
+   printf 'Host=postgres;Port=5432;Database=nirengi;Username=nirengi_app;Password=%s' "$(cat app_password)" > app_db_connection
+   printf 'Host=postgres;Port=5432;Database=nirengi;Username=nirengi_owner;Password=%s' "$(cat owner_password)" > owner_db_connection
+   chown 1654 app_db_connection owner_db_connection Jwt__SigningKey Identity__Security__HashKey \
+     DataProtection__Certificate DataProtection__CertificatePassword Smtp__Password   # APP_UID (api, migrate)
+   chown 70 postgres_password                                                         # postgres (alpine)
+   chmod 0400 *
+   ```
+   SMTP henüz yoksa `Smtp__Password` boş dosya olur (compose eksik dosyayla açılmaz).
+6. `.env`'yi `.env.example`'dan doldur (`chmod 0600`).
+7. Postgres'i başlat, rolleri kur (tekrar çalıştırılabilir; parolayı da eşitler):
+   ```bash
+   cd /opt/nirengi
+   docker compose -f compose.prod.yml up -d --wait postgres
+   docker compose -f compose.prod.yml exec -T postgres psql -U postgres -d nirengi \
+     -v owner_password="$(cat secrets/owner_password)" -v app_password="$(cat secrets/app_password)" -f /sql/00-roles.sql
+   ```
 8. İlk dağıtım: bölüm 3.
 9. DNS: `api.<alan>` A kaydı; posta kayıtları (SPF, DKIM, DMARC) bölüm 9.
 10. Zamanlayıcıları etkinleştir, Healthchecks.io ping adreslerini `.env`'ye yaz; bir yedeği elle tetikleyip ping'in geldiğini gör.
@@ -93,9 +109,10 @@ Sıklık: ilk üç ay ayda bir, sonra üç ayda bir. Healthchecks "restore-drill
 
 | Sır (dosya adı `/opt/nirengi/secrets/`) | Kim okur | Döndürme etkisi |
 | --- | --- | --- |
-| `app_db_connection` → `ConnectionStrings__Database` | api | Yok (yeni parola + yeniden başlatma) |
-| `owner_db_connection` → `ConnectionStrings__Database` | migrate | Yok |
-| `postgres_password` | postgres | Yok |
+| `app_db_connection` → `ConnectionStrings__Database` (sahip 1654) | api | Yok (yeni parola + yeniden başlatma) |
+| `owner_db_connection` → `ConnectionStrings__Database` (sahip 1654) | migrate | Yok |
+| `app_password`, `owner_password` (root) | yalnız rol kurulumu (`00-roles.sql`) | Bağlantı dizesiyle birlikte |
+| `postgres_password` (sahip 70) | postgres (süper kullanıcı) | Yalnız ilk açılışta okunur; sonra `ALTER ROLE postgres` |
 | `Jwt__SigningKey` | api | Erişim jetonları (≤ 15 dk) geçersiz; istemci refresh ile sürer |
 | `Identity__Security__HashKey` | api | **Yıkıcı:** tüm refresh token'lar, kurtarma kodları, bekleyen kodlar ve kimlik postaları geçersiz; herkes yeniden giriş yapar |
 | `DataProtection__Certificate` (+ `__CertificatePassword`) | api | Eski sertifika `DataProtection__PreviousCertificates__N`'e taşınır, **silinmez** |
@@ -138,7 +155,7 @@ Genel döndürme adımları:
 
 Sentry'de kişisel veri görülürse: olayı sil, süzgeç testine (F2 kartı 3/4) o alanı ekle, düzelt.
 
-Sentry ayarı (Sentry Logs/Metrics kodda kapalı; sunucuda da açılmaz): API `.env`'de `Sentry__Dsn` (boşsa kapalı) ve `Sentry__Environment=production`; mobil `SENTRY_DSN_MOBILE` depo değişkeni. Sunucu tarafında (Sentry proje ayarı) "Data Scrubber", "Use Default Scrubbers" ve "Prevent Storing of IP Addresses" açık; ek hassas alanlar `password, code, email, token, refreshToken, note, title, sourceName` (ADR-0022 §5 katman 4).
+Sentry ayarı (Sentry Logs/Metrics kodda kapalı; sunucuda da açılmaz): API `.env`'de `SENTRY_DSN` (boşsa kapalı; compose `Sentry__Dsn`'e verir, ortam `production`); mobil `SENTRY_DSN_MOBILE` depo değişkeni. Sunucu tarafında (Sentry proje ayarı) "Data Scrubber", "Use Default Scrubbers" ve "Prevent Storing of IP Addresses" açık; ek hassas alanlar `password, code, email, token, refreshToken, note, title, sourceName` (ADR-0022 §5 katman 4).
 
 ## 9. E-posta (SMTP) ve DNS
 
