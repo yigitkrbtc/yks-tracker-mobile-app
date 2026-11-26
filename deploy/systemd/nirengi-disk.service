@@ -1,0 +1,6 @@
+[Unit]
+Description=Nirengi disk usage check (ADR-0022 §5)
+
+[Service]
+Type=oneshot
+ExecStart=/opt/nirengi/bin/diskcheck.sh

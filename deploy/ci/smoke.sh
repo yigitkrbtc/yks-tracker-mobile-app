@@ -98,3 +98,43 @@ privileges=$(compose exec -T -e PGPASSWORD="$app_pw" postgres psql -h 127.0.0.1 
   "SELECT current_user, has_database_privilege('nirengi','CREATE'), has_schema_privilege('platform','CREATE'), has_table_privilege('platform.sync_epoch','UPDATE')")
 [[ $privileges == "nirengi_app|f|f|t" ]] || fail "nirengi_app privileges are '$privileges', expected nirengi_app|f|f|t"
 echo "nirengi_app: DML only"
+
+# --- Card 8 scripts against the running stack (as on the server, with paths moved into $work). ---
+export NIRENGI_DIR=$work BACKUP_DIR=$work/backups DISK_THRESHOLD=99
+age-keygen -o "$work/age.key" 2>/dev/null
+age-keygen -y "$work/age.key" > "$work/backup.pub"
+
+# A few MB in an owner schema: the dump outgrows pipe buffers (the lister must drain its input).
+compose exec -T postgres psql -U postgres -d nirengi -qc \
+  "SET ROLE nirengi_owner; CREATE TABLE platform.ci_ballast AS SELECT md5(random()::text) AS x FROM generate_series(1, 300000)"
+backup=$("$repo/deploy/bin/backup.sh" --tag manual)
+[[ -s $backup && -s $backup.sha256 && -s ${backup%.dump.age}.counts ]] || fail "backup.sh left no archive, checksum or counts"
+(cd "$BACKUP_DIR" && sha256sum -c --quiet "$(basename "$backup").sha256") || fail "backup checksum"
+age -d -i "$work/age.key" -o "$work/plain.dump" "$backup" || fail "backup does not decrypt with the key"
+[[ $(head -c 5 "$work/plain.dump") == PGDMP ]] || fail "backup is not a pg_dump custom archive"
+rm -f "$work/plain.dump"
+echo "backup: age-encrypted pg_dump archive"
+grep -q '^curriculum.topics [1-9]' "${backup%.dump.age}.counts" || fail "counts file lacks the curriculum"
+
+# After the backup: an object the backup does not have (a newer migration) and lost rows.
+compose exec -T postgres psql -U postgres -d nirengi -qc \
+  "SET ROLE nirengi_owner; CREATE TABLE platform.ci_newer_than_backup (x int); DELETE FROM platform.ci_ballast WHERE x < '8'"
+epoch_before=$(compose exec -T postgres psql -U postgres -d nirengi -tA -c 'SELECT epoch FROM platform.sync_epoch')
+RESTORE_KEY=$work/age.key "$repo/deploy/bin/restore.sh" "$backup" --yes
+epoch_after=$(compose exec -T postgres psql -U postgres -d nirengi -tA -c 'SELECT epoch FROM platform.sync_epoch')
+[[ -n $epoch_after && $epoch_after != "$epoch_before" ]] || fail "restore.sh did not renew the sync epoch"
+state=$(compose exec -T postgres psql -U postgres -d nirengi -tA -c \
+  "SELECT to_regclass('platform.ci_newer_than_backup') IS NULL, (SELECT count(*) FROM platform.ci_ballast)")
+[[ $state == "t|300000" ]] || fail "restore did not bring back the backup's state ($state; want: newer table gone, 300000 rows)"
+ls "$BACKUP_DIR"/*-pre-restore.dump.age >/dev/null || fail "restore.sh took no safety backup"
+privileges=$(compose exec -T postgres psql -h 127.0.0.1 -U nirengi_app -d nirengi -tA -c \
+  "SELECT has_schema_privilege('platform','CREATE'), has_table_privilege('platform.sync_epoch','UPDATE')")
+[[ $privileges == "f|t" ]] || fail "after restore nirengi_app privileges are '$privileges'"
+body=$(curl -sk --max-time 5 --resolve "$host:443:127.0.0.1" "https://$host/health/ready" || true)
+[[ $body == Healthy ]] || fail "not Healthy after restore ($body)"
+echo "restore: backup state back, newer objects gone, new sync epoch, safety backup, DML-only app role, Healthy"
+
+"$repo/deploy/bin/verify-restore.sh" "$backup" --identity "$work/age.key" --image "ghcr.io/$owner/nirengi-api:$version"
+"$repo/deploy/bin/diskcheck.sh"
+if DISK_THRESHOLD=0 "$repo/deploy/bin/diskcheck.sh" 2>/dev/null; then fail "diskcheck.sh did not alarm above the threshold"; fi
+echo "diskcheck: ok, alarms above the threshold"

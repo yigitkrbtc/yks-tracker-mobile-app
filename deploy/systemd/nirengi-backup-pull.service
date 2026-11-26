@@ -1,0 +1,10 @@
+# Copy 2 only (the storage server at another provider), not the VPS.
+[Unit]
+Description=Pull Nirengi backups from the VPS (ADR-0022 §4)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/nirengi-backup-pull.sh
+TimeoutStartSec=2h

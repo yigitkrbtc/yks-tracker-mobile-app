@@ -1,0 +1,10 @@
+[Unit]
+Description=Nirengi encrypted database backup (ADR-0022 §4)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/nirengi/bin/backup.sh --tag daily
+TimeoutStartSec=1h
+Nice=10

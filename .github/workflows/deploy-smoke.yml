@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: shellcheck deploy scripts
-        run: shellcheck --severity=style deploy/bin/*.sh deploy/ci/*.sh
+        run: shellcheck --severity=style -x deploy/bin/*.sh deploy/ci/*.sh
 
   compose:
     runs-on: ubuntu-latest
@@ -39,5 +39,9 @@ jobs:
         run: docker build -t ghcr.io/ci/nirengi-api:0.0.0-ci --build-arg VERSION=0.0.0-ci -f backend/src/Host/Dockerfile .
       - name: Caddyfile is valid
         run: docker run --rm -e NIRENGI_API_HOST=api.example.com -e ACME_EMAIL=ci@example.com -v "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2.11.8-alpine caddy validate --config /etc/caddy/Caddyfile
-      - name: Bring production compose up and check /health/ready through Caddy
+      - name: Tools the server scripts need (age, rsync)
+        run: sudo apt-get update -q && sudo apt-get install -y -q age rsync
+      - name: Production compose up, /health/ready through Caddy, then backup → restore → drill → diskcheck
         run: deploy/ci/smoke.sh ci 0.0.0-ci
+      - name: Copy 2 retention keeps 7 days and one per week up to 35 days
+        run: deploy/ci/pull-retention.sh

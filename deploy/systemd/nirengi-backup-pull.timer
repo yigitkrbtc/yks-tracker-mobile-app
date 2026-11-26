@@ -1,0 +1,10 @@
+# Copy 2 only.
+[Unit]
+Description=Pull Nirengi backups daily at 05:00 UTC
+
+[Timer]
+OnCalendar=*-*-* 05:00:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target
