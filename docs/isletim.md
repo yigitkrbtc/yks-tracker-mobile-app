@@ -193,10 +193,24 @@ Sentry ayarı (Sentry Logs/Metrics kodda kapalı; sunucuda da açılmaz): API `.
 
 ## 10. Mobil yayın
 
-1. `pubspec.yaml` `version: X.Y.Z+<herhangi>` güncelle, PR, birleştir.
-2. `mobile-vX.Y.Z` etiketini it; `mobile-release.yml` (F2 kartı 10) imzalı AAB üretir (`versionCode = X*1000000 + Y*1000 + Z`).
-3. AAB'yi iş akışı çıktısından indir, Play Console → İç test → yeni sürüm → yükle.
-4. Kırıcı API değişikliğiyse yayılım bitince `Clients__MinimumVersion=X.Y.Z` (`.env`) ve `deploy.sh <mevcut sürüm>`.
+Bir kez (Play Console ve GitHub):
+- Play Console'da uygulamayı aç, **Play App Signing**'i kabul et (uygulama anahtarı Google'da; bizimki yalnız yükleme anahtarı, kaybolursa Play desteğiyle sıfırlanır).
+- Yükleme anahtarı (kendi makinende; `.jks` ve parolalar parola yöneticisine + çevrimdışı kopya):
+  ```bash
+  keytool -genkeypair -keystore nirengi-upload.jks -storetype PKCS12 -alias nirengi-upload -keyalg RSA -keysize 4096 -validity 10000
+  base64 -w0 nirengi-upload.jks   # → NIRENGI_UPLOAD_KEYSTORE_BASE64
+  ```
+- GitHub → Settings → Secrets and variables → Actions:
+  - Sırlar: `NIRENGI_UPLOAD_KEYSTORE_BASE64`, `NIRENGI_KEYSTORE_PASSWORD`, `NIRENGI_KEY_ALIAS` (`nirengi-upload`), `NIRENGI_KEY_PASSWORD` (PKCS12'de mağaza parolasıyla aynı).
+  - Değişkenler: `API_BASE_URL_PROD` = `https://api.<alan>` (önizleme APK'larının `API_BASE_URL`'ünden ayrı), `SENTRY_DSN_MOBILE` (boşsa sürüm hata raporlamaz, iş uyarı verir).
+
+Her sürüm:
+1. `mobile/pubspec.yaml` → `version: X.Y.Z+1` (`+`'dan sonrası yok sayılır), PR, birleştir.
+2. `git tag mobile-vX.Y.Z <main'deki commit> && git push origin mobile-vX.Y.Z`. `mobile-release` iş akışı: etiket `main` üzerinde mi, sürüm `pubspec` ile aynı mı denetler; `versionCode = X*1000000 + Y*1000 + Z`; imzalı AAB'yi derler, imzanın yükleme anahtarına ait olduğunu doğrular.
+3. AAB'yi iş akışı çıktısından indir (`nirengi-X.Y.Z-aab`, 30 gün), Play Console → Test → İç test → Yeni sürüm → yükle. Aynı `versionCode` iki kez yüklenemez: düzeltme yeni PATCH ister.
+4. Kırıcı API değişikliğiyse yayılım bitince `.env`'de `CLIENTS_MINIMUM_VERSION=X.Y.Z` ve `sudo deploy.sh <mevcut sürüm>` (yeniden başlatma).
+
+İş akışı her PR'da (`mobile/android/**`, iş akışı ya da sürüm betiği değişince) atılabilir bir anahtarla kuru çalışır; yayın yolu sürümler arasında da yeşil kalır.
 
 ## 11. Periyodik bakım
 

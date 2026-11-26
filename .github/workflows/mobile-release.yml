@@ -1,0 +1,135 @@
+# Signed release AAB for Play (ADR-0022 §7, F2 card 10).
+#   - Tag mobile-vX.Y.Z on main → AAB signed with the upload key, kept 30 days as a workflow artifact; upload it to
+#     Play Console → Internal testing by hand (docs/isletim.md §10).
+#   - Pull requests touching this pipeline, or a manual run: the same build with a throwaway key and a dummy
+#     address (dry run; nothing is kept), so the release path stays green between releases.
+name: mobile-release
+
+on:
+  push:
+    tags: ["mobile-v*"]
+  pull_request:
+    paths:
+      - ".github/workflows/mobile-release.yml"
+      - "mobile/tool/release_version.sh"
+      - "mobile/android/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  aab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      RELEASE: ${{ startsWith(github.ref, 'refs/tags/mobile-v') }}
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 0
+
+      # Third-party setup runs before any secret enters the job environment.
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: 3.47.8
+          cache: true
+      - run: flutter pub get
+
+      - name: Tagged commit is on main
+        if: env.RELEASE == 'true'
+        run: |
+          git fetch --quiet origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::Tag only commits that are on main (CI green)."; exit 1; }
+
+      - name: Version and versionCode
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          if [[ $RELEASE == true ]]; then read -r version code < <(tool/release_version.sh pubspec.yaml "$TAG")
+          else read -r version code < <(tool/release_version.sh pubspec.yaml); fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$code" >> "$GITHUB_ENV"
+          echo "Release $version (versionCode $code)"
+
+      - name: Production settings
+        env:
+          API_URL: ${{ vars.API_BASE_URL_PROD }}
+          SENTRY: ${{ vars.SENTRY_DSN_MOBILE }}
+        run: |
+          if [[ $RELEASE == true ]]; then
+            [[ $API_URL == https://* ]] || { echo "::error::Set the repository variable API_BASE_URL_PROD to https://api.<domain>"; exit 1; }
+            [[ -n $SENTRY ]] || echo "::warning::SENTRY_DSN_MOBILE is empty: this release reports no errors."
+          else
+            API_URL=https://api.example.invalid SENTRY=""
+          fi
+          { echo "API_URL=$API_URL"; echo "SENTRY_DSN=$SENTRY"; } >> "$GITHUB_ENV"
+
+      - name: Upload key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.NIRENGI_UPLOAD_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.NIRENGI_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.NIRENGI_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.NIRENGI_KEY_PASSWORD }}
+        run: |
+          keystore="$RUNNER_TEMP/upload.jks"
+          if [[ $RELEASE == true ]]; then
+            [[ -n $KEYSTORE_BASE64 && -n $KEYSTORE_PASSWORD && -n $KEY_ALIAS && -n $KEY_PASSWORD ]] \
+              || { echo "::error::Set NIRENGI_UPLOAD_KEYSTORE_BASE64, NIRENGI_KEYSTORE_PASSWORD, NIRENGI_KEY_ALIAS, NIRENGI_KEY_PASSWORD"; exit 1; }
+            base64 -d <<<"$KEYSTORE_BASE64" > "$keystore"
+          else
+            KEYSTORE_PASSWORD=$(openssl rand -hex 16) KEY_PASSWORD=$KEYSTORE_PASSWORD KEY_ALIAS=dry-run
+            echo "::add-mask::$KEYSTORE_PASSWORD"
+            keytool -genkeypair -keystore "$keystore" -storetype PKCS12 -alias "$KEY_ALIAS" -keyalg RSA -keysize 2048 \
+              -validity 2 -dname CN=nirengi-dry-run -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" >/dev/null
+          fi
+          chmod 0600 "$keystore"
+          {
+            echo "NIRENGI_KEYSTORE_FILE=$keystore"
+            echo "NIRENGI_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "NIRENGI_KEY_ALIAS=$KEY_ALIAS"
+            echo "NIRENGI_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Build the AAB
+        # No obfuscation: stack traces stay readable without symbol uploads (ADR-0022 §7).
+        run: >
+          flutter build appbundle --release
+          --build-name="$VERSION" --build-number="$VERSION_CODE"
+          --dart-define=API_BASE_URL="$API_URL"
+          --dart-define=SENTRY_DSN="$SENTRY_DSN"
+          --dart-define=SENTRY_ENVIRONMENT=production
+
+      - name: Signed with the expected key
+        run: |
+          aab=build/app/outputs/bundle/release/app-release.aab
+          jarsigner -verify "$aab" >/dev/null || { echo "::error::The AAB is not signed."; exit 1; }
+          expected=$(keytool -list -keystore "$NIRENGI_KEYSTORE_FILE" -storepass "$NIRENGI_KEYSTORE_PASSWORD" -alias "$NIRENGI_KEY_ALIAS" -rfc | openssl x509 -noout -fingerprint -sha256)
+          actual=$(unzip -p "$aab" 'META-INF/*.RSA' | openssl pkcs7 -inform DER -print_certs | openssl x509 -noout -fingerprint -sha256)
+          [[ $expected == "$actual" ]] || { echo "::error::Signed with another key ($actual)"; exit 1; }
+          echo "signed: $actual"
+          echo "AAB=mobile/$aab" >> "$GITHUB_ENV"
+
+      - name: Forget the key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.jks"
+
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        if: env.RELEASE == 'true'
+        with:
+          name: nirengi-${{ env.VERSION }}-aab
+          path: ${{ env.AAB }}
+          retention-days: 30
+          if-no-files-found: error
