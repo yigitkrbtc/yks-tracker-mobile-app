@@ -7,3 +7,4 @@ After=network-online.target
 [Service]
 Type=oneshot
 ExecStart=/usr/local/bin/nirengi-backup-pull.sh
+TimeoutStartSec=2h

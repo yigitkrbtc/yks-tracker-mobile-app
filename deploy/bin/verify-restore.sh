@@ -5,6 +5,8 @@
 #   - core row counts equal the counts recorded at dump time and the curriculum is not empty,
 #   - the API opens against it and /health/ready answers Healthy.
 # On success it pings $HC_DRILL_URL and appends a line to $DRILL_HISTORY (default ~/nirengi-drill-history).
+# The image must be the version production ran when the backup was taken (deploy-history): an older image would also
+# find nothing to migrate. The restored data stays in memory (tmpfs) and is gone when the drill ends.
 # Usage: verify-restore.sh <file.dump.age> --identity <age private key> --image ghcr.io/<owner>/nirengi-api:<X.Y.Z>
 set -euo pipefail
 file=${1:?usage: verify-restore.sh <file.dump.age> --identity <key> --image <image>}
@@ -19,7 +21,9 @@ while (($#)); do
 done
 [[ -f $file && -f $identity && -n $image ]] || { echo "need a backup file, --identity and --image" >&2; exit 2; }
 here=$(dirname "$(readlink -f "$0")")
-sql=${ROLES_SQL:-$here/../sql/00-roles.sql}
+# shellcheck source=deploy/bin/lib.sh
+. "$here/lib.sh"
+sql=$(readlink -f "${ROLES_SQL:-$here/../sql/00-roles.sql}")
 [[ -f $sql ]] || sql=/opt/nirengi/sql/00-roles.sql
 counts=${file%.dump.age}.counts
 step() { printf '== %s\n' "$*"; }
@@ -33,7 +37,7 @@ run=nirengi-drill-$$
 work=$(mktemp -d)
 # shellcheck disable=SC2317,SC2329 # called by the EXIT trap
 cleanup() {
-  docker rm -f "$run-db" "$run-api" >/dev/null 2>&1 || true
+  docker rm -f -v "$run-db" "$run-api" >/dev/null 2>&1 || true # the restored data lives in tmpfs: nothing stays behind
   docker network rm "$run" >/dev/null 2>&1 || true
   rm -rf "$work"
 }
@@ -43,6 +47,7 @@ rand() { openssl rand -hex 32; }
 owner_pw=$(rand) app_pw=$(rand)
 docker network create "$run" >/dev/null
 docker run -d --name "$run-db" --network "$run" --network-alias postgres \
+  --tmpfs /var/lib/postgresql/data:rw,size=4g \
   -e POSTGRES_DB=nirengi -e POSTGRES_PASSWORD="$(rand)" -v "$sql:/sql/00-roles.sql:ro" postgres:17.11-alpine >/dev/null
 for _ in $(seq 1 60); do
   docker exec "$run-db" pg_isready -h 127.0.0.1 -U postgres -d nirengi >/dev/null 2>&1 && break
@@ -72,11 +77,7 @@ after=$(history)
 echo "migration history per schema: $after"
 
 step "row counts"
-actual=$(psql -tA -F ' ' -c "
-  SELECT 'identity.users', count(*) FROM identity.users
-  UNION ALL SELECT 'curriculum.topics', count(*) FROM curriculum.topics
-  UNION ALL SELECT 'tracking.topic_tests', count(*) FROM tracking.topic_tests
-  UNION ALL SELECT 'tracking.mock_exams', count(*) FROM tracking.mock_exams")
+actual=$(psql -tA -F ' ' -c "$COUNTS_SQL")
 echo "$actual"
 if [[ -f $counts ]]; then
   [[ $actual == "$(cat "$counts")" ]] || fail "row counts differ from the ones recorded at dump time ($counts)"

@@ -63,7 +63,8 @@ Sürüm geçmişi: `/opt/nirengi/deploy-history` (`zaman sürüm imaj-özeti son
     sudo /opt/nirengi/bin/backup.sh --tag manual   # ping'in geldiğini gör
     ```
 11. Kopya 2 sunucusu (Türkiye'de başka sağlayıcı):
-    - Orada bir anahtar çifti üret; açık anahtarı VPS'te yedek okuyucu bir kullanıcının `authorized_keys`'ine `command="rrsync -ro /var/backups/nirengi",restrict <anahtar>` olarak ekle (`/var/backups/nirengi` o kullanıcının grubuna okunur: `chgrp <grup> /var/backups/nirengi`, dosyalar 0640).
+    - Orada bir anahtar çifti üret; açık anahtarı VPS'te yedek okuyucu bir kullanıcının `authorized_keys`'ine `command="rrsync -ro /var/backups/nirengi",restrict <anahtar>` olarak ekle (`chgrp <grup> /var/backups/nirengi && chmod 2750 /var/backups/nirengi`: setgid sayesinde yeni yedekler o grupla 0640 oluşur).
+    - Kopya 2'de VPS'in sunucu anahtarını `known_hosts`'a ekle (`ssh-keyscan <vps> >> ~/.ssh/known_hosts`, parmak izini sağlayıcı panelinden doğrula); çekme `StrictHostKeyChecking=yes` ile çalışır.
     - Kopya 2'ye `deploy/bin/backup-pull.sh` → `/usr/local/bin/nirengi-backup-pull.sh`, `/etc/nirengi-pull.env`: `PULL_SOURCE=<kullanıcı>@<vps>:`, `PULL_DEST=/srv/nirengi-backups`, `PULL_SSH_KEY=<anahtar yolu>`, `HC_PULL_URL=<ping>`.
     - `deploy/systemd/nirengi-backup-pull.*` → `/etc/systemd/system/`, `systemctl enable --now nirengi-backup-pull.timer`.
 
@@ -94,7 +95,8 @@ Migration içeren sürümden önce: [ ] migration genişlet/daralt kuralına uyu
 
 - Otomatik: her gün 03:30 UTC (`nirengi-backup.timer`) ve her dağıtımdan önce `backup.sh`: `pg_dump -Fc` → `pg_restore --list` doğrulaması → `age` ile şifreleme → `/var/backups/nirengi/nirengi-<UTC>-<etiket>.dump.age`, `.sha256` ve `.counts` (çekirdek tablo satır sayıları; prova karşılaştırır), Healthchecks başlangıç/başarı/hata ping'i. Kopya 1 saklama: 7 gün + son 3 `pre-deploy`.
 - Elle: `sudo /opt/nirengi/bin/backup.sh --tag manual`.
-- Kopya 2 her gün 05:00'te çeker; çekmeyi sunucu değil kopya 2 başlatır.
+- Kopya 2 her gün 05:00'te çeker; çekmeyi sunucu değil kopya 2 başlatır. Saklama dosyanın kopya 2'ye **varış** zamanına göredir (ele geçmiş bir VPS geçmiş tarihli adla gerçek yedekleri itemez); sağlama tutmayan dosya `quarantine/`'e alınır ve çekme başarısız sayılır.
+- Döküm ile `.counts` aynı dışa aktarılmış anlık görüntüden (snapshot) okunur; prova birebir karşılaştırır.
 - `age` özel anahtarı sunucuda **yoktur**; parola yöneticisinde ve kâğıtta.
 
 ## 6. Yedekten geri yükleme
@@ -103,7 +105,7 @@ Ne zaman: veri bozulması, DB kaybı, sunucu kaybı. Hedef süre (RTO): 2 saat. 
 
 1. Kullanılacak yedeği seç (kopya 1, yoksa kopya 2), SHA-256'yı doğrula.
 2. Özel `age` anahtarını sunucuya geçici kopyala (`/root/restore.key`, 0400).
-3. `sudo /opt/nirengi/bin/restore.sh <dosya>` (onay için `RESTORE` yazılır; anahtar yolu `RESTORE_KEY` ile değişir): API'yi durdurur, çözer, `pg_restore --clean --if-exists --no-owner --role=nirengi_owner --single-transaction` (hata olursa canlı veri değişmez), `migrate`, senkron dönemini yeniler (`UPDATE platform.sync_epoch SET epoch = gen_random_uuid()`), API'yi başlatır. Yeni dönemi gören cihaz imlecini 0'a çeker, elindeki kayıtları yeniden gönderir (sunucu LWW ile birleştirir). Sunucuda aynı ya da daha yeni hâli olan kayıtlar yeniden gönderilmez; yalnız yedekte olmayanlar gider. Sınırlar: yedek anından sonra silinip silmesi eşitlenmiş kayıtlar cihazda iz bırakmadığı için geri gelir (kullanıcı yeniden silebilir); kaybolan eski bir kayıt bugünkü kurallarla (365 günlük tarih penceresi, emekli konu/kaynak) reddedilip cihazda "reddedildi" olarak kalabilir. Dönem yenilemesi atlanırsa (betik dışı elle `pg_restore`) kayıp sessiz olur: geri yükleme yalnız `restore.sh` ile yapılır.
+3. `sudo /opt/nirengi/bin/restore.sh <dosya>` (onay için `RESTORE` yazılır; anahtar yolu `RESTORE_KEY` ile değişir): önce mevcut DB'nin güvenlik yedeğini alır (`pre-restore`), API'yi durdurur; **tek transaction'da** modül şemalarını düşürür (yedekten yeni migration'ların nesneleri dahil), dökümü `nirengi_owner` olarak yükler ve senkron dönemini yeniler (`UPDATE platform.sync_epoch SET epoch = gen_random_uuid()`); sonra `migrate`, API'yi başlatır ve `Healthy` bekler. Transaction'dan önce ya da içinde hata olursa veri değişmez ve API yeniden başlatılır; `migrate` hata verirse betik API'yi başlatmaz ve bunu söyler. Yeni dönemi gören cihaz imlecini 0'a çeker, elindeki kayıtları yeniden gönderir (sunucu LWW ile birleştirir). Sunucuda aynı ya da daha yeni hâli olan kayıtlar yeniden gönderilmez; yalnız yedekte olmayanlar gider. Sınırlar: yedek anından sonra silinip silmesi eşitlenmiş kayıtlar cihazda iz bırakmadığı için geri gelir (kullanıcı yeniden silebilir); kaybolan eski bir kayıt bugünkü kurallarla (365 günlük tarih penceresi, emekli konu/kaynak) reddedilip cihazda "reddedildi" olarak kalabilir. Dönem yenilemesi atlanırsa (betik dışı elle `pg_restore`) kayıp sessiz olur: geri yükleme yalnız `restore.sh` ile yapılır.
 4. Özel anahtarı sil: `shred -u /root/restore.key`.
 5. `/health/ready` = `Healthy`; admin girişi (Data Protection sertifikası doğruysa TOTP çalışır; sertifika kayıpsa admin TOTP'yi yeniden kurar).
 6. Silinen hesaplar: yedek anından sonra kalıcı silinen hesaplar yedekte "silme istendi" durumunda ve eski tarihle durur; saatlik temizlik işi onları bir saat içinde yeniden siler, elle iş gerekmez. Yedek anından **sonra** istenen silmeler kaybolur (log kullanıcı kimliği taşımaz): o aralıkta hesabını silen biri hesabı açık görür, yeniden silmesi gerekir. Bu, RPO'nun (≤ 24 sa) kabul edilen sonucudur.

@@ -6,4 +6,5 @@ Requires=docker.service
 [Service]
 Type=oneshot
 ExecStart=/opt/nirengi/bin/backup.sh --tag daily
+TimeoutStartSec=1h
 Nice=10
