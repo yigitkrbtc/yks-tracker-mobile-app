@@ -4,7 +4,7 @@ YKS (TYT/AYT) konu testi ve deneme takibi + açıklanabilir analiz. Gereksinim v
 
 ## Durum
 
-S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S4 deneme + yanlış etiketleme, S5 analiz motoru + panel + konu kartı, S6 öneri motoru + Bugün sekmesi + konu işareti + hedef/seri + yerel hatırlatma + sınav takvimi + veri dışa aktarma, S7 puan türüne göre `q` + müfredat sürümleri (taslak/yayın/geri dönüş, soy bağı) + Refine admin paneli `/admin` + güvenlik başlıkları (ADR-0012…0019). Güvenlik denetimi sertleştirmesi dört PR'da (ADR-0021; PR 1 kimlik, PR 2 outbox, PR 3 API sınırları işlendi, PR 4 mobil + CI). Sıradaki: **yayın hazırlığı** (denetim kaydı, KVKK yeniden onay, barındırma, SMTP, Play iç test); ürünün yönü netleşince.
+S0 temel, S1 kimlik, S2 müfredat/onboarding, S3 konu testi + offline senkron, S4 deneme + yanlış etiketleme, S5 analiz motoru + panel + konu kartı, S6 öneri motoru + Bugün sekmesi + konu işareti + hedef/seri + yerel hatırlatma + sınav takvimi + veri dışa aktarma, S7 puan türüne göre `q` + müfredat sürümleri (taslak/yayın/geri dönüş, soy bağı) + Refine admin paneli `/admin` + güvenlik başlıkları (ADR-0012…0019). Güvenlik denetimi sertleştirmesi dört PR'da (ADR-0021; PR 1 kimlik, PR 2 outbox, PR 3 API sınırları işlendi, PR 4 mobil + CI). F2 üretim dağıtımı (ADR-0022) kodu tamam: Host `--migrate`, sertifikalı Data Protection, backend + mobil Sentry (kişisel veri süzgeci), senkron dönemi, `deploy/` (compose, Caddy, roller, yedek/geri yükleme/prova, dağıtım), `deploy-smoke`, `deploy-api`, `mobile-release`; işletim adımları `docs/isletim.md`. Sıradaki: sunucu ve hesap kurulumu (VPS, alan adı, Sentry, SMTP, Play), hukuki metinlerin bireysel yayıncıya göre güncellenmesi, Play iç test.
 
 ## Yapı
 
