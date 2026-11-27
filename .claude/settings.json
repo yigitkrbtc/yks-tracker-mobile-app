@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/model_guard.py\""
+            "command": "python -X utf8 \"$CLAUDE_PROJECT_DIR/.claude/hooks/model_guard.py\""
           }
         ]
       }
