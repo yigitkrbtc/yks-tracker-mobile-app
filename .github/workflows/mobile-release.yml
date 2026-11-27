@@ -1,0 +1,126 @@
+# Signed release AAB for Play (ADR-0022 §7, F2 card 10).
+#   release: tag mobile-vX.Y.Z on main → AAB signed with the upload key, kept 30 days as a workflow artifact; upload
+#            it to Play Console → Internal testing by hand (docs/isletim.md §10). Runs in the `mobile-release`
+#            environment, which holds the signing secrets and only admits mobile-v* tags: no branch or pull
+#            request can reach the upload key, even with an edited copy of this file.
+#   dry-run: pull requests touching this pipeline and manual runs from a branch: the same build and checks with a
+#            throwaway key and a dummy address; references no secret, keeps nothing.
+name: mobile-release
+
+on:
+  push:
+    tags: ["mobile-v*"]
+  pull_request:
+    paths:
+      - ".github/workflows/mobile-release.yml"
+      - "mobile/tool/**"
+      - "mobile/android/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dry-run:
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - name: shellcheck release scripts
+        run: shellcheck tool/*.sh
+      - name: Version rules (tag match, refusals)
+        run: |
+          read -r version code < <(tool/release_version.sh pubspec.yaml)
+          tool/release_version.sh pubspec.yaml "mobile-v$version" >/dev/null
+          if tool/release_version.sh pubspec.yaml "mobile-v$version-rc" 2>/dev/null; then echo "::error::an -rc tag was accepted"; exit 1; fi
+          { echo "VERSION=$version"; echo "VERSION_CODE=$code"; } >> "$GITHUB_ENV"
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: 3.47.8
+          cache: true
+      - run: flutter pub get
+      - name: Build and check with a throwaway key (same path as a release, base64 round trip included)
+        run: |
+          pass=$(openssl rand -hex 16)
+          echo "::add-mask::$pass"
+          export NIRENGI_KEYSTORE_PASSWORD=$pass NIRENGI_KEY_PASSWORD=$pass NIRENGI_KEY_ALIAS=dry-run
+          export NIRENGI_KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"
+          keytool -genkeypair -keystore "$RUNNER_TEMP/made.jks" -storetype PKCS12 -alias dry-run -keyalg RSA -keysize 2048 \
+            -validity 2 -dname CN=nirengi-dry-run -storepass:env NIRENGI_KEYSTORE_PASSWORD -keypass:env NIRENGI_KEY_PASSWORD >/dev/null
+          base64 -w0 "$RUNNER_TEMP/made.jks" | base64 -d > "$NIRENGI_KEYSTORE_FILE"
+          API_URL=https://api.example.invalid SENTRY_DSN="" tool/build_release_aab.sh
+          rm -f "$RUNNER_TEMP"/*.jks
+
+  release:
+    if: ${{ startsWith(github.ref, 'refs/tags/mobile-v') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: mobile-release
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Tagged commit is on main
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::Tag only commits that are on main (CI green)."; exit 1; }
+      - name: Version and versionCode
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          read -r version code < <(tool/release_version.sh pubspec.yaml "$TAG")
+          { echo "VERSION=$version"; echo "VERSION_CODE=$code"; } >> "$GITHUB_ENV"
+          echo "Release $version (versionCode $code)"
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: 3.47.8
+          cache: true
+      - run: flutter pub get
+      - name: Build and check the signed AAB
+        # The secrets exist only in this step's environment (never in GITHUB_ENV); the key file is removed here.
+        env:
+          KEYSTORE_BASE64: ${{ secrets.NIRENGI_UPLOAD_KEYSTORE_BASE64 }}
+          NIRENGI_KEYSTORE_PASSWORD: ${{ secrets.NIRENGI_KEYSTORE_PASSWORD }}
+          NIRENGI_KEY_ALIAS: ${{ secrets.NIRENGI_KEY_ALIAS }}
+          NIRENGI_KEY_PASSWORD: ${{ secrets.NIRENGI_KEY_PASSWORD }}
+          API_URL: ${{ vars.API_BASE_URL_PROD }}
+          SENTRY_DSN: ${{ vars.SENTRY_DSN_MOBILE }}
+        run: |
+          [[ -n $KEYSTORE_BASE64 && -n $NIRENGI_KEYSTORE_PASSWORD && -n $NIRENGI_KEY_ALIAS && -n $NIRENGI_KEY_PASSWORD ]] \
+            || { echo "::error::Set the mobile-release environment secrets NIRENGI_UPLOAD_KEYSTORE_BASE64, NIRENGI_KEYSTORE_PASSWORD, NIRENGI_KEY_ALIAS, NIRENGI_KEY_PASSWORD"; exit 1; }
+          [[ $API_URL == https://* ]] || { echo "::error::Set the variable API_BASE_URL_PROD to https://api.<domain>"; exit 1; }
+          [[ -n $SENTRY_DSN ]] || echo "::warning::SENTRY_DSN_MOBILE is empty: this release reports no errors."
+          export NIRENGI_KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"
+          trap 'rm -f "$NIRENGI_KEYSTORE_FILE"' EXIT
+          (umask 077 && tr -d '\r' <<<"$KEYSTORE_BASE64" | base64 -d > "$NIRENGI_KEYSTORE_FILE") \
+            || { echo "::error::NIRENGI_UPLOAD_KEYSTORE_BASE64 is not valid base64"; exit 1; }
+          aab=$(tool/build_release_aab.sh)
+          echo "AAB=mobile/$aab" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: nirengi-${{ env.VERSION }}-aab
+          path: ${{ env.AAB }}
+          retention-days: 30
+          if-no-files-found: error
