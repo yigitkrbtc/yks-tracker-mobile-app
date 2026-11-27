@@ -200,9 +200,9 @@ Bir kez (Play Console ve GitHub):
   keytool -genkeypair -keystore nirengi-upload.jks -storetype PKCS12 -alias nirengi-upload -keyalg RSA -keysize 4096 -validity 10000
   base64 -w0 nirengi-upload.jks   # → NIRENGI_UPLOAD_KEYSTORE_BASE64
   ```
-- GitHub → Settings → Secrets and variables → Actions:
-  - Sırlar: `NIRENGI_UPLOAD_KEYSTORE_BASE64`, `NIRENGI_KEYSTORE_PASSWORD`, `NIRENGI_KEY_ALIAS` (`nirengi-upload`), `NIRENGI_KEY_PASSWORD` (PKCS12'de mağaza parolasıyla aynı).
-  - Değişkenler: `API_BASE_URL_PROD` = `https://api.<alan>` (önizleme APK'larının `API_BASE_URL`'ünden ayrı), `SENTRY_DSN_MOBILE` (boşsa sürüm hata raporlamaz, iş uyarı verir).
+- GitHub → Settings → Environments → **`mobile-release`** ortamını aç; **Deployment branches and tags** = yalnız `mobile-v*` etiketleri (dal ve PR'lar anahtara ulaşamaz). İsteğe bağlı: zorunlu onaylayıcı (sen). Ayrıca Settings → Rules → yeni etiket kuralı: `mobile-v*` etiketini yalnız sen oluşturabil.
+  - Ortam sırları: `NIRENGI_UPLOAD_KEYSTORE_BASE64`, `NIRENGI_KEYSTORE_PASSWORD`, `NIRENGI_KEY_ALIAS` (`nirengi-upload`), `NIRENGI_KEY_PASSWORD` (PKCS12'de mağaza parolasıyla aynı). Depo düzeyinde **koyma**.
+  - Değişkenler (depo ya da ortam): `API_BASE_URL_PROD` = `https://api.<alan>` (önizleme APK'larının `API_BASE_URL`'ünden ayrı), `SENTRY_DSN_MOBILE` (boşsa sürüm hata raporlamaz, iş uyarı verir).
 
 Her sürüm:
 1. `mobile/pubspec.yaml` → `version: X.Y.Z+1` (`+`'dan sonrası yok sayılır), PR, birleştir.
@@ -210,7 +210,7 @@ Her sürüm:
 3. AAB'yi iş akışı çıktısından indir (`nirengi-X.Y.Z-aab`, 30 gün), Play Console → Test → İç test → Yeni sürüm → yükle. Aynı `versionCode` iki kez yüklenemez: düzeltme yeni PATCH ister.
 4. Kırıcı API değişikliğiyse yayılım bitince `.env`'de `CLIENTS_MINIMUM_VERSION=X.Y.Z` ve `sudo deploy.sh <mevcut sürüm>` (yeniden başlatma).
 
-İş akışı her PR'da (`mobile/android/**`, iş akışı ya da sürüm betiği değişince) atılabilir bir anahtarla kuru çalışır; yayın yolu sürümler arasında da yeşil kalır.
+İş akışı her PR'da (`mobile/android/**`, `mobile/tool/**` ya da iş akışı değişince) ve daldan elle çalıştırmada aynı betikle (`mobile/tool/build_release_aab.sh`) atılabilir bir anahtarla kuru çalışır; hiçbir sırra dokunmaz. Bir etiketten elle çalıştırma gerçek sürüm üretir (aynı etiketin AAB'sini yeniden almak için kullanılabilir).
 
 ## 11. Periyodik bakım
 
